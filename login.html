@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ログイン｜セレネス</title>
+
+<style>
+:root{
+  --bg:#fbf6f1; --card:#fff; --line:#eadfce; --text:#3b352e; --muted:#7a6f63;
+  --acc:#c9a36a; --acc2:#b8945f; --shadow:0 14px 28px rgba(0,0,0,.08); --radius:28px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:560px;margin:auto;padding:28px}
+.card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid rgba(234,223,206,.55)}
+h1{margin:0 0 8px;font-size:20px}
+p{margin:0;color:var(--muted);line-height:1.9}
+label{display:block;margin-top:16px;font-size:14px}
+input{
+  width:100%;padding:14px;margin-top:6px;border-radius:16px;border:1px solid var(--line);font-size:16px;
+}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button,.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:14px 18px;border-radius:24px;border:none;
+  background:linear-gradient(180deg,var(--acc),var(--acc2));
+  color:#fff;font-weight:800;cursor:pointer;text-decoration:none;
+}
+.btn.sub{background:#8b7a63}
+.small{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.9}
+.error{
+  margin-top:12px;padding:10px 12px;border-radius:12px;background:#fff3f3;border:1px solid #ffd1d1;
+  color:#9b1c1c;font-size:13px;display:none;white-space:pre-line;
+}
+hr{border:none;border-top:1px solid rgba(234,223,206,.9);margin:16px 0}
+.autoRow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.autoRow label{margin:0;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.autoRow input[type="checkbox"]{width:auto;margin:0}
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 12px;border-radius:999px;border:1px solid rgba(234,223,206,.9);
+  background:rgba(255,255,255,.7); color:var(--muted); font-size:12px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>会員ログイン</h1>
+    <p>会員登録時の「会員ID・お名前・電話番号」でログインできます。</p>
+
+    <div class="autoRow" id="autoBox" style="display:none">
+      <span class="badge">自動ログイン設定あり</span>
+      <button type="button" class="btn sub" id="autoGo">この端末でログインする</button>
+      <button type="button" class="btn sub" id="autoClear">自動ログインを解除</button>
+    </div>
+
+    <hr>
+
+    <label>会員ID（半角英数）
+      <input id="id" type="text" placeholder="例：serenes25" autocomplete="off">
+    </label>
+
+    <label>お名前
+      <input id="name" type="text" placeholder="例：竹内 太郎" autocomplete="name">
+    </label>
+
+    <label>電話番号（ハイフンなし推奨）
+      <input id="phone" type="tel" placeholder="例：09012345678" autocomplete="tel">
+    </label>
+
+    <div class="autoRow">
+      <label>
+        <input type="checkbox" id="remember" checked>
+        この端末で自動ログインする
+      </label>
+    </div>
+
+    <div class="row">
+      <button type="button" id="btn">ログイン</button>
+      <a class="btn sub" href="index.html">トップへ</a>
+    </div>
+
+    <div class="error" id="err"></div>
+
+    <div class="small">
+      会員IDをお持ちでない方は <a href="register.html">新規登録</a> へ。<br>
+      ご不明点は <a href="contact.html">お問い合わせ</a> へ。<br>
+      <span style="display:inline-block;margin-top:6px">※共有端末では自動ログインをOFFにしてください。</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+
+const idEl = document.getElementById("id");
+const nameEl = document.getElementById("name");
+const phoneEl = document.getElementById("phone");
+const rememberEl = document.getElementById("remember");
+const btn  = document.getElementById("btn");
+const err  = document.getElementById("err");
+
+const autoBox = document.getElementById("autoBox");
+const autoGo = document.getElementById("autoGo");
+const autoClear = document.getElementById("autoClear");
+
+function showErr(msg){ err.style.display="block"; err.textContent=msg; }
+function clearErr(){ err.style.display="none"; err.textContent=""; }
+function setBusy(b){ btn.disabled=b; btn.textContent=b ? "確認中..." : "ログイン"; }
+
+function normPhone(s){
+  return String(s || "").replace(/[^\d]/g,"");
+}
+
+function hasAutoLogin(){
+  return localStorage.getItem("member_ok")==="1"
+    && (localStorage.getItem("member_id")||"")
+    && (localStorage.getItem("member_name")||"")
+    && (localStorage.getItem("member_phone")||"");
+}
+
+function goMember(){
+  location.href = "member.html";
+}
+
+// 自動ログインUI
+(function initAuto(){
+  if(hasAutoLogin()){
+    autoBox.style.display = "flex";
+  }
+})();
+
+autoGo.addEventListener("click", ()=>{
+  goMember();
+});
+
+autoClear.addEventListener("click", ()=>{
+  localStorage.removeItem("member_ok");
+  localStorage.removeItem("member_id");
+  localStorage.removeItem("member_name");
+  localStorage.removeItem("member_phone");
+  autoBox.style.display = "none";
+  showErr("自動ログインを解除しました。必要情報を入力してログインしてください。");
+});
+
+// 入力バリデーション
+function validate(){
+  const idRaw = (idEl.value || "").trim();
+  const nameRaw = (nameEl.value || "").trim();
+  const phoneRaw = normPhone(phoneEl.value);
+
+  if(!idRaw || !nameRaw || !phoneRaw){
+    showErr("会員ID・お名前・電話番号をすべて入力してください。");
+    return null;
+  }
+  if(!/^[a-zA-Z0-9]{6,20}$/.test(idRaw)){
+    showErr("会員IDは半角英数6〜20文字で入力してください。");
+    return null;
+  }
+  if(nameRaw.length < 1 || nameRaw.length > 40){
+    showErr("お名前の入力内容をご確認ください。");
+    return null;
+  }
+  if(phoneRaw.length < 10 || phoneRaw.length > 11){
+    showErr("電話番号は10〜11桁で入力してください（ハイフンなし推奨）。");
+    return null;
+  }
+  return { id: idRaw.toLowerCase(), name: nameRaw, phone: phoneRaw };
+}
+
+function setSessionLogin(v){
+  // ✅ remember OFFでも「今回だけ入れる」ため sessionStorage に入れる
+  sessionStorage.setItem("member_ok", "1");
+  sessionStorage.setItem("member_id", v.id);
+  sessionStorage.setItem("member_name", v.name);
+  sessionStorage.setItem("member_phone", v.phone);
+}
+
+function clearSessionLogin(){
+  sessionStorage.removeItem("member_ok");
+  sessionStorage.removeItem("member_id");
+  sessionStorage.removeItem("member_name");
+  sessionStorage.removeItem("member_phone");
+}
+
+async function login(){
+  clearErr();
+  clearSessionLogin();
+
+  const v = validate();
+  if(!v) return;
+
+  setBusy(true);
+  try{
+    // ✅ mode=login → action=login
+    const url = `${SCRIPT_URL}?action=login&id=${encodeURIComponent(v.id)}&name=${encodeURIComponent(v.name)}&phone=${encodeURIComponent(v.phone)}&_=${Date.now()}`;
+    const res = await fetch(url, { method:"GET", cache:"no-store" });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+
+    if(data && data.ok){
+      // ✅ まず sessionStorage に入れて「今回のログイン」を成立させる
+      setSessionLogin(v);
+
+      // 自動ログインONなら localStorage にも保存
+      if(rememberEl.checked){
+        localStorage.setItem("member_ok","1");
+        localStorage.setItem("member_id", v.id);
+        localStorage.setItem("member_name", v.name);
+        localStorage.setItem("member_phone", v.phone);
+      }else{
+        localStorage.removeItem("member_ok");
+        localStorage.removeItem("member_id");
+        localStorage.removeItem("member_name");
+        localStorage.removeItem("member_phone");
+      }
+
+      goMember();
+      return;
+    }
+
+    if(data && data.error === "INACTIVE"){
+      showErr("この会員は現在無効です。");
+    }else{
+      showErr("入力情報が一致しません。会員ID・お名前・電話番号をご確認ください。");
+    }
+  }catch(ex){
+    console.error(ex);
+    showErr("通信エラーです。しばらくしてからもう一度お試しください。");
+  }finally{
+    setBusy(false);
+  }
+}
+
+btn.addEventListener("click", login);
+[idEl,nameEl,phoneEl].forEach(el=>{
+  el.addEventListener("keydown", (e)=>{ if(e.key==="Enter") login(); });
+});
+</script>
+</body>
+</html>

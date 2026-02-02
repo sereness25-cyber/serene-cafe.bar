@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>会員ページ｜セレネス</title>
+
+<style>
+:root{
+  --bg:#fbf6f1;
+  --card:#ffffff;
+  --line:#eadfce;
+  --text:#3b352e;
+  --muted:#7a6f63;
+
+  --acc:#c9a36a;
+  --acc2:#b8945f;
+  --shadow:0 14px 28px rgba(0,0,0,.08);
+  --radius:24px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",system-ui,sans-serif;
+  background:linear-gradient(180deg,#fbf6f1 0%, #f6efe6 100%);
+  color:var(--text);
+}
+
+.wrap{max-width:1100px;margin:auto;padding:18px 16px 40px}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 0 12px;
+  flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:10px}
+.badge{
+  width:40px;height:40px;border-radius:16px;
+  background:linear-gradient(180deg,var(--acc),var(--acc2));
+  box-shadow:0 10px 18px rgba(201,163,106,.25);
+}
+.brand h1{margin:0;font-size:16px}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:12px 16px;border-radius:999px;border:none;
+  font-weight:900;cursor:pointer;text-decoration:none;
+  color:#fff;background:linear-gradient(180deg,var(--acc),var(--acc2));
+}
+.btn.sub{background:#8b7a63}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:#b91c1c}
+
+.grid{
+  display:grid;
+  gap:14px;
+  grid-template-columns: 1fr 1fr;
+  align-items:start;
+}
+@media (max-width:920px){
+  .grid{grid-template-columns:1fr}
+}
+
+.card{
+  background:var(--card);
+  border:1px solid rgba(234,223,206,.75);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+}
+
+.card h2{margin:0 0 10px;font-size:15px}
+.small{font-size:12px;color:var(--muted);line-height:1.75}
+.kv{
+  display:grid;gap:10px;margin-top:10px;
+}
+.kv .row{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:16px;
+  padding:10px 12px;
+}
+.kv .row b{display:block;font-size:12px}
+.kv .row span{display:block;color:var(--muted);font-size:12px;line-height:1.6}
+
+hr.sep{border:none;border-top:1px solid var(--line);margin:12px 0}
+
+.linkCard{
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:12px;
+  background:rgba(255,255,255,.85);
+}
+.linkCard b{display:block;font-size:13px}
+.linkCard p{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.7}
+.linkRow{
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px;
+}
+
+.miniCard{
+  border:1px dashed rgba(201,163,106,.55);
+  border-radius:18px;
+  padding:12px;
+  background:linear-gradient(180deg, rgba(201,163,106,.10), rgba(255,255,255,.70));
+}
+.miniTop{
+  display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;
+}
+.miniTop .name{
+  font-weight:900;
+  font-size:14px;
+}
+.badgeScore{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 10px;border-radius:999px;
+  border:1px solid var(--line);
+  background:#fff;
+  font-size:12px;color:var(--muted);
+  white-space:nowrap;
+}
+.badgeScore b{color:var(--text)}
+.miniBio{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.75;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+.toast{
+  position:fixed;
+  bottom:18px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#3b352e;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:999px;
+  font-size:13px;
+  display:none;
+  z-index:10000;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="badge" aria-hidden="true"></div>
+      <div>
+        <h1>会員ページ</h1>
+        <p class="muted">プロフィール・コミュニティ・イベントへ</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <a class="btn ghost" href="index.html">トップ</a>
+      <button class="btn danger" id="logoutBtn" type="button">ログアウト</button>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 左：会員情報 + 価値観が一番近い人 -->
+    <div class="card">
+      <h2>あなたの情報</h2>
+
+      <div class="kv">
+        <div class="row">
+          <b>会員ID</b>
+          <span id="mId">-</span>
+        </div>
+
+        <div class="row">
+          <b>表示名（ニックネーム）</b>
+          <span id="mNick">—</span>
+        </div>
+      </div>
+
+      <hr class="sep">
+
+      <h2 style="margin-top:0">価値観が一番近い人</h2>
+      <div id="bestWrap" class="miniCard">
+        <div class="small">読み込み中…</div>
+      </div>
+
+      <div class="small" style="margin-top:10px">
+        ※ 公開プロフィールONの会員の中から、価値観（q1〜q12）の一致数が最も多い1名を表示します。
+      </div>
+    </div>
+
+    <!-- 右：メニュー -->
+    <div class="card">
+      <h2>メニュー</h2>
+
+      <div class="linkCard">
+        <b>プロフィールヒアリング</b>
+        <p>価値観12問＋プロフィール8問。公開プロフィールの設定もできます。</p>
+        <div class="linkRow">
+          <a class="btn" href="profile.html">開く</a>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="linkCard">
+        <b>コミュニティチャット</b>
+        <p>投稿・閲覧。公開ONなら、名前タップで簡易プロフィールが開きます。</p>
+        <div class="linkRow">
+          <a class="btn" href="board.html">開く</a>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="linkCard">
+        <b>イベントページ</b>
+        <p>イベント一覧・スケジュールを確認できます。</p>
+        <div class="linkRow">
+          <button class="btn" id="openEventsBtn" type="button">開く</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="toast" id="toast">OK</div>
+
+<script>
+/* ========= 固定URL ========= */
+const EVENT_PAGE_URL = "https://sereness25-cyber.github.io/serene-event/";
+
+/* ========= GAS ========= */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+
+/* ========= utils ========= */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  setTimeout(()=> t.style.display="none", 2600);
+}
+
+/* ✅ 追記：localStorage / sessionStorage 両対応 */
+function getStoreItem(key){
+  return localStorage.getItem(key) || sessionStorage.getItem(key) || "";
+}
+
+function getMemberId(){
+  return (getStoreItem("member_id")
+    || getStoreItem("memberId")
+    || getStoreItem("user_id")
+    || getStoreItem("userId")
+    || "").trim();
+}
+
+/* ========= login guard（✅追記：sessionStorageも見る） ========= */
+const okFlag = getStoreItem("member_ok");
+if(!okFlag){ location.href = "login.html"; }
+
+/* ========= member ========= */
+const memberId = getMemberId();
+if(!memberId){ location.href = "login.html"; }
+document.getElementById("mId").textContent = memberId;
+
+/* ========= local nickname ========= */
+const STATE_KEY = `sereness_profile_answers_v2_${memberId}`;
+function loadLocalState(){
+  try{ return JSON.parse(localStorage.getItem(STATE_KEY) || "{}"); }
+  catch(_){ return {}; }
+}
+function saveLocalState(st){
+  localStorage.setItem(STATE_KEY, JSON.stringify(st));
+}
+let L = loadLocalState();
+
+function nickOrDefault(){
+  const n = (L.nickname || "").trim();
+  return n ? n : "村人A";
+}
+document.getElementById("mNick").textContent = nickOrDefault();
+
+function baseDir(){
+  return `${location.origin}${location.pathname.replace(/[^/]+$/, "")}`;
+}
+function publicUrlFromId(pid){
+  return `${baseDir()}public_profile.html?u=${encodeURIComponent(pid)}`;
+}
+
+/* ========= API ========= */
+async function fetchMyValues(){
+  const res = await fetch(`${GAS_URL}?action=get_my_values&id=${encodeURIComponent(memberId)}&_=${Date.now()}`, { cache:"no-store" });
+  return await res.json();
+}
+
+async function fetchBestMatch(){
+  const res = await fetch(`${GAS_URL}?action=get_best_match&id=${encodeURIComponent(memberId)}&_=${Date.now()}`, { cache:"no-store" });
+  return await res.json();
+}
+
+/* ========= render best ========= */
+function esc(s){
+  return String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+function renderBest(best){
+  const wrap = document.getElementById("bestWrap");
+
+  if(!best){
+    wrap.innerHTML = `<div class="small">まだ表示できません（公開プロフィールONの会員がいない、またはあなたの回答が未設定の可能性があります）</div>`;
+    return;
+  }
+
+  const name = [best.alias, best.nickname].filter(Boolean).join(" ").trim() || "匿名";
+  const score = Number(best.score ?? 0);
+  const pid = String(best.public_profile_id || "").trim();
+  const bio = String(best.bio || "").trim();
+
+  wrap.innerHTML = `
+    <div class="miniTop">
+      <div>
+        <div class="name">${esc(name)}</div>
+        <div class="miniBio">${esc(bio || "ひとこと：—")}</div>
+      </div>
+      <div class="badgeScore">
+        一致 <b>${esc(String(score))}</b> / 12
+      </div>
+    </div>
+    <div class="linkRow" style="margin-top:10px">
+      <button class="btn ghost" id="openBestBtn" type="button">プロフィールを見る</button>
+    </div>
+  `;
+
+  const btn = document.getElementById("openBestBtn");
+  btn.onclick = ()=>{
+    if(!pid){
+      toast("相手の公開プロフィールIDがありません");
+      return;
+    }
+    window.open(publicUrlFromId(pid), "_blank", "noopener,noreferrer");
+  };
+}
+
+/* ========= start ========= */
+(async function start(){
+  // サーバのニックネームがあれば反映
+  try{
+    const me = await fetchMyValues();
+    if(me && me.ok){
+      const v = me.values || {};
+      const srvNick = String(v.nickname || "").trim();
+      if(srvNick){
+        L.nickname = srvNick;
+        saveLocalState(L);
+        document.getElementById("mNick").textContent = nickOrDefault();
+      }
+    }
+  }catch(_){}
+
+  // ベストマッチ取得
+  try{
+    const bm = await fetchBestMatch();
+    if(bm && bm.ok){
+      renderBest(bm.best || null);
+    }else{
+      renderBest(null);
+    }
+  }catch(_){
+    renderBest(null);
+  }
+})();
+
+/* ========= イベント（別タブ） ========= */
+document.getElementById("openEventsBtn").addEventListener("click", ()=>{
+  window.open(EVENT_PAGE_URL, "_blank", "noopener,noreferrer");
+});
+
+/* ========= ログアウト（✅追記：sessionStorageも消す） ========= */
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+  if(!confirm("ログアウトしますか？")) return;
+
+  // local
+  localStorage.removeItem("member_ok");
+  localStorage.removeItem("member_id");
+  localStorage.removeItem("member_name");
+  localStorage.removeItem("member_phone");
+  localStorage.removeItem("memberId");
+  localStorage.removeItem("user_id");
+  localStorage.removeItem("userId");
+
+  // session
+  sessionStorage.removeItem("member_ok");
+  sessionStorage.removeItem("member_id");
+  sessionStorage.removeItem("member_name");
+  sessionStorage.removeItem("member_phone");
+  sessionStorage.removeItem("memberId");
+  sessionStorage.removeItem("user_id");
+  sessionStorage.removeItem("userId");
+
+  location.href = "login.html";
+});
+</script>
+
+</body>
+</html>

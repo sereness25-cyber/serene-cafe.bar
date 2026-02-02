@@ -1,0 +1,1140 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>プロフィールヒアリング｜セレネス</title>
+
+<style>
+:root{
+  --bg:#fbf6f1;
+  --card:#ffffff;
+  --line:#eadfce;
+  --text:#3b352e;
+  --muted:#7a6f63;
+  --acc:#c9a36a;
+  --acc2:#b8945f;
+  --shadow:0 14px 28px rgba(0,0,0,.08);
+  --radius:24px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+.wrap{max-width:1100px;margin:auto;padding:18px 16px 40px}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 0 12px;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+}
+.badge{
+  width:40px;height:40px;border-radius:16px;
+  background:linear-gradient(180deg,var(--acc),var(--acc2));
+  box-shadow:0 10px 18px rgba(201,163,106,.25);
+}
+.brand h1{margin:0;font-size:16px}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:12px 16px;border-radius:999px;border:none;
+  font-weight:900;cursor:pointer;text-decoration:none;
+  color:#fff;background:linear-gradient(180deg,var(--acc),var(--acc2));
+}
+.btn.sub{background:#8b7a63}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+
+.grid{
+  display:grid;gap:14px;
+  grid-template-columns: .9fr 1.1fr;
+  align-items:start;
+}
+@media (max-width:920px){
+  .grid{grid-template-columns:1fr}
+}
+
+.card{
+  background:var(--card);
+  border:1px solid rgba(234,223,206,.75);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+}
+.card h2{margin:0 0 10px;font-size:15px}
+.muted{color:var(--muted)}
+.small{font-size:12px;color:var(--muted);line-height:1.75}
+
+.sticky{
+  position:sticky; top:12px;
+}
+@media (max-width:920px){
+  .sticky{position:static}
+}
+
+/* tabs */
+.tabs{
+  display:flex;gap:8px;flex-wrap:wrap;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:999px;
+  padding:6px;
+}
+.tab{
+  flex:1;
+  min-width:140px;
+  border:none;
+  background:transparent;
+  padding:10px 12px;
+  border-radius:999px;
+  font-weight:900;
+  cursor:pointer;
+  color:var(--muted);
+}
+.tab.active{
+  background:linear-gradient(180deg, rgba(201,163,106,.20), rgba(201,163,106,.10));
+  border:1px solid rgba(201,163,106,.45);
+  color:var(--text);
+}
+
+/* question layout */
+.sectionHead{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+  margin-bottom:10px;
+}
+.progress{
+  font-size:12px;color:var(--muted);
+  padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;
+}
+.qgrid{
+  display:grid;gap:12px;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+}
+@media (max-width:760px){
+  .qgrid{grid-template-columns:1fr}
+}
+.qcard{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.8);
+  border-radius:18px;
+  padding:12px;
+}
+.qtitle{
+  display:flex;gap:8px;align-items:center;
+  margin-bottom:8px;
+}
+.qno{
+  width:26px;height:26px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-weight:900;color:#fff;
+  background:linear-gradient(180deg,var(--acc),var(--acc2));
+  box-shadow:0 10px 18px rgba(0,0,0,.10);
+  font-size:12px;
+}
+.qtitle b{font-size:13px}
+.chips{
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:999px;
+  border:1px solid var(--line);
+  background:#fff;
+  cursor:pointer;
+  font-size:12px;
+  color:var(--text);
+  user-select:none;
+}
+.chip input{display:none}
+.chip.on{
+  border-color:rgba(201,163,106,.65);
+  background:linear-gradient(180deg, rgba(201,163,106,.18), rgba(201,163,106,.08));
+  box-shadow:0 10px 18px rgba(0,0,0,.06);
+}
+.helper{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+/* profile summary */
+.profileTop{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:10px;
+}
+.nameLine{
+  font-size:14px;font-weight:900;
+}
+.tagRow{
+  display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;
+}
+.tag{
+  font-size:12px;
+  padding:6px 10px;border-radius:999px;
+  border:1px solid var(--line);
+  background:#f7f1e7;
+  color:#6b5f52;
+}
+.kv{
+  display:grid;gap:10px;margin-top:10px;
+}
+.kv .row{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:16px;
+  padding:10px 12px;
+}
+.kv .row b{display:block;font-size:12px}
+.kv .row span{display:block;color:var(--muted);font-size:12px;line-height:1.6}
+textarea{
+  width:100%;
+  min-height:88px;
+  padding:12px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  font-size:14px;
+  background:#fff;
+}
+.actions{
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;
+}
+.msg{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#fff;
+  font-size:13px;
+  display:none;
+  white-space:pre-line;
+}
+.msg.err{border-color:#ffd1d1;background:#fff3f3;color:#9b1c1c}
+.msg.ok{border-color:#b8f0c6;background:#f2fff5;color:#155724}
+
+hr.sep{border:none;border-top:1px solid var(--line);margin:12px 0}
+
+/* ====== 二つ名 / ニックネーム UI ====== */
+.aliasBox{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.92);
+  border-radius:18px;
+  padding:12px;
+  margin:0 0 12px;
+}
+.aliasHead{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;
+}
+.aliasHead b{font-size:13px}
+.aliasHelp{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.6}
+.aliasRow{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;
+}
+.aliasInput{
+  flex:1;
+  min-width:220px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px 12px;
+  background:#fff;
+  font-size:14px;
+}
+.btn.small{
+  padding:10px 12px;
+  font-size:13px;
+}
+.btn.ghost2{
+  background:transparent;color:var(--text);border:1px solid var(--line)
+}
+
+/* modal */
+.modalBack{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.35);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:9999;
+}
+.modal{
+  width:min(720px,100%);
+  background:#fff;
+  border-radius:22px;
+  border:1px solid var(--line);
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+  padding:14px;
+}
+.modalTop{
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modalTop b{font-size:15px}
+.modalTop .x{
+  border:none;background:transparent;cursor:pointer;
+  font-size:22px;color:var(--muted);
+}
+
+.slotWrap{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:#fff;
+  padding:12px;
+  margin-top:12px;
+}
+.slots{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:10px;
+}
+@media (max-width:760px){
+  .slots{grid-template-columns:1fr}
+}
+.slot{
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  height:170px;
+  background:#fff;
+}
+.reel{
+  height:170px;
+  overflow:hidden;
+  position:relative;
+}
+.reel .inner{
+  position:absolute;left:0;top:0;width:100%;
+  transition:transform 900ms cubic-bezier(.15,.85,.15,1);
+}
+.item{
+  height:34px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:13px;
+  border-bottom:1px solid var(--line);
+}
+.slotLine{
+  position:absolute;
+  left:12px; right:12px;
+  top:50%;
+  height:34px;
+  transform:translateY(-50%);
+  border:2px solid rgba(201,163,106,.55);
+  border-radius:14px;
+  pointer-events:none;
+}
+.preview{
+  margin-top:10px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.preview .cap{
+  font-size:12px;color:var(--muted);
+  border:1px solid var(--line);
+  padding:6px 10px;border-radius:999px;
+}
+.preview .val{font-weight:1000}
+.modalBtns{
+  margin-top:12px;
+  display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="badge" aria-hidden="true"></div>
+      <div>
+        <h1>プロフィールヒアリング</h1>
+        <p class="muted">質問に答えるほど、プロフィールが整っていきます</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <a class="btn ghost" href="member.html">会員ページ</a>
+      <a class="btn sub" href="index.html">トップ</a>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 左：プロフィール要約（固定） -->
+    <div class="card sticky" aria-label="プロフィール要約">
+      <div class="profileTop">
+        <div>
+          <div class="nameLine" id="pName">村人A</div>
+          <div class="small" id="pId">ID：-</div>
+        </div>
+        <div class="progress" id="pProgress">入力 0 / 20</div>
+      </div>
+
+      <div class="tagRow" id="tagRow">
+        <span class="tag">価値観＋プロフィール</span>
+      </div>
+
+      <div class="kv" id="kv"></div>
+
+      <hr class="sep">
+
+      <div class="small">ひとこと自己紹介（任意）</div>
+      <textarea id="bio" placeholder="例：落ち着いて話せる関係を大切にしています。"></textarea>
+
+      <div class="actions">
+        <button class="btn" id="saveBtn" type="button">保存する</button>
+        <button class="btn ghost" id="resetBtn" type="button">リセット</button>
+      </div>
+
+      <div class="msg err" id="err"></div>
+      <div class="msg ok"  id="ok"></div>
+
+      <div class="small" style="margin-top:10px">
+        ※ 「保存する」で診断が保存され、紹介候補の生成に利用されます。<br>
+        ※ 迷ったら一番近いものを選べばOKです。
+      </div>
+    </div>
+
+    <!-- 右：質問（タブで切替） -->
+    <div class="card">
+      <div class="sectionHead">
+        <div class="tabs" role="tablist" aria-label="入力タブ">
+          <button class="tab active" id="tab1" type="button">価値観</button>
+          <button class="tab" id="tab2" type="button">プロフィール</button>
+        </div>
+        <div class="progress" id="rightHint">迷ったら「一番近い」</div>
+      </div>
+
+      <!-- ===== タブ1：価値観（Q1〜Q12） ===== -->
+      <div id="panel1">
+        <div class="small muted" style="margin:0 0 10px">
+          価値観は「相性診断」ではなく、あなたの軸を整理するためのヒアリングです。
+        </div>
+        <div class="qgrid" id="qgrid1"></div>
+      </div>
+
+      <!-- ===== タブ2：プロフィール（q13〜q20＋任意） ===== -->
+      <div id="panel2" style="display:none">
+        <div class="small muted" style="margin:0 0 10px">
+          プロフィールは会話のきっかけになります。答えやすいところからでOKです。
+        </div>
+
+        <!-- 公開プロフィール -->
+        <div class="aliasBox">
+          <div class="aliasHead">
+            <div>
+              <b>公開プロフィール</b>
+              <div class="aliasHelp">
+                掲示板から「プロフィールを見る」で飛べる公開用ページです。<br>
+                公開ONのときだけ表示されます（本名・電話などは表示されません）。
+              </div>
+            </div>
+          </div>
+          <div class="aliasRow">
+            <label class="chip" id="publicToggle" style="cursor:pointer">
+              <input type="checkbox" id="publicEnabled">
+              <span>公開する</span>
+            </label>
+            <button class="btn ghost2 small" type="button" id="copyPublicUrlBtn">公開URLをコピー</button>
+          </div>
+          <div class="helper" id="publicHint">現在：非公開</div>
+        </div>
+
+        <!-- ニックネーム -->
+        <div class="aliasBox">
+          <div class="aliasHead">
+            <div>
+              <b>ニックネーム（表示名）</b>
+              <div class="aliasHelp">
+                コミュニティやプロフィールで表示される名前です。<br>
+                未入力の場合は「村人A」として表示されます。
+              </div>
+            </div>
+          </div>
+          <div class="aliasRow">
+            <input class="aliasInput" id="nicknameInput" placeholder="例：あかり / K / けい">
+          </div>
+        </div>
+
+        <!-- 二つ名 -->
+        <div class="aliasBox">
+          <div class="aliasHead">
+            <div>
+              <b>二つ名（コミュニティ用）</b>
+              <div class="aliasHelp">
+                雰囲気やキャラを表す名前です。<br>
+                掲示板では「二つ名＋ニックネーム」で表示されます。
+              </div>
+            </div>
+          </div>
+          <div class="aliasRow">
+            <input class="aliasInput" id="aliasInput" placeholder="未設定（リールで決めよう）" readonly>
+            <button class="btn small" type="button" id="openAliasBtn">リールで決める</button>
+            <button class="btn ghost2 small" type="button" id="clearAliasBtn">クリア</button>
+          </div>
+        </div>
+
+        <div class="qgrid" id="qgrid2"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== 二つ名リールモーダル ===== -->
+<div class="modalBack" id="aliasModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="二つ名リール">
+    <div class="modalTop">
+      <b>二つ名をリールで決める（前半・中盤・後半）</b>
+      <button class="x" type="button" id="closeAliasBtn" aria-label="閉じる">×</button>
+    </div>
+
+    <div class="slotWrap">
+      <div class="slots">
+        <div class="slot"><div class="reel" id="reelA"></div></div>
+        <div class="slot"><div class="reel" id="reelB"></div></div>
+        <div class="slot"><div class="reel" id="reelC"></div></div>
+      </div>
+      <div class="slotLine"></div>
+    </div>
+
+    <div class="preview">
+      <span class="cap">選択中</span>
+      <span class="val" id="aliasPreview">—</span>
+    </div>
+
+    <div class="modalBtns">
+      <button class="btn ghost2" type="button" id="spinAliasBtn">回す</button>
+      <button class="btn" type="button" id="useAliasBtn">これにする</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== 設定 ====== */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+
+/* ====== ログインガード ====== */
+const okFlag = localStorage.getItem("member_ok");
+if(!okFlag){ location.href = "login.html"; }
+
+/* ====== 会員情報（本名は画面に出さない） ====== */
+const memberId = (localStorage.getItem("member_id") || "").trim();
+const memberRealName = (localStorage.getItem("member_name") || "").trim();
+if(!memberId){ location.href = "login.html"; }
+
+document.getElementById("pId").textContent = memberId ? `ID：${memberId}` : "ID：-";
+
+/* =========================================================
+   ✅ 追記：IDキー揺れ対策（チャット側が別名で読む場合も拾う）
+   - member_id があるなら、別名キーにも必ず書いておく
+========================================================= */
+(function ensureIdAliases(){
+  const id = memberId;
+  if(!id) return;
+  localStorage.setItem("member_id", id);
+  localStorage.setItem("memberId", id);
+  localStorage.setItem("user_id", id);
+  localStorage.setItem("userId", id);
+})();
+
+/* ====== ★安全ガード：別アカウントの状態を出さない ====== */
+(function accountGuard(){
+  const cur = memberId;
+  const prev = (localStorage.getItem("current_member_id") || "").trim();
+  if(prev && prev !== cur){
+    localStorage.removeItem("sereness_profile_answers_v1");
+  }
+  localStorage.setItem("current_member_id", cur);
+})();
+
+/* =========================================================
+   質問データ
+========================================================= */
+
+/* ===== 価値観12問 ===== */
+const VALUES_12 = [
+  { key:"q1", no:"Q1", title:"家計の管理方法", helper:"あなたに最も近いものを1つ選んでください。",
+    options:[
+      "財布は完全に一つにまとめ、共同で管理したい",
+      "共通の生活費だけ出し合い、残りは各自で自由にしたい",
+      "全て別々。支払う項目（家賃、食費など）を分担したい"
+    ]
+  },
+  { key:"q2", no:"Q2", title:"お金の使い道", helper:"お金の優先順位に近いものを選んでください。",
+    options:[
+      "将来の安心が一番。できるだけ貯蓄に回したい",
+      "無駄遣いはしないが、必要な生活の質にはお金をかけたい",
+      "今の楽しみが大事。趣味や旅行には積極的にお金を使いたい"
+    ]
+  },
+  { key:"q3", no:"Q3", title:"居住地の柔軟性", helper:"移動・引っ越しの柔軟さに近いものを選んでください。",
+    options:[
+      "今の場所から絶対に動けない（仕事・育児・介護など）",
+      "30分〜1時間圏内なら、相手に合わせて引っ越しも検討できる",
+      "秋田県内ならどこへでも。良い人がいれば柔軟に動ける"
+    ]
+  },
+  { key:"q4", no:"Q4", title:"自己開示のスピード", helper:"話せる深さのペースに近いものを選んでください。",
+    options:[
+      "初対面でも自分の悩みや過去をオープンに話せる",
+      "打ち解けるのに少し時間がかかるが、徐々に話せる",
+      "信頼関係が築けるまで、深い話をするのは慎重でありたい"
+    ]
+  },
+  { key:"q5", no:"Q5", title:"意見が食い違った時", helper:"ズレが出た時の向き合い方に近いものは？",
+    options:[
+      "忘れないうちに、その場ですぐに話し合って解決したい",
+      "一度時間を置いて、お互い冷静になってから話したい",
+      "争いごとは苦手。時間が解決するのを待つか、譲ることが多い"
+    ]
+  },
+  { key:"q6", no:"Q6", title:"愛情表現の形", helper:"愛情の伝え方に近いものを選んでください。",
+    options:[
+      "「好き」という言葉やスキンシップでハッキリ伝え合いたい",
+      "言葉よりも、日々の家事や気遣いなどの「行動」で感じ合いたい",
+      "お互いの存在を信頼し、自然体でいられれば表現にはこだわらない"
+    ]
+  },
+  { key:"q7", no:"Q7", title:"ひとりの時間の重要性", helper:"ひとり時間の必要度に近いものは？",
+    options:[
+      "休日はできるだけ二人で一緒に過ごしたい",
+      "一緒にいても、別々のことをする時間が少しあると落ち着く",
+      "ひとりで趣味に没頭する時間は、絶対に確保したい"
+    ]
+  },
+  { key:"q8", no:"Q8", title:"生活のこだわり", helper:"生活スタイルの“こだわり”に近いものは？",
+    options:[
+      "家事のやり方や物の置き場所など、自分のルールがある方だ",
+      "基本はあるが、相手に合わせてやり方を変えるのは苦ではない",
+      "こだわりはほぼない。楽に、柔軟に生活したい"
+    ]
+  },
+  { key:"q9", no:"Q9", title:"家族・親族との距離感", helper:"親族付き合いのイメージに近いものを選んでください。",
+    options:[
+      "親や親戚、友人とも家族ぐるみで密に付き合いたい",
+      "冠婚葬祭などの行事は大切にするが、普段は二人の時間を優先したい",
+      "親族付き合いは最小限にし、二人の自立した生活を重視したい"
+    ]
+  },
+  { key:"q10", no:"Q10", title:"再婚における優先順位", helper:"何を土台にしたいかに近いものを選んでください。",
+    options:[
+      "子供や親のケアを最優先とし、それを支え合う関係でありたい",
+      "家族のことも大事だが、夫婦二人の絆を全ての土台にしたい",
+      "お互いの状況を尊重し、無理のないペースで家族を築きたい"
+    ]
+  },
+  { key:"q11", no:"Q11", title:"変化への意欲", helper:"変化・新しい体験へのスタンスに近いものは？",
+    options:[
+      "新しい場所や体験にどんどん挑戦し、変化を楽しみたい",
+      "変化はあってもいいが、基本的には今の安定を大切にしたい",
+      "変わらない日常に幸せを感じる。平穏が一番だと思う"
+    ]
+  },
+  { key:"q12", no:"Q12", title:"物事の決め方", helper:"決断の仕方に近いものを選んでください。",
+    options:[
+      "直感や「なんとなく良い」というフィーリングを信じる",
+      "周囲の意見や世間の評判を聞いてから決めたい",
+      "メリット・デメリットをしっかり比較し、納得して決めたい"
+    ]
+  }
+];
+
+/* ===== プロフィール8問 ===== */
+const PROFILE_8 = [
+  { key:"q13", no:"①", title:"性格", helper:"自分に一番近い雰囲気を選んでください。",
+    options:["穏やかで落ち着いている","明るく前向き","真面目で堅実","マイペース","刺激や変化が好き"]
+  },
+  { key:"q14", no:"②", title:"人との距離感", helper:"仲良くなるスピード感のイメージです。",
+    options:["ほどよい距離が一番楽","徐々に距離が近くなる関係がいい","仲良くなったら距離は近め","かなり距離が近い関係が好き","状況によって変わる"]
+  },
+  { key:"q15", no:"③", title:"休日の過ごし方", helper:"休日のイメージに近いものを選んでください。",
+    options:["家でゆっくり過ごす","予定を入れて外出する","趣味や習い事を楽しむ","その時の気分次第","仕事や用事が多め"]
+  },
+  { key:"q16", no:"④", title:"食のスタイル", helper:"食事のこだわり・傾向に近いものは？",
+    options:["健康やバランス重視","特にこだわらず何でも食べる","外食や食べ歩きが好き","手軽さや簡単さ重視","食へのこだわりが強め"]
+  },
+  { key:"q17", no:"⑤", title:"お酒との付き合い方", helper:"頻度やスタンスのイメージです。",
+    options:["ほとんど飲まない","付き合い程度","たまに楽しむ","お酒が好き","相手に合わせる"]
+  },
+  { key:"q18", no:"⑥", title:"連絡の頻度", helper:"心地よい連絡頻度のイメージです。",
+    options:["必要な時だけで十分","1日1回くらい","こまめにやり取りしたい","気分や状況次第","相手に合わせたい"]
+  },
+  { key:"q19", no:"⑦", title:"大切にしていること", helper:"関係づくりで大事にしたい軸です。",
+    options:["安心感","信頼","自由","思いやり","成長"]
+  },
+  { key:"q20", no:"⑧", title:"好きなペット", helper:"会話のきっかけ用です。",
+    options:["犬","猫","小動物","飼っていない","動物が苦手"]
+  }
+];
+
+/* ====== UI生成 ====== */
+function makeQCard(q){
+  const wrap = document.createElement("div");
+  wrap.className = "qcard";
+  wrap.innerHTML = `
+    <div class="qtitle">
+      <span class="qno">${q.no}</span>
+      <div>
+        <b>${q.title}</b>
+        <div class="helper">${q.helper}</div>
+      </div>
+    </div>
+    <div class="chips" data-key="${q.key}"></div>
+  `;
+  const chips = wrap.querySelector(".chips");
+  q.options.forEach((label, idx)=>{
+    const value = String(idx+1);
+    const chip = document.createElement("label");
+    chip.className = "chip";
+    chip.innerHTML = `<input type="radio" name="${q.key}" value="${value}"><span>${label}</span>`;
+    chip.addEventListener("click", ()=>{
+      setAnswer(q.key, value);
+    });
+    chips.appendChild(chip);
+  });
+  return wrap;
+}
+
+const qgrid1 = document.getElementById("qgrid1");
+const qgrid2 = document.getElementById("qgrid2");
+VALUES_12.forEach(q=> qgrid1.appendChild(makeQCard(q)));
+PROFILE_8.forEach(q=> qgrid2.appendChild(makeQCard(q)));
+
+/* ====== 状態管理（会員IDごとに分離） ====== */
+const STATE_KEY = `sereness_profile_answers_v2_${memberId}`;
+
+/* =========================================================
+   ✅ 追記：状態を “複数キー” に保存して取りこぼし防止
+   - チャット側が member_id を拾えない/キーがズレても読めるように
+   - sereness_profile_answers_v2_   (memberIdが空のときの保険)
+   - sereness_profile_answers_v2_current (最後に触った人)
+========================================================= */
+const FALLBACK_STATE_KEY = "sereness_profile_answers_v2_";
+const CURRENT_STATE_KEY  = "sereness_profile_answers_v2_current";
+
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(STATE_KEY) || "{}"); }
+  catch(_){ return {}; }
+}
+function saveState(obj){
+  const s = JSON.stringify(obj);
+  localStorage.setItem(STATE_KEY, s);
+  localStorage.setItem(CURRENT_STATE_KEY, s);
+  localStorage.setItem(FALLBACK_STATE_KEY, s);
+}
+
+/* ✅ publicProfileId の生成を関数化（リセットでも壊れないように） */
+function ensurePublicState(st){
+  if(!st.publicProfileId){
+    st.publicProfileId =
+      (crypto?.randomUUID ? crypto.randomUUID() : ("u_" + Math.random().toString(36).slice(2) + Date.now()));
+  }
+  if(typeof st.publicEnabled !== "boolean"){
+    st.publicEnabled = false;
+  }
+  return st;
+}
+
+let state = ensurePublicState(loadState());
+saveState(state);
+
+/* bio復元（ローカル） */
+document.getElementById("bio").value = state.bio || "";
+document.getElementById("bio").addEventListener("input", ()=>{
+  state.bio = document.getElementById("bio").value || "";
+  saveState(state);
+});
+
+/* ニックネーム入力（ローカル復元＆操作） */
+const nicknameInput = document.getElementById("nicknameInput");
+if(nicknameInput){
+  nicknameInput.value = (state.nickname || "").trim();
+  nicknameInput.addEventListener("input", ()=>{
+    state.nickname = (nicknameInput.value || "").trim();
+    saveState(state);
+    updateDisplayName();
+  });
+}
+
+/* 表示名 */
+function getNickOrDefault(){
+  const v = (state.nickname || "").trim();
+  return v ? v : "村人A";
+}
+function updateDisplayName(){
+  document.getElementById("pName").textContent = getNickOrDefault();
+}
+updateDisplayName();
+
+/* ===== 公開ON/OFF UI ===== */
+const publicEnabledEl = document.getElementById("publicEnabled");
+const publicHint = document.getElementById("publicHint");
+const publicToggle = document.getElementById("publicToggle");
+const copyBtn = document.getElementById("copyPublicUrlBtn");
+
+function publicUrl(){
+  return `${location.origin}${location.pathname.replace(/[^/]+$/, "")}public_profile.html?u=${encodeURIComponent(state.publicProfileId)}`;
+}
+
+function renderPublicUI(){
+  if(publicEnabledEl){
+    publicEnabledEl.checked = !!state.publicEnabled;
+  }
+  if(publicToggle){
+    publicToggle.classList.toggle("on", !!state.publicEnabled);
+  }
+  if(publicHint){
+    publicHint.textContent = state.publicEnabled
+      ? "現在：公開中（掲示板に「プロフィールを見る」が出ます）"
+      : "現在：非公開";
+  }
+}
+renderPublicUI();
+
+/* ✅ チップ自体を押しても確実にON/OFFが反映される */
+publicToggle?.addEventListener("click", (e)=>{
+  if(publicEnabledEl){
+    setTimeout(()=>{
+      state.publicEnabled = !!publicEnabledEl.checked;
+      saveState(state);
+      renderPublicUI();
+    }, 0);
+  }
+});
+
+publicEnabledEl?.addEventListener("change", ()=>{
+  state.publicEnabled = !!publicEnabledEl.checked;
+  saveState(state);
+  renderPublicUI();
+});
+
+copyBtn?.addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText(publicUrl());
+    showOk("公開URLをコピーしました。");
+  }catch(_){
+    prompt("このURLをコピーしてください", publicUrl());
+  }
+});
+
+/* ====== 二つ名（ローカル復元＆操作） ====== */
+const aliasInput = document.getElementById("aliasInput");
+if(aliasInput){
+  aliasInput.value = state.alias || "";
+}
+
+const aliasModal = document.getElementById("aliasModal");
+const aliasPreview = document.getElementById("aliasPreview");
+const reelA = document.getElementById("reelA");
+const reelB = document.getElementById("reelB");
+const reelC = document.getElementById("reelC");
+
+const ALIAS_A = ["月明かりの","陽だまりの","静かな","穏やかな","誠実な","旅する","星読みの","雪解けの","朝焼けの","宵の","風の","森の","海辺の","小さな勇気の","まっすぐな","見守る"];
+const ALIAS_B = ["やさしき","芯のある","不器用な","ひたむきな","静かなる","堅実な","おだやかな","気配りの","熱い想いの","凛とした","誠実な","陽気な","落ち着いた","丁寧な","一途な","前向きな"];
+const ALIAS_C = ["案内人","聞き手","旅人","守り手","相談役","仲人","癒し手","語り部","見張り番","料理人","探検家","詩人","鍛冶屋","学者","吟遊","司祭","剣士","魔導師","商人","守護者"];
+
+function buildReel(el, words){
+  el.innerHTML = `<div class="inner"></div>`;
+  const inner = el.querySelector(".inner");
+  const loop = 10;
+  for(let i=0;i<loop;i++){
+    words.forEach(w=>{
+      const div = document.createElement("div");
+      div.className = "item";
+      div.textContent = w;
+      inner.appendChild(div);
+    });
+  }
+  return inner;
+}
+
+let innerA = null;
+let innerB = null;
+let innerC = null;
+let curA = 0, curB = 0, curC = 0;
+
+function pickRand(max){ return Math.floor(Math.random()*max); }
+
+function spin(){
+  const nA = ALIAS_A.length, nB = ALIAS_B.length, nC = ALIAS_C.length;
+  curA = pickRand(nA); curB = pickRand(nB); curC = pickRand(nC);
+
+  const itemH = 34;
+  const centerOffset = (170/2) - (itemH/2); // 68
+
+  const loopsA = 6 + pickRand(4);
+  const loopsB = 6 + pickRand(4);
+  const loopsC = 6 + pickRand(4);
+
+  const idxA = (loopsA * nA) + curA;
+  const idxB = (loopsB * nB) + curB;
+  const idxC = (loopsC * nC) + curC;
+
+  innerA.style.transform = `translateY(${-(idxA * itemH) + centerOffset}px)`;
+  innerB.style.transform = `translateY(${-(idxB * itemH) + centerOffset}px)`;
+  innerC.style.transform = `translateY(${-(idxC * itemH) + centerOffset}px)`;
+
+  aliasPreview.textContent = `${ALIAS_A[curA]}${ALIAS_B[curB]}${ALIAS_C[curC]}`;
+}
+
+function openAlias(){
+  if(!innerA){
+    innerA = buildReel(reelA, ALIAS_A);
+    innerB = buildReel(reelB, ALIAS_B);
+    innerC = buildReel(reelC, ALIAS_C);
+    innerA.style.transform = `translateY(68px)`;
+    innerB.style.transform = `translateY(68px)`;
+    innerC.style.transform = `translateY(68px)`;
+  }
+  aliasModal.style.display = "flex";
+  aliasModal.setAttribute("aria-hidden","false");
+  spin();
+}
+function closeAlias(){
+  aliasModal.style.display = "none";
+  aliasModal.setAttribute("aria-hidden","true");
+}
+
+document.getElementById("openAliasBtn")?.addEventListener("click", openAlias);
+document.getElementById("closeAliasBtn")?.addEventListener("click", closeAlias);
+document.getElementById("spinAliasBtn")?.addEventListener("click", spin);
+
+document.getElementById("useAliasBtn")?.addEventListener("click", ()=>{
+  const v = (aliasPreview.textContent || "").trim();
+  state.alias = v;
+  saveState(state);
+  if(aliasInput) aliasInput.value = v;
+  closeAlias();
+});
+
+document.getElementById("clearAliasBtn")?.addEventListener("click", ()=>{
+  state.alias = "";
+  saveState(state);
+  if(aliasInput) aliasInput.value = "";
+});
+
+aliasModal?.addEventListener("click", (e)=>{
+  if(e.target === aliasModal) closeAlias();
+});
+
+/* ====== 選択反映 ====== */
+function setAnswer(key, value){
+  state[key] = value;
+  saveState(state);
+  renderAll();
+}
+function renderChipsFor(key){
+  document.querySelectorAll(`.chips[data-key="${key}"] .chip`).forEach(chip=>{
+    const input = chip.querySelector("input");
+    const isOn = (state[key] && input.value === state[key]);
+    if(isOn) input.checked = true;
+    chip.classList.toggle("on", !!isOn);
+  });
+}
+
+function labelFrom(key, value){
+  const all = [...VALUES_12, ...PROFILE_8];
+  const q = all.find(x=>x.key===key);
+  if(!q) return "";
+  const idx = Number(value||0) - 1;
+  if(idx < 0 || idx >= q.options.length) return "";
+  return q.options[idx];
+}
+
+function renderSummary(){
+  const kv = document.getElementById("kv");
+  kv.innerHTML = "";
+
+  const showKeys = [
+    ["q1","家計管理"],["q2","お金の使い道"],["q3","居住地の柔軟性"],
+    ["q4","自己開示"],["q5","意見のズレ"],["q6","愛情表現"],
+    ["q7","ひとり時間"],["q8","生活のこだわり"],["q9","親族距離"],
+    ["q10","再婚の優先"],["q11","変化への意欲"],["q12","決め方"],
+    ["q13","性格"],["q15","休日"],["q19","大切にしていること"]
+  ];
+
+  showKeys.forEach(([k, title])=>{
+    const val = state[k] ? labelFrom(k, state[k]) : "未選択";
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `<b>${title}</b><span>${val}</span>`;
+    kv.appendChild(row);
+  });
+
+  let filled = 0;
+  for(let i=1;i<=20;i++){
+    if(state["q"+i]) filled++;
+  }
+  document.getElementById("pProgress").textContent = `入力 ${filled} / 20`;
+}
+
+function renderAll(){
+  for(let i=1;i<=20;i++) renderChipsFor("q"+i);
+  renderSummary();
+}
+renderAll();
+
+/* ====== タブ切替 ====== */
+const tab1 = document.getElementById("tab1");
+const tab2 = document.getElementById("tab2");
+const panel1 = document.getElementById("panel1");
+const panel2 = document.getElementById("panel2");
+
+tab1.addEventListener("click", ()=>{
+  tab1.classList.add("active"); tab2.classList.remove("active");
+  panel1.style.display="block"; panel2.style.display="none";
+});
+tab2.addEventListener("click", ()=>{
+  tab2.classList.add("active"); tab1.classList.remove("active");
+  panel2.style.display="block"; panel1.style.display="none";
+});
+
+/* ====== 保存（GASへ） ====== */
+const errBox = document.getElementById("err");
+const okBox  = document.getElementById("ok");
+function showErr(msg){ okBox.style.display="none"; okBox.textContent=""; errBox.style.display="block"; errBox.textContent=msg; }
+function showOk(msg){ errBox.style.display="none"; errBox.textContent=""; okBox.style.display="block"; okBox.textContent=msg; }
+function clearMsg(){ errBox.style.display="none"; errBox.textContent=""; okBox.style.display="none"; okBox.textContent=""; }
+
+function buildQuery(params){
+  return Object.keys(params)
+    .map(k=> `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
+    .join("&");
+}
+
+document.getElementById("saveBtn").addEventListener("click", async ()=>{
+  clearMsg();
+
+  for(let i=1;i<=12;i++){
+    if(!state["q"+i]){
+      showErr(`未選択があります。\nまずは「価値観（Q1〜Q12）」を埋めてください。`);
+      tab1.click();
+      return;
+    }
+  }
+
+  const params = {
+    action:"save_values",
+    id: memberId,
+    real_name: memberRealName,
+    phone: (localStorage.getItem("member_phone") || ""),
+
+    public_profile_id: state.publicProfileId,
+    public_enabled: state.publicEnabled ? "true" : "false",
+
+    nickname: getNickOrDefault(),
+    alias: state.alias || "",
+    bio: state.bio || "",
+
+    q1: state.q1||"",  q2: state.q2||"",  q3: state.q3||"",  q4: state.q4||"",
+    q5: state.q5||"",  q6: state.q6||"",  q7: state.q7||"",  q8: state.q8||"",
+    q9: state.q9||"",  q10: state.q10||"", q11: state.q11||"", q12: state.q12||"",
+    q13: state.q13||"", q14: state.q14||"", q15: state.q15||"", q16: state.q16||"",
+    q17: state.q17||"", q18: state.q18||"", q19: state.q19||"", q20: state.q20||"",
+
+    _: Date.now()
+  };
+
+  try{
+    const url = `${GAS_URL}?${buildQuery(params)}`;
+    const res = await fetch(url, { method:"GET", cache:"no-store" });
+    const data = await res.json();
+
+    if(data && data.ok){
+      showOk("保存しました。\n紹介候補の生成に反映されます。");
+      await hydrateFromServer(true);
+      return;
+    }
+    showErr("保存に失敗しました。時間をおいて再度お試しください。");
+  }catch(ex){
+    console.error(ex);
+    showErr("通信エラーです。電波状況をご確認のうえ再度お試しください。");
+  }
+});
+
+/* ====== リセット ====== */
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(!confirm("入力をリセットしますか？")) return;
+
+  const keepPublicId = state.publicProfileId;
+
+  state = {};
+  state.publicProfileId = keepPublicId;
+  state.publicEnabled = false;
+  state = ensurePublicState(state);
+
+  saveState(state);
+
+  document.getElementById("bio").value = "";
+  if(aliasInput) aliasInput.value = "";
+  if(nicknameInput) nicknameInput.value = "";
+  updateDisplayName();
+
+  renderPublicUI();
+  renderAll();
+  clearMsg();
+});
+
+/* ====== GASの最新を読み込んで復元 ====== */
+async function hydrateFromServer(showMessage){
+  try{
+    const url = `${GAS_URL}?action=get_my_values&id=${encodeURIComponent(memberId)}&_=${Date.now()}`;
+    const res = await fetch(url, { cache:"no-store" });
+    const data = await res.json();
+    if(!data || !data.ok) return;
+
+    const v = data.values || {};
+
+    const srvPid = String(v.public_profile_id || "").trim();
+    if(srvPid) state.publicProfileId = srvPid;
+    state.publicEnabled = String(v.public_enabled || "").trim() === "true";
+    state = ensurePublicState(state);
+    saveState(state);
+    renderPublicUI();
+
+    const hasAny =
+      Array.from({length:20}, (_,i)=>"q"+(i+1)).some(k => String(v[k] || "").trim() !== "") ||
+      String(v.bio || "").trim() !== "" ||
+      String(v.alias || "").trim() !== "" ||
+      String(v.nickname || "").trim() !== "";
+
+    if(!hasAny) return;
+
+    for(let i=1;i<=20;i++){
+      const k = "q"+i;
+      state[k] = String(v[k] || "").trim();
+    }
+    state.bio = String(v.bio || "");
+    state.alias = String(v.alias || "").trim();
+    state.nickname = String(v.nickname || "").trim();
+
+    saveState(state);
+
+    document.getElementById("bio").value = state.bio || "";
+    if(aliasInput) aliasInput.value = state.alias || "";
+    if(nicknameInput) nicknameInput.value = state.nickname || "";
+    updateDisplayName();
+    renderAll();
+
+    if(showMessage){
+      showOk("保存内容を反映しました。");
+    }
+  }catch(e){
+    console.error(e);
+  }
+}
+
+/* start */
+(async ()=>{
+  await hydrateFromServer(false);
+})();
+</script>
+
+</body>
+</html>
