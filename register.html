@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LINEログイン｜セレネス</title>
+<title>LINEで新規登録｜セレネス</title>
 
 <style>
 :root{
@@ -45,12 +45,11 @@ p{margin:0;color:var(--muted);line-height:1.9}
 }
 .line-btn img{width:24px;height:24px}
 
-.sub-btn{
-  margin-top:14px;
-  display:inline-block;
-  font-size:13px;
-  color:#6b7280;
-  text-decoration:none;
+.note{
+  margin-top:18px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.8;
 }
 
 .err{
@@ -69,22 +68,24 @@ p{margin:0;color:var(--muted);line-height:1.9}
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>LINEでログイン</h1>
+    <h1>LINEで新規登録</h1>
     <p>
-      セレネス会員の方は<br>
-      LINEアカウントでログインできます
+      面倒な入力は不要です。<br>
+      LINEアカウントを使って、<br>
+      すぐに登録できます。
     </p>
 
-    <button class="line-btn" id="lineLoginBtn">
+    <button class="line-btn" id="lineBtn">
       <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg">
-      LINEでログイン
+      LINEで登録する
     </button>
 
-    <a href="register.html" class="sub-btn">
-      はじめての方はこちら（新規登録）
-    </a>
-
     <div class="err" id="err"></div>
+
+    <div class="note">
+      ※ LINEの表示名・電話番号を使用します<br>
+      ※ あとから設定変更できます
+    </div>
   </div>
 </div>
 
@@ -92,15 +93,18 @@ p{margin:0;color:var(--muted);line-height:1.9}
 /* =========================
  * 設定
  * ========================= */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
 
 /* =========================
- * 仮：LINEログイン成功後の情報
- * ※ 後で LIFF / OAuth に差し替え
+ * 仮LINEログイン（確認用）
+ * ※ 本番では LIFF に置き換える
  * ========================= */
 function mockLineLogin(){
   return {
-    line_user_id: "U" + Math.random().toString(36).slice(2)
+    line_user_id: "U_TEST_001",
+    name: "LINEユーザー",
+    phone: "09012345678"
   };
 }
 
@@ -111,22 +115,42 @@ function showErr(msg){
 }
 
 /* =========================
- * LINEログイン処理
+ * LINE登録処理
  * ========================= */
-document.getElementById("lineLoginBtn").addEventListener("click", async ()=>{
+document.getElementById("lineBtn").addEventListener("click", async ()=>{
   errBox.style.display="none";
 
+  // file:// 判定（超重要）
+  if(location.protocol === "file:"){
+    showErr("このページは file:// では動作しません。Live Server または Web公開してください。");
+    return;
+  }
+
   try{
-    // 本来はここで LINEログイン（LIFF）
     const line = mockLineLogin();
 
-    const url =
-      `${SCRIPT_URL}?action=login_line` +
+    // ① 新規登録
+    let res = await fetch(
+      `${SCRIPT_URL}?action=register_line` +
       `&line_user_id=${encodeURIComponent(line.line_user_id)}` +
-      `&_=${Date.now()}`;
+      `&name=${encodeURIComponent(line.name)}` +
+      `&phone=${encodeURIComponent(line.phone)}` +
+      `&_=${Date.now()}`,
+      { cache:"no-store" }
+    );
 
-    const res = await fetch(url, { method:"GET", cache:"no-store" });
-    const data = await res.json();
+    let data = await res.json();
+
+    // ② 既存ならログインに切替
+    if(!data.ok && data.error === "LINE_ALREADY_REGISTERED"){
+      res = await fetch(
+        `${SCRIPT_URL}?action=login_line` +
+        `&line_user_id=${encodeURIComponent(line.line_user_id)}` +
+        `&_=${Date.now()}`,
+        { cache:"no-store" }
+      );
+      data = await res.json();
+    }
 
     if(data.ok){
       localStorage.setItem("member_ok","1");
@@ -135,12 +159,7 @@ document.getElementById("lineLoginBtn").addEventListener("click", async ()=>{
       return;
     }
 
-    if(data.error === "NOT_REGISTERED"){
-      location.href = "register.html";
-      return;
-    }
-
-    showErr("ログインに失敗しました。時間をおいて再度お試しください。");
+    showErr("登録・ログインに失敗しました：" + (data.error || "不明なエラー"));
 
   }catch(e){
     showErr("通信エラーが発生しました。");
