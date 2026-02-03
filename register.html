@@ -23,14 +23,14 @@ p{margin:0;color:var(--muted);line-height:1.9}
 .form{margin-top:14px;text-align:left}
 label{display:block;margin:10px 0 6px;font-size:12px;color:var(--muted)}
 input{
-  width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--line);font-size:15px;
+  width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);font-size:15px;
 }
 
-.line-btn{
+.btn{
   margin-top:18px;width:100%;padding:16px;border-radius:999px;border:none;
   background:var(--acc);color:#fff;font-size:16px;font-weight:900;cursor:pointer;
 }
-.line-btn[disabled]{opacity:.6;cursor:not-allowed}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
 
 .err{
   margin-top:12px;padding:10px 12px;border-radius:12px;
@@ -55,16 +55,16 @@ input{
 
     <div class="form">
       <label>お名前（ニックネーム可）</label>
-      <input id="name" placeholder="例）けい">
+      <input id="name">
 
       <label>年齢</label>
-      <input id="age" inputmode="numeric" placeholder="例）41">
+      <input id="age" inputmode="numeric">
 
-      <label>電話番号（ハイフンなし推奨）</label>
-      <input id="phone" inputmode="numeric" placeholder="例）09012345678">
+      <label>電話番号</label>
+      <input id="phone" inputmode="numeric">
     </div>
 
-    <button class="line-btn" id="registerBtn">LINEで新規登録</button>
+    <button class="btn" id="registerBtn">LINEで新規登録</button>
 
     <div class="err" id="err"></div>
 
@@ -74,9 +74,9 @@ input{
     </div>
 
     <div class="note" id="outsideNote" style="display:none;">
-      <b>※この画面はLINEアプリ内で開く必要があります。</b><br>
-      スマホで下のリンクを開いてください。<br>
-      <a class="smallbtn" href="https://liff.line.me/2006846780-ojjmzQx9?mode=register">
+      <b>※この画面はLINEアプリ内（LIFF）で開く必要があります。</b><br>
+      <a class="smallbtn"
+         href="https://liff.line.me/2006846780-ojjmzQx9?mode=register">
         LINEで新規登録を開く
       </a>
     </div>
@@ -84,35 +84,20 @@ input{
 </div>
 
 <script>
-/* ===== 共通設定 ===== */
+/* ===== 設定 ===== */
 const LIFF_ID = "2006846780-ojjmzQx9";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
-const LIFF_REGISTER_URL = `https://liff.line.me/${LIFF_ID}?mode=register`;
-
-const errBox = document.getElementById("err");
-const outsideNote = document.getElementById("outsideNote");
-const btn = document.getElementById("registerBtn");
 
 const $ = id => document.getElementById(id);
+const errBox = $("err");
+const outsideNote = $("outsideNote");
+const btn = $("registerBtn");
+
 const norm = v => String(v||"").replace(/[^\d]/g,"");
+const showErr = m => { errBox.style.display="block"; errBox.textContent=m; };
+const hideErr = () => { errBox.style.display="none"; errBox.textContent=""; };
 
-function showErr(m){ errBox.style.display="block"; errBox.textContent=m; }
-function hideErr(){ errBox.style.display="none"; errBox.textContent=""; }
-
-/* ===== 入口強制（register.html直開き対策） ===== */
-(function forceEntry(){
-  const params = new URLSearchParams(location.search);
-  if(params.get("from")==="liff") return;
-
-  const isMobile = /iPhone|Android|iPad|iPod/i.test(navigator.userAgent);
-  if(isMobile){
-    location.replace(LIFF_REGISTER_URL + "&from=liff");
-  }else{
-    outsideNote.style.display="block";
-  }
-})();
-
-/* ===== LIFF初期化 ===== */
+/* ===== LIFF 初期化 ===== */
 let liffReady=false;
 
 (async ()=>{
@@ -120,22 +105,13 @@ let liffReady=false;
     await liff.init({ liffId: LIFF_ID });
     liffReady=true;
 
-    // PCブラウザ等（LINE外）なら注意を出す（ただしLIFFは外でも動くことがある）
     if(!liff.isInClient()){
       outsideNote.style.display="block";
     }
-
-    // ✅ ここが追加：LIFFで開けていて未ログインなら先にログインさせる
-    // （クリック時にもあるけど、起動時にもやると“未連携すり抜け”が減る）
-    if(liff.isInClient() && !liff.isLoggedIn()){
-      liff.login({ redirectUri: location.href });
-      return;
-    }
-
   }catch(e){
     outsideNote.style.display="block";
   }
-})();();
+})();
 
 /* ===== 新規登録 ===== */
 btn.addEventListener("click", async ()=>{
@@ -146,22 +122,21 @@ btn.addEventListener("click", async ()=>{
   const phone= norm($("phone").value);
 
   if(!name) return showErr("お名前を入力してください。");
-  if(!age || age<18 || age>99) return showErr("年齢を正しく入力してください（18〜99）。");
-  if(phone.length<10) return showErr("電話番号を正しく入力してください。");
+  if(!age || age<18 || age>99) return showErr("年齢を正しく入力してください。");
+  if(phone.length < 10) return showErr("電話番号を正しく入力してください。");
 
   if(!liffReady){
-    showErr("LINEアプリ内で開いてください。");
     outsideNote.style.display="block";
+    return showErr("LINEアプリ内で開いてください。");
+  }
+
+  if(!liff.isLoggedIn()){
+    liff.login({ redirectUri: location.href });
     return;
   }
 
   try{
     btn.disabled=true;
-
-    if(!liff.isLoggedIn()){
-      liff.login({ redirectUri: location.href });
-      return;
-    }
 
     const profile = await liff.getProfile();
     const url =
@@ -172,7 +147,7 @@ btn.addEventListener("click", async ()=>{
       `&phone=${encodeURIComponent(phone)}` +
       `&_=${Date.now()}`;
 
-    const res = await fetch(url);
+    const res = await fetch(url, { cache:"no-store" });
     const data = await res.json();
 
     if(data.ok){
@@ -184,7 +159,6 @@ btn.addEventListener("click", async ()=>{
 
     if(data.error==="LINE_ALREADY_REGISTERED"){
       showErr("このLINEは既に登録されています。ログインしてください。");
-      setTimeout(()=>location.href="login.html",600);
       return;
     }
 

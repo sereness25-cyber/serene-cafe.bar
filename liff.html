@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Serenes LIFF</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",system-ui,sans-serif;background:#0b1220;color:#e6edf7}
+    .wrap{max-width:720px;margin:auto;padding:22px}
+    .card{background:#101b33;border:1px solid #1f2c4d;border-radius:16px;padding:16px}
+    .muted{color:#b7c3d9;line-height:1.8;font-size:13px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    a{color:#7aa7ff}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;
+         border:1px solid #1f2c4d;background:#0f1a33;color:#e6edf7;text-decoration:none;font-weight:800}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div style="font-weight:1000">Serenes LIFF（振り分け中…）</div>
+      <div class="muted" id="msg" style="margin-top:8px">LINE連携を確認しています。</div>
+      <div class="row" id="fallback" style="display:none">
+        <a class="btn" href="./index.html">トップへ戻る</a>
+        <a class="btn" id="toRegister" href="./register.html">新規登録へ</a>
+        <a class="btn" id="toLogin" href="./login.html">ログインへ</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+/**
+ * ✅ 目的：
+ * - LIFF Endpoint（この liff.html）に来たら
+ *   mode=login / mode=register を見て
+ *   login.html / register.html にだけ遷移させる
+ *
+ * ✅ 重要：
+ * - 絶対に index.html にリダイレクトしない（ループ原因）
+ * - redirectUri には「この liff.html 自身」を入れない（ループ原因）
+ */
+
+const LIFF_ID = "2006846780-ojjmzQx9";
+
+// GitHub Pages の相対パス運用（どのドメインでも壊れにくい）
+const LOGIN_PAGE    = "./login.html";
+const REGISTER_PAGE = "./register.html";
+
+// リダイレクト後に戻る先（＝最終到着地）は login/register にする
+function buildDestUrl(base){
+  // modeなど必要なクエリだけ残す（from等は不要なら捨ててOK）
+  const params = new URLSearchParams(location.search);
+  // mode はこの中継ページでは使い終わるので、遷移先には不要
+  params.delete("mode");
+  const qs = params.toString();
+  return base + (qs ? ("?" + qs) : "");
+}
+
+// mode 判定（なければ login 扱いでOK）
+function getMode(){
+  const sp = new URLSearchParams(location.search);
+  const m = (sp.get("mode") || "").toLowerCase();
+  if(m === "register") return "register";
+  return "login";
+}
+
+function showFallback(text){
+  document.getElementById("msg").textContent = text;
+  document.getElementById("fallback").style.display = "flex";
+  document.getElementById("toRegister").href = REGISTER_PAGE;
+  document.getElementById("toLogin").href = LOGIN_PAGE;
+}
+
+(async () => {
+  const mode = getMode();
+  const dest = buildDestUrl(mode === "register" ? REGISTER_PAGE : LOGIN_PAGE);
+
+  try{
+    document.getElementById("msg").textContent = "LINE連携を初期化しています…";
+    await liff.init({ liffId: LIFF_ID });
+
+    // LINEアプリ内じゃない（Safari/Chrome直）なら案内
+    if(!liff.isInClient()){
+      // ※外ブラウザでも liff.login は動く場合があるが、運用上は案内の方が安全
+      showFallback("この画面はLINEアプリ内で開いてください。下のボタンから進めます。");
+      return;
+    }
+
+    // 未ログインなら LINE ログインへ（戻り先は「liff.html」ではなく、最終ページ！）
+    if(!liff.isLoggedIn()){
+      document.getElementById("msg").textContent = "LINEログインへ移動します…";
+      liff.login({ redirectUri: dest }); // ✅ ここが超重要（liff.html に戻さない）
+      return;
+    }
+
+    // ログイン済みなら、最終ページへ
+    document.getElementById("msg").textContent = "認証OK。ページへ移動します…";
+    location.replace(dest);
+
+  }catch(e){
+    showFallback("初期化に失敗しました。LINEアプリ内で開き直してください。");
+  }
+})();
+</script>
+</body>
+</html>

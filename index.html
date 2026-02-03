@@ -16,26 +16,7 @@
       --acc:#06c755;
       --shadow:0 14px 28px rgba(0,0,0,.08);
       --radius:22px;
-      --heroGrad: radial-gradient(1200px 500px at 10% 10%, #fff 0%, #fbf6f1 50%, #f4efe8 100%);
-      --chip:#fff;
-      --pill:#ffffffcc;
     }
-
-    /* 夜モード（バー） */
-    body.night{
-      --bg:#0b1220;
-      --card:#101b33;
-      --text:#e6edf7;
-      --muted:#b7c3d9;
-      --line:#1f2c4d;
-      --pri:#7aa7ff;
-      --acc:#22c55e;
-      --shadow:0 18px 40px rgba(0,0,0,.35);
-      --heroGrad: radial-gradient(1200px 520px at 10% 10%, #142141 0%, #0b1220 55%, #070c16 100%);
-      --chip:#0f1a33;
-      --pill:#101b33cc;
-    }
-
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -43,228 +24,82 @@
       background:var(--bg);
       color:var(--text);
     }
-    a{color:inherit}
-    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:980px;margin:0 auto;padding:20px}
 
     header{
-      position:sticky; top:0; z-index:10;
-      background:var(--pill);
-      backdrop-filter: blur(10px);
       border-bottom:1px solid var(--line);
+      background:#fff;
     }
     .nav{
-      max-width:1100px;margin:0 auto;padding:12px 18px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      max-width:980px;margin:0 auto;padding:14px 20px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
     }
-    .brand{display:flex; align-items:center; gap:10px; min-width:0}
+    .brand{display:flex;align-items:center;gap:10px}
     .logo{
       width:40px;height:40px;border-radius:14px;
-      background:linear-gradient(135deg, var(--pri), var(--acc));
+      background:linear-gradient(135deg,var(--pri),var(--acc));
       box-shadow:var(--shadow);
-      flex:0 0 auto;
     }
-    .brandText{min-width:0}
-    .brandTitle{
-      font-weight:1000; letter-spacing:.02em;
-      margin:0; font-size:16px; line-height:1.2;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .brandSub{
-      margin:2px 0 0;
-      font-size:12px; color:var(--muted);
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
+    .brandTitle{margin:0;font-weight:1000}
+    .brandSub{margin:2px 0 0;font-size:12px;color:var(--muted)}
 
-    .navRight{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
     .btn{
-      border:none;
-      border-radius:14px;
-      padding:10px 12px;
-      font-weight:900;
-      cursor:pointer;
-      background:var(--pri);
-      color:#fff;
-      box-shadow: 0 10px 20px rgba(0,0,0,.10);
-      text-decoration:none;
-      display:inline-flex; align-items:center; gap:8px;
-      line-height:1;
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 14px;border-radius:14px;
+      font-weight:900;cursor:pointer;
+      background:var(--pri);color:#fff;
+      box-shadow:0 10px 20px rgba(0,0,0,.1);
     }
     .btn.green{background:var(--acc)}
     .btn.ghost{
-      background:transparent;
-      color:var(--text);
+      background:#fff;color:var(--text);
       border:1px solid var(--line);
       box-shadow:none;
-      font-weight:800;
     }
 
     .hero{
-      background:var(--heroGrad);
+      padding:40px 20px;
+      background:linear-gradient(180deg,#fff,#fbf6f1);
       border-bottom:1px solid var(--line);
     }
-    .heroInner{
-      max-width:1100px;margin:0 auto;padding:28px 18px 22px;
-      display:grid; gap:16px;
-      grid-template-columns:1fr;
+    .hero h1{
+      margin:0 0 12px;
+      font-size:28px;font-weight:1000;
     }
-    @media(min-width:900px){
-      .heroInner{grid-template-columns:1.1fr .9fr; align-items:center}
+    .hero p{
+      margin:0;color:var(--muted);line-height:1.9;
     }
-
-    .heroCard{
-      background:color-mix(in srgb, var(--card) 92%, transparent);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-    .kicker{
-      display:inline-flex; align-items:center; gap:8px;
-      font-size:12px; color:var(--muted);
-      border:1px solid var(--line);
-      background:var(--chip);
-      padding:6px 10px;
-      border-radius:999px;
-      margin-bottom:10px;
-    }
-    .h1{
-      margin:0 0 10px;
-      font-size:28px;
-      line-height:1.25;
-      letter-spacing:.01em;
-      font-weight:1000;
-    }
-    .lead{
-      margin:0;
-      color:var(--muted);
-      line-height:1.9;
-      font-size:14px;
-    }
-    .ctaRow{
-      margin-top:14px;
-      display:flex; gap:10px; flex-wrap:wrap;
+    .cta{
+      margin-top:20px;
+      display:flex;gap:12px;flex-wrap:wrap;
     }
 
-    section{padding:18px 0}
-    .sectionTitle{margin:0 0 10px;font-size:16px;font-weight:1000}
-    .sectionDesc{margin:0 0 14px;color:var(--muted);line-height:1.8;font-size:13px}
-
-    .grid{
-      display:grid; gap:12px;
-      grid-template-columns:1fr;
-    }
-    @media(min-width:900px){
-      .grid{grid-template-columns:repeat(3, 1fr)}
-    }
+    section{padding:28px 0}
     .card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      padding:16px;
+      padding:18px;
     }
-    .card h3{margin:0 0 8px;font-size:15px}
+    .grid{
+      display:grid;gap:14px;
+      grid-template-columns:1fr;
+    }
+    @media(min-width:900px){
+      .grid{grid-template-columns:repeat(3,1fr)}
+    }
+    h3{margin:0 0 8px;font-size:15px}
     .card p{margin:0;color:var(--muted);line-height:1.8;font-size:13px}
-
-    /* ▼ 追加：紹介までの流れ（見出し/ステップカード） */
-    .sectionSub{
-      margin:18px 0 10px;
-      font-size:14px;
-      font-weight:1000;
-    }
-    .steps{
-      display:grid;
-      gap:12px;
-      grid-template-columns:1fr;
-    }
-    @media(min-width:900px){
-      .steps{grid-template-columns:repeat(2, 1fr)}
-    }
-    .stepCard{
-      background:color-mix(in srgb, var(--card) 92%, transparent);
-      border:1px solid var(--line);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      padding:14px 14px;
-    }
-    .stepHead{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin:0 0 6px;
-      font-weight:1000;
-      font-size:14px;
-    }
-    .stepNo{
-      width:28px;height:28px;
-      border-radius:10px;
-      display:grid;place-items:center;
-      background:linear-gradient(135deg, var(--pri), var(--acc));
-      color:#fff;
-      font-size:12px;
-      flex:0 0 auto;
-    }
-    .stepText{
-      margin:0;
-      color:var(--muted);
-      line-height:1.8;
-      font-size:13px;
-    }
-    /* ▲ 追加ここまで */
-
-    .pricing{
-      display:grid; gap:12px;
-      grid-template-columns:1fr;
-    }
-    @media(min-width:900px){
-      .pricing{grid-template-columns:repeat(3, 1fr)}
-    }
-    .tag{
-      display:inline-flex; font-size:11px; font-weight:900;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid var(--line);
-      background:var(--chip);
-      color:var(--text);
-      margin-bottom:8px;
-    }
-    .price{
-      display:flex; align-items:baseline; gap:8px; margin:6px 0 10px;
-    }
-    .yen{font-size:22px;font-weight:1100}
-    .per{font-size:12px;color:var(--muted);font-weight:800}
-    ul{margin:10px 0 0; padding-left:18px; color:var(--muted); line-height:1.9; font-size:13px}
-
-    .faq details{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px 14px;
-      box-shadow:var(--shadow);
-    }
-    .faq details + details{margin-top:10px}
-    summary{cursor:pointer;font-weight:900}
-    .faq p{margin:10px 0 0;color:var(--muted);line-height:1.9;font-size:13px}
-
-    .callout{
-      margin-top:14px;
-      padding:12px 14px;
-      border:1px solid var(--line);
-      background:color-mix(in srgb, var(--card) 75%, transparent);
-      border-radius:16px;
-      color:var(--muted);
-      line-height:1.9;
-      font-size:12px;
-    }
 
     footer{
       border-top:1px solid var(--line);
-      padding:18px 0 30px;
+      padding:20px;
       color:var(--muted);
       font-size:12px;
+      text-align:center;
     }
-    .footRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between}
-    .links{display:flex; gap:10px; flex-wrap:wrap}
-    .links a{color:var(--muted); text-decoration:underline}
   </style>
 </head>
 
@@ -272,265 +107,75 @@
 <header>
   <div class="nav">
     <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <div class="brandText">
-        <p class="brandTitle" id="brandTitle">セレネスカフェ</p>
-        <p class="brandSub" id="brandSub">LINEでサクッと会員登録・ログイン</p>
+      <div class="logo"></div>
+      <div>
+        <div class="brandTitle">セレネスカフェ</div>
+        <div class="brandSub">LINEで始める、やさしい出会い</div>
       </div>
     </div>
 
-    <div class="navRight">
-      <a class="btn ghost" href="#service">サービス</a>
-      <a class="btn ghost" href="#pricing">料金</a>
-      <a class="btn ghost" href="#faq">FAQ</a>
-      <a class="btn green" id="registerLink" href="#">新規登録</a>
-      <a class="btn" id="loginLink" href="#">ログイン</a>
+    <div style="display:flex;gap:10px">
+      <a id="loginLinkTop" class="btn ghost" href="#">ログイン</a>
+      <a id="registerLinkTop" class="btn green" href="#">新規登録</a>
     </div>
   </div>
 </header>
 
 <div class="hero">
-  <div class="heroInner">
-    <div>
-      <div class="kicker" id="kicker">☕ セレネスカフェ</div>
-      <h1 class="h1" id="heroTitle">もう一度、出会いを心地よく。</h1>
-      <p class="lead" id="heroLead">
-        セレネスカフェは、LINEから気軽にスタートできる「再スタートのための出会いサポート」です。<br>
-        まずはプロフィール登録から。あなたのペースで進められます。
-      </p>
+  <div class="wrap">
+    <h1>もう一度、出会いを心地よく。</h1>
+    <p>
+      セレネスカフェは、LINEから気軽に始められる再スタートのための出会いサポートです。<br>
+      登録・ログインはすべてLINEアプリ内で完結します。
+    </p>
 
-      <div class="ctaRow">
-        <a class="btn green" id="registerLink2" href="#">LINEで新規登録</a>
-        <a class="btn" id="loginLink2" href="#">LINEでログイン</a>
-        <a class="btn ghost" href="#pricing">料金を見る</a>
-      </div>
-
-      <div class="callout" id="entryNote">
-        ※PCやブラウザでこのページを見ていてもOKです。<br>
-        登録・ログインは「LINEで新規登録／ログイン」ボタンから、LINEアプリに移動して行います。
-      </div>
-    </div>
-
-    <div class="heroCard">
-      <div class="tag">できること</div>
-      <ul>
-        <li>LINEで会員登録・ログイン</li>
-        <li>名前・年齢・電話番号の登録（最初に入力）</li>
-        <li>プロフィール作成（価値観・自己紹介）</li>
-        <li>相性の近い人の紹介（※運用に合わせて拡張）</li>
-      </ul>
-      <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
-      <div class="tag">安心ポイント</div>
-      <p style="margin:8px 0 0;color:var(--muted);line-height:1.9;font-size:13px">
-        未登録のLINEはログインできない設計にできます。<br>
-        退会時はLINEログイン状態も解除する運用が可能です。
-      </p>
+    <div class="cta">
+      <a id="registerLink" class="btn green" href="#">LINEで新規登録</a>
+      <a id="loginLink" class="btn" href="#">LINEでログイン</a>
     </div>
   </div>
 </div>
 
 <main class="wrap">
-  <section id="service">
-    <h2 class="sectionTitle">サービス内容</h2>
-    <p class="sectionDesc">
-      “カフェ”のように落ち着いて始められて、夜は“バー”のように寄り添う——そんな入口を目指しています。
-    </p>
-
+  <section>
     <div class="grid">
       <div class="card">
         <h3>① LINEで完結</h3>
-        <p>登録・ログインがシンプル。面倒な入力を減らして、最初の一歩を軽くします。</p>
+        <p>面倒なIDやパスワード不要。LINEだけで登録・ログインできます。</p>
       </div>
       <div class="card">
-        <h3>② 情報を整理して出会いの質を上げる</h3>
-        <p>名前・年齢・電話番号を最初に登録。プロフィールで価値観も整え、ミスマッチを減らします。</p>
+        <h3>② 必要最低限から</h3>
+        <p>最初は名前・年齢・電話番号のみ。無理なく始められます。</p>
       </div>
       <div class="card">
-        <h3>③ 運用に合わせて拡張できる</h3>
-        <p>紹介・掲示板・診断など、必要な機能だけ増やせます。小さく始めて育てる運用に向きます。</p>
-      </div>
-    </div>
-
-    <!-- ▼ 追加：紹介までの流れ -->
-    <h3 class="sectionSub">紹介までの流れ（最短3分）</h3>
-    <p class="sectionDesc" style="margin-top:-6px">
-      登録して「譲れない軸」を整えるだけ。相性の近い人を1人ずつ丁寧にご案内します。
-    </p>
-
-    <div class="steps">
-      <div class="stepCard">
-        <div class="stepHead"><span class="stepNo">1</span>LINEで新規登録／ログイン</div>
-        <p class="stepText">面倒なID・パスワードは不要。LINEでサクッと開始できます。</p>
-      </div>
-
-      <div class="stepCard">
-        <div class="stepHead"><span class="stepNo">2</span>基本情報を入力</div>
-        <p class="stepText">名前・年齢・電話番号など、最低限だけ。安心して紹介できる状態に整えます。</p>
-      </div>
-
-      <div class="stepCard">
-        <div class="stepHead"><span class="stepNo">3</span>価値観を選ぶ（かんたん診断）</div>
-        <p class="stepText">「譲れない条件」を選ぶだけ。大事にしたい軸を可視化します。</p>
-      </div>
-
-      <div class="stepCard">
-        <div class="stepHead"><span class="stepNo">4</span>相性の良い人を紹介</div>
-        <p class="stepText">価値観の一致度が高い方をピックアップしてご案内します。</p>
-      </div>
-
-      <div class="stepCard">
-        <div class="stepHead"><span class="stepNo">5</span>連絡・日程調整へ</div>
-        <p class="stepText">気になったら次へ。やり取りの不安もこちらがサポートします。</p>
-      </div>
-    </div>
-    <!-- ▲ 追加ここまで -->
-  </section>
-
-  <section id="pricing">
-    <h2 class="sectionTitle">料金</h2>
-    <p class="sectionDesc">※このまま“ひな形”として後で差し替えできます。</p>
-
-    <div class="pricing">
-      <div class="card">
-        <div class="tag">ライト</div>
-        <div class="price"><div class="yen">¥0</div><div class="per">/ 登録</div></div>
-        <ul>
-          <li>LINE登録・ログイン</li>
-          <li>プロフィール作成</li>
-          <li>基本機能の利用</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <div class="tag">紹介</div>
-        <div class="price"><div class="yen">¥5,000</div><div class="per">/ 1紹介</div></div>
-        <ul>
-          <li>価値観が近い人を紹介</li>
-          <li>紹介前の簡易確認</li>
-          <li>運用ルールは柔軟に調整</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <div class="tag">サポート</div>
-        <div class="price"><div class="yen">要相談</div><div class="per">/ オプション</div></div>
-        <ul>
-          <li>プロフィール添削</li>
-          <li>活動方針の整理</li>
-          <li>面談・チャット相談 等</li>
-        </ul>
+        <h3>③ 紹介までスムーズ</h3>
+        <p>価値観を整えた上で、相性の近い人を丁寧にご紹介します。</p>
       </div>
     </div>
   </section>
-
-  <section id="faq" class="faq">
-    <h2 class="sectionTitle">FAQ</h2>
-    <p class="sectionDesc">よくある質問をまとめました。</p>
-
-    <details>
-      <summary>夜モード（セレネスバー）への切り替えはどうなりますか？</summary>
-      <p>
-        トグルはありません。<br>
-        端末がダークモード、または時間帯（18:00〜5:59）の場合に自動で「セレネスバー」に切り替わります。
-      </p>
-    </details>
-
-    <details>
-      <summary>PCで登録できますか？</summary>
-      <p>
-        登録・ログイン自体は「LINEアプリ内（LIFF）」で行います。<br>
-        PCでこのサイトを見て、スマホで登録ボタンを押す運用が一番スムーズです。
-      </p>
-    </details>
-
-    <details>
-      <summary>LINE情報は端末から勝手に読み取られますか？</summary>
-      <p>
-        端末の連絡先などを勝手に読み取ることはありません。<br>
-        LIFFは「その端末でログインしているLINEアカウント」で認証し、許可された範囲（userId等）だけを取得します。
-      </p>
-    </details>
-  </section>
-
-  <footer>
-    <div class="footRow">
-      <div>© <span id="y"></span> セレネスカフェ</div>
-      <div class="links">
-        <a id="registerLinkFoot" href="#">新規登録</a>
-        <a id="loginLinkFoot" href="#">ログイン</a>
-        <a href="#pricing">料金</a>
-      </div>
-    </div>
-  </footer>
 </main>
 
+<footer>
+  © <span id="y"></span> セレネスカフェ
+</footer>
+
 <script>
-  /* ========= LIFF入口URL（統一） ========= */
+  /* ========= ここが重要 ========= */
+
   const LIFF_ID = "2006846780-ojjmzQx9";
+
+  // 👉 index は必ず「liff.line.me」を踏ませる
   const LIFF_REGISTER = `https://liff.line.me/${LIFF_ID}?mode=register`;
   const LIFF_LOGIN    = `https://liff.line.me/${LIFF_ID}?mode=login`;
 
-  // ボタン/リンクに反映
-  const setHref = (id, href)=>{ const el=document.getElementById(id); if(el) el.href = href; };
-  setHref("registerLink", LIFF_REGISTER);
-  setHref("registerLink2", LIFF_REGISTER);
-  setHref("registerLinkFoot", LIFF_REGISTER);
-  setHref("loginLink", LIFF_LOGIN);
-  setHref("loginLink2", LIFF_LOGIN);
-  setHref("loginLinkFoot", LIFF_LOGIN);
+  // すべてのボタンに反映
+  const set = (id, url)=>{ const el=document.getElementById(id); if(el) el.href=url; };
+  set("registerLink", LIFF_REGISTER);
+  set("loginLink", LIFF_LOGIN);
+  set("registerLinkTop", LIFF_REGISTER);
+  set("loginLinkTop", LIFF_LOGIN);
 
-  /* ========= 年表示 ========= */
   document.getElementById("y").textContent = new Date().getFullYear();
-
-  /* ========= 昼/夜 自動切替（トグルなし） ========= */
-  const brandTitle = document.getElementById("brandTitle");
-  const brandSub   = document.getElementById("brandSub");
-  const kicker     = document.getElementById("kicker");
-  const heroTitle  = document.getElementById("heroTitle");
-  const heroLead   = document.getElementById("heroLead");
-
-  function shouldNightAuto(){
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const h = new Date().getHours();
-    const byTime = (h >= 18 || h < 6);
-    return prefersDark || byTime;
-  }
-
-  function applyNight(isNight){
-    document.body.classList.toggle("night", isNight);
-
-    if(isNight){
-      document.title = "セレネスバー";
-      brandTitle.textContent = "セレネスバー";
-      brandSub.textContent   = "夜に寄り添う、再スタートの入口";
-      kicker.textContent     = "🍸 セレネスバー";
-      heroTitle.textContent  = "夜は、少しだけ本音で。";
-      heroLead.innerHTML     =
-        "セレネスバーは、夜にそっと寄り添うモードです。<br>" +
-        "焦らず、静かに、次の一歩を整える時間に。";
-    }else{
-      document.title = "セレネスカフェ";
-      brandTitle.textContent = "セレネスカフェ";
-      brandSub.textContent   = "LINEでサクッと会員登録・ログイン";
-      kicker.textContent     = "☕ セレネスカフェ";
-      heroTitle.textContent  = "もう一度、出会いを心地よく。";
-      heroLead.innerHTML     =
-        "セレネスカフェは、LINEから気軽にスタートできる「再スタートのための出会いサポート」です。<br>" +
-        "まずはプロフィール登録から。あなたのペースで進められます。";
-    }
-  }
-
-  // 初回適用
-  applyNight(shouldNightAuto());
-
-  // 端末テーマ変更にも追従
-  if(window.matchMedia){
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    mq.addEventListener?.("change", ()=> applyNight(shouldNightAuto()));
-  }
-
-  // 1分ごとに時刻を見て更新（18:00/6:00跨ぎ対策）
-  setInterval(()=> applyNight(shouldNightAuto()), 60 * 1000);
 </script>
 </body>
 </html>
