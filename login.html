@@ -89,38 +89,24 @@ function showErr(msg){
 async function initLIFF(){
   try{
     await liff.init({ liffId: LIFF_ID });
+
+    /* ===== ここから追加 ===== */
+    const params = new URLSearchParams(location.search);
+    const state = params.get("liff.state") || "";
+
+    // /register で開かれたら新規登録画面へ
+    if(state.startsWith("/register")){
+      location.replace("register.html");
+      return;
+    }
+    /* ===== ここまで追加 ===== */
+
     lineBtn.disabled = false;
   }catch(e){
     showErr("LINEアプリ内で開いてください。");
   }
 }
 initLIFF();
-
-lineBtn.addEventListener("click", async ()=>{
-  try{
-    if(!liff.isLoggedIn()){
-      liff.login({ redirectUri: location.href });
-      return;
-    }
-
-    const profile = await liff.getProfile();
-    const res = await fetch(
-      `${SCRIPT_URL}?action=login_line&line_user_id=${encodeURIComponent(profile.userId)}`
-    );
-    const data = await res.json();
-
-    if(data.ok){
-      localStorage.setItem("member_ok","1");
-      localStorage.setItem("member_id", data.member_id);
-      location.href = "member.html";
-      return;
-    }
-
-    showErr("未登録のLINEアカウントです。新規登録してください。");
-  }catch(e){
-    showErr("通信エラーが発生しました。");
-  }
-});
 </script>
 </body>
 </html>
