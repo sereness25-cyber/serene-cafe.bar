@@ -18,6 +18,7 @@
       --radius:22px;
       --heroGrad: radial-gradient(1200px 500px at 10% 10%, #fff 0%, #fbf6f1 50%, #f4efe8 100%);
       --chip:#fff;
+      --pill:#ffffffcc;
     }
 
     /* 夜モード（バー） */
@@ -32,6 +33,7 @@
       --shadow:0 18px 40px rgba(0,0,0,.35);
       --heroGrad: radial-gradient(1200px 520px at 10% 10%, #142141 0%, #0b1220 55%, #070c16 100%);
       --chip:#0f1a33;
+      --pill:#101b33cc;
     }
 
     *{box-sizing:border-box}
@@ -42,11 +44,11 @@
       color:var(--text);
     }
     a{color:inherit}
-
     .wrap{max-width:1100px;margin:0 auto;padding:18px}
+
     header{
       position:sticky; top:0; z-index:10;
-      background:color-mix(in srgb, var(--bg) 82%, transparent);
+      background:var(--pill);
       backdrop-filter: blur(10px);
       border-bottom:1px solid var(--line);
     }
@@ -54,9 +56,7 @@
       max-width:1100px;margin:0 auto;padding:12px 18px;
       display:flex; align-items:center; justify-content:space-between; gap:12px;
     }
-    .brand{
-      display:flex; align-items:center; gap:10px; min-width:0;
-    }
+    .brand{display:flex; align-items:center; gap:10px; min-width:0}
     .logo{
       width:40px;height:40px;border-radius:14px;
       background:linear-gradient(135deg, var(--pri), var(--acc));
@@ -74,8 +74,8 @@
       font-size:12px; color:var(--muted);
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
-    .navRight{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
 
+    .navRight{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
     .btn{
       border:none;
       border-radius:14px;
@@ -86,9 +86,8 @@
       color:#fff;
       box-shadow: 0 10px 20px rgba(0,0,0,.10);
       text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
+      display:inline-flex; align-items:center; gap:8px;
+      line-height:1;
     }
     .btn.green{background:var(--acc)}
     .btn.ghost{
@@ -111,6 +110,7 @@
     @media(min-width:900px){
       .heroInner{grid-template-columns:1.1fr .9fr; align-items:center}
     }
+
     .heroCard{
       background:color-mix(in srgb, var(--card) 92%, transparent);
       border:1px solid var(--line);
@@ -129,7 +129,7 @@
     }
     .h1{
       margin:0 0 10px;
-      font-size:26px;
+      font-size:28px;
       line-height:1.25;
       letter-spacing:.01em;
       font-weight:1000;
@@ -146,6 +146,9 @@
     }
 
     section{padding:18px 0}
+    .sectionTitle{margin:0 0 10px;font-size:16px;font-weight:1000}
+    .sectionDesc{margin:0 0 14px;color:var(--muted);line-height:1.8;font-size:13px}
+
     .grid{
       display:grid; gap:12px;
       grid-template-columns:1fr;
@@ -163,18 +166,6 @@
     .card h3{margin:0 0 8px;font-size:15px}
     .card p{margin:0;color:var(--muted);line-height:1.8;font-size:13px}
 
-    .sectionTitle{
-      margin:0 0 10px;
-      font-size:16px;
-      font-weight:1000;
-    }
-    .sectionDesc{
-      margin:0 0 14px;
-      color:var(--muted);
-      line-height:1.8;
-      font-size:13px;
-    }
-
     .pricing{
       display:grid; gap:12px;
       grid-template-columns:1fr;
@@ -182,12 +173,6 @@
     @media(min-width:900px){
       .pricing{grid-template-columns:repeat(3, 1fr)}
     }
-    .price{
-      display:flex; align-items:baseline; gap:8px; margin:6px 0 10px;
-    }
-    .yen{font-size:22px;font-weight:1100}
-    .per{font-size:12px;color:var(--muted);font-weight:800}
-    ul{margin:10px 0 0; padding-left:18px; color:var(--muted); line-height:1.9; font-size:13px}
     .tag{
       display:inline-flex; font-size:11px; font-weight:900;
       padding:6px 10px; border-radius:999px;
@@ -196,6 +181,12 @@
       color:var(--text);
       margin-bottom:8px;
     }
+    .price{
+      display:flex; align-items:baseline; gap:8px; margin:6px 0 10px;
+    }
+    .yen{font-size:22px;font-weight:1100}
+    .per{font-size:12px;color:var(--muted);font-weight:800}
+    ul{margin:10px 0 0; padding-left:18px; color:var(--muted); line-height:1.9; font-size:13px}
 
     .faq details{
       background:var(--card);
@@ -207,6 +198,17 @@
     .faq details + details{margin-top:10px}
     summary{cursor:pointer;font-weight:900}
     .faq p{margin:10px 0 0;color:var(--muted);line-height:1.9;font-size:13px}
+
+    .callout{
+      margin-top:14px;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      background:color-mix(in srgb, var(--card) 75%, transparent);
+      border-radius:16px;
+      color:var(--muted);
+      line-height:1.9;
+      font-size:12px;
+    }
 
     footer{
       border-top:1px solid var(--line);
@@ -235,8 +237,8 @@
       <a class="btn ghost" href="#service">サービス</a>
       <a class="btn ghost" href="#pricing">料金</a>
       <a class="btn ghost" href="#faq">FAQ</a>
-      <a class="btn green" href="register.html">新規登録</a>
-      <a class="btn" href="login.html">ログイン</a>
+      <a class="btn green" id="registerLink" href="#">新規登録</a>
+      <a class="btn" id="loginLink" href="#">ログイン</a>
     </div>
   </div>
 </header>
@@ -252,9 +254,14 @@
       </p>
 
       <div class="ctaRow">
-        <a class="btn green" href="register.html">LINEで新規登録</a>
-        <a class="btn" href="login.html">LINEでログイン</a>
+        <a class="btn green" id="registerLink2" href="#">LINEで新規登録</a>
+        <a class="btn" id="loginLink2" href="#">LINEでログイン</a>
         <a class="btn ghost" href="#pricing">料金を見る</a>
+      </div>
+
+      <div class="callout" id="entryNote">
+        ※PCやブラウザでこのページを見ていてもOKです。<br>
+        登録・ログインは「LINEで新規登録／ログイン」ボタンから、LINEアプリに移動して行います。
       </div>
     </div>
 
@@ -262,15 +269,15 @@
       <div class="tag">できること</div>
       <ul>
         <li>LINEで会員登録・ログイン</li>
+        <li>名前・年齢・電話番号の登録（最初に入力）</li>
         <li>プロフィール作成（価値観・自己紹介）</li>
-        <li>相性の近い人の紹介（※機能拡張OK）</li>
-        <li>掲示板・交流（※必要に応じてON）</li>
+        <li>相性の近い人の紹介（※運用に合わせて拡張）</li>
       </ul>
       <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
-      <div class="tag">まずはここから</div>
+      <div class="tag">安心ポイント</div>
       <p style="margin:8px 0 0;color:var(--muted);line-height:1.9;font-size:13px">
-        初めての方は「新規登録」→必要情報入力→LINE連携で完了。<br>
-        登録済みの方は「ログイン」からどうぞ。
+        未登録のLINEはログインできない設計にできます。<br>
+        退会時はLINEログイン状態も解除する運用が可能です。
       </p>
     </div>
   </div>
@@ -289,19 +296,19 @@
         <p>登録・ログインがシンプル。面倒な入力を減らして、最初の一歩を軽くします。</p>
       </div>
       <div class="card">
-        <h3>② プロフィール作成</h3>
-        <p>自己紹介・価値観などを整理。出会いの質を上げるための土台づくり。</p>
+        <h3>② 情報を整理して出会いの質を上げる</h3>
+        <p>名前・年齢・電話番号を最初に登録。プロフィールで価値観も整え、ミスマッチを減らします。</p>
       </div>
       <div class="card">
-        <h3>③ 相性の近い人の紹介</h3>
-        <p>価値観が近い人を「1人」紹介する仕組みなど、運用に合わせて調整できます。</p>
+        <h3>③ 運用に合わせて拡張できる</h3>
+        <p>紹介・掲示板・診断など、必要な機能だけ増やせます。小さく始めて育てる運用に向きます。</p>
       </div>
     </div>
   </section>
 
   <section id="pricing">
     <h2 class="sectionTitle">料金</h2>
-    <p class="sectionDesc">※金額やプラン名はこのまま“ひな形”として、後から差し替えできます。</p>
+    <p class="sectionDesc">※このまま“ひな形”として後で差し替えできます。</p>
 
     <div class="pricing">
       <div class="card">
@@ -341,25 +348,26 @@
     <p class="sectionDesc">よくある質問をまとめました。</p>
 
     <details>
-      <summary>夜モードって何ですか？</summary>
+      <summary>夜モード（セレネスバー）への切り替えはどうなりますか？</summary>
       <p>
-        トグルはありません。時間で自動的に切り替わります。<br>
-        18:00〜翌5:59 は「セレネスバー」表示になります。
+        トグルはありません。<br>
+        端末がダークモード、または時間帯（18:00〜5:59）の場合に自動で「セレネスバー」に切り替わります。
+      </p>
+    </details>
+
+    <details>
+      <summary>PCで登録できますか？</summary>
+      <p>
+        登録・ログイン自体は「LINEアプリ内（LIFF）」で行います。<br>
+        PCでこのサイトを見て、スマホで登録ボタンを押す運用が一番スムーズです。
       </p>
     </details>
 
     <details>
       <summary>LINE情報は端末から勝手に読み取られますか？</summary>
       <p>
-        いいえ。LIFFは「その端末でログインしているLINEアカウント」で認証し、許可された範囲の情報（ユーザーIDなど）を取得します。
-      </p>
-    </details>
-
-    <details>
-      <summary>登録とログインの違いは？</summary>
-      <p>
-        新規登録は「会員台帳にデータを作る」こと。ログインは「既に登録済みか確認して通す」ことです。<br>
-        未登録のLINEはログインできない設計にできます。
+        端末の連絡先などを勝手に読み取ることはありません。<br>
+        LIFFは「その端末でログインしているLINEアカウント」で認証し、許可された範囲（userId等）だけを取得します。
       </p>
     </details>
   </section>
@@ -368,8 +376,8 @@
     <div class="footRow">
       <div>© <span id="y"></span> セレネスカフェ</div>
       <div class="links">
-        <a href="register.html">新規登録</a>
-        <a href="login.html">ログイン</a>
+        <a id="registerLinkFoot" href="#">新規登録</a>
+        <a id="loginLinkFoot" href="#">ログイン</a>
         <a href="#pricing">料金</a>
       </div>
     </div>
@@ -377,18 +385,35 @@
 </main>
 
 <script>
+  /* ========= LIFF入口URL（統一） ========= */
+  const LIFF_ID = "2006846780-ojjmzQx9";
+  const LIFF_REGISTER = `https://liff.line.me/${LIFF_ID}?mode=register`;
+  const LIFF_LOGIN    = `https://liff.line.me/${LIFF_ID}?mode=login`;
+
+  // ボタン/リンクに反映
+  const setHref = (id, href)=>{ const el=document.getElementById(id); if(el) el.href = href; };
+  setHref("registerLink", LIFF_REGISTER);
+  setHref("registerLink2", LIFF_REGISTER);
+  setHref("registerLinkFoot", LIFF_REGISTER);
+  setHref("loginLink", LIFF_LOGIN);
+  setHref("loginLink2", LIFF_LOGIN);
+  setHref("loginLinkFoot", LIFF_LOGIN);
+
+  /* ========= 年表示 ========= */
+  document.getElementById("y").textContent = new Date().getFullYear();
+
+  /* ========= 昼/夜 自動切替（トグルなし） ========= */
   const brandTitle = document.getElementById("brandTitle");
   const brandSub   = document.getElementById("brandSub");
   const kicker     = document.getElementById("kicker");
   const heroTitle  = document.getElementById("heroTitle");
   const heroLead   = document.getElementById("heroLead");
 
-  document.getElementById("y").textContent = new Date().getFullYear();
-
-  // ✅ 時間だけで判定（18:00〜5:59）
-  function isNightByTime(){
+  function shouldNightAuto(){
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     const h = new Date().getHours();
-    return (h >= 18 || h < 6);
+    const byTime = (h >= 18 || h < 6);
+    return prefersDark || byTime;
   }
 
   function applyNight(isNight){
@@ -416,18 +441,16 @@
   }
 
   // 初回適用
-  let lastNight = null;
-  function tick(){
-    const nowNight = isNightByTime();
-    if(nowNight !== lastNight){
-      applyNight(nowNight);
-      lastNight = nowNight;
-    }
-  }
-  tick();
+  applyNight(shouldNightAuto());
 
-  // ✅ 開きっぱなしでも切り替わる（1分ごと）
-  setInterval(tick, 60 * 1000);
+  // 端末テーマ変更にも追従
+  if(window.matchMedia){
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener?.("change", ()=> applyNight(shouldNightAuto()));
+  }
+
+  // 1分ごとに時刻を見て更新（18:00/6:00跨ぎ対策）
+  setInterval(()=> applyNight(shouldNightAuto()), 60 * 1000);
 </script>
 </body>
 </html>
