@@ -114,15 +114,28 @@ function hideErr(){ errBox.style.display="none"; errBox.textContent=""; }
 
 /* ===== LIFF初期化 ===== */
 let liffReady=false;
+
 (async ()=>{
   try{
     await liff.init({ liffId: LIFF_ID });
     liffReady=true;
-    if(!liff.isInClient()) outsideNote.style.display="block";
+
+    // PCブラウザ等（LINE外）なら注意を出す（ただしLIFFは外でも動くことがある）
+    if(!liff.isInClient()){
+      outsideNote.style.display="block";
+    }
+
+    // ✅ ここが追加：LIFFで開けていて未ログインなら先にログインさせる
+    // （クリック時にもあるけど、起動時にもやると“未連携すり抜け”が減る）
+    if(liff.isInClient() && !liff.isLoggedIn()){
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+
   }catch(e){
     outsideNote.style.display="block";
   }
-})();
+})();();
 
 /* ===== 新規登録 ===== */
 btn.addEventListener("click", async ()=>{

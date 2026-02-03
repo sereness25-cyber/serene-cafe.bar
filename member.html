@@ -52,6 +52,43 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
 .ok{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid #bbf7d0;background:#ecfdf5;color:#065f46;display:none}
 </style>
 </head>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  const LIFF_ID = "2006846780-ojjmzQx9";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+
+  async function guardMember(){
+    await liff.init({ liffId: LIFF_ID });
+
+    // 1) LINE未ログインなら必ずログインへ
+    if(!liff.isLoggedIn()){
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+
+    // 2) 登録済みかをGASで確認（未登録なら register へ）
+    const profile = await liff.getProfile();
+    const url = `${SCRIPT_URL}?action=login_line&line_user_id=${encodeURIComponent(profile.userId)}&_=${Date.now()}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if(!data.ok){
+      // 未登録（NOT_REGISTERED）や退会（INACTIVE）などは登録画面へ
+      location.replace("register.html");
+      return;
+    }
+
+    // ここまで来たら「連携OK」
+    localStorage.setItem("member_id", data.member_id);
+    localStorage.setItem("member_ok", "1");
+  }
+
+  guardMember().catch(err=>{
+    console.error(err);
+    alert("ログイン確認に失敗しました。もう一度お試しください。");
+    location.replace("register.html");
+  });
+</script>
 <body>
 <div class="wrap">
 
