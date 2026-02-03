@@ -160,16 +160,19 @@
 </footer>
 
 <script>
-  /* ========= ここが重要 ========= */
-
   const LIFF_ID = "2006846780-ojjmzQx9";
 
-  // 👉 index は必ず「liff.line.me」を踏ませる
-  const LIFF_REGISTER = `https://liff.line.me/${LIFF_ID}?mode=register`;
-  const LIFF_LOGIN    = `https://liff.line.me/${LIFF_ID}?mode=login`;
+  // ルーター(liff.html)が mode を保持しやすいように router=1 を付ける
+  // Safariのキャッシュ対策で t も付ける（任意だが効く）
+  const t = Date.now();
+  const LIFF_REGISTER = `https://liff.line.me/${LIFF_ID}?mode=register&router=1&t=${t}`;
+  const LIFF_LOGIN    = `https://liff.line.me/${LIFF_ID}?mode=login&router=1&t=${t}`;
 
-  // すべてのボタンに反映
-  const set = (id, url)=>{ const el=document.getElementById(id); if(el) el.href=url; };
+  const set = (id, url)=>{
+    const el = document.getElementById(id);
+    if(el) el.href = url;
+  };
+
   set("registerLink", LIFF_REGISTER);
   set("loginLink", LIFF_LOGIN);
   set("registerLinkTop", LIFF_REGISTER);
