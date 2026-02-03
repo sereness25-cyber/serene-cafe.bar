@@ -16,28 +16,21 @@
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;background:var(--bg);color:var(--text)}
-.wrap{max-width:520px;margin:auto;padding:24px}
-.card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center}
-h1{margin:0 0 12px;font-size:20px}
+.wrap{max-width:560px;margin:auto;padding:24px}
+.card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;border:1px solid var(--line)}
+h1{margin:0 0 8px;font-size:20px}
 p{margin:0;color:var(--muted);line-height:1.9}
 
-.form{margin-top:16px;text-align:left}
-label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+.form{margin-top:14px;text-align:left}
+label{display:block;margin:10px 0 6px;font-size:12px;color:var(--muted)}
 input{
-  width:100%;
-  padding:12px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  font-size:15px;
-  background:#fff;
+  width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--line);font-size:15px;
+  outline:none;
 }
+input:focus{border-color:#c7b7a8}
 
 .line-btn{
   margin-top:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
   width:100%;
   padding:16px;
   border-radius:999px;
@@ -45,14 +38,13 @@ input{
   background:var(--acc);
   color:#fff;
   font-size:16px;
-  font-weight:800;
+  font-weight:900;
   cursor:pointer;
 }
 .line-btn[disabled]{opacity:.6;cursor:not-allowed}
-.line-btn img{width:24px;height:24px}
 
 .err{
-  margin-top:14px;
+  margin-top:12px;
   padding:10px 12px;
   border-radius:12px;
   background:#fff3f3;
@@ -61,14 +53,16 @@ input{
   font-size:13px;
   display:none;
   line-height:1.8;
+  text-align:left;
+  white-space:pre-wrap;
 }
-.note{
-  margin-top:18px;
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.8;
-}
+.note{margin-top:16px;font-size:12px;color:var(--muted);line-height:1.8}
 .note a{color:#2563eb;text-decoration:underline}
+.smallbtn{
+  display:inline-block;margin-top:10px;
+  padding:10px 12px;border-radius:12px;border:1px solid var(--line);
+  text-decoration:none;color:var(--text);font-weight:800;background:#fff;
+}
 </style>
 </head>
 
@@ -76,157 +70,176 @@ input{
 <div class="wrap">
   <div class="card">
     <h1>LINEで新規登録</h1>
-    <p>
-      名前・年齢・電話番号を入力して、LINE連携で登録します。
-    </p>
+    <p>名前・年齢・電話番号を入力して、LINE連携で登録します。</p>
 
     <div class="form">
       <label>お名前（ニックネーム可）</label>
-      <input id="nameInput" placeholder="例）けい">
+      <input id="name" placeholder="例）けい">
 
       <label>年齢</label>
-      <input id="ageInput" inputmode="numeric" placeholder="例）32">
+      <input id="age" inputmode="numeric" placeholder="例）41">
 
       <label>電話番号（ハイフンなし推奨）</label>
-      <input id="phoneInput" inputmode="numeric" placeholder="例）09012345678">
+      <input id="phone" inputmode="numeric" placeholder="例）09012345678">
     </div>
 
-    <button class="line-btn" id="lineBtn" disabled>
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="">
-      LINEで新規登録
-    </button>
+    <button class="line-btn" id="registerBtn">LINEで新規登録</button>
 
     <div class="err" id="err"></div>
 
     <div class="note">
       すでに登録済みの方は<br>
-      <a href="https://liff.line.me/2006846780-ojjmzQx9">LINEでログイン</a>
+      <a href="https://liff.line.me/2006846780-ojjmzQx9?mode=login">LINEでログイン</a>
+    </div>
+
+    <div class="note" id="outsideNote" style="display:none;">
+      <b>※この画面はLINEアプリ内で開く必要があります。</b><br>
+      スマホで下のリンクを開くか、QR化して読み取ってください。<br>
+      <a class="smallbtn" href="https://liff.line.me/2006846780-ojjmzQx9?mode=register">LINEで新規登録を開く</a>
     </div>
   </div>
 </div>
 
 <script>
 /* ===== 設定 ===== */
-const LIFF_ID = "2006846780-8WiFYZIr"; // 登録LIFF
+const LIFF_ID = "2006846780-ojjmzQx9";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+const LIFF_REGISTER_URL = "https://liff.line.me/2006846780-ojjmzQx9?mode=register";
 
 const errBox = document.getElementById("err");
-const lineBtn = document.getElementById("lineBtn");
-const nameInput = document.getElementById("nameInput");
-const ageInput = document.getElementById("ageInput");
-const phoneInput = document.getElementById("phoneInput");
+const outsideNote = document.getElementById("outsideNote");
+const btn = document.getElementById("registerBtn");
 
-function showErr(msg){ errBox.style.display="block"; errBox.textContent=msg; }
-function hideErr(){ errBox.style.display="none"; errBox.textContent=""; }
+function showErr(msg){
+  errBox.style.display="block";
+  errBox.textContent=msg;
+}
+function hideErr(){
+  errBox.style.display="none";
+  errBox.textContent="";
+}
+function normDigits(v){ return String(v||"").replace(/[^\d]/g,""); }
 
-function normNum(v){ return String(v||"").replace(/[^\d]/g,""); }
-function normPhone(v){ return normNum(v); }
+/* --- JSON以外を返された時に原因を潰さない --- */
+async function fetchJson(url){
+  const res = await fetch(url, { method:"GET", cache:"no-store" });
+  const ct = (res.headers.get("content-type") || "").toLowerCase();
+  const text = await res.text();
 
-let liffReady = false;
+  if(!ct.includes("application/json")){
+    throw new Error("NOT_JSON_RESPONSE\n" + text.slice(0, 800));
+  }
+  try{ return JSON.parse(text); }
+  catch(e){ throw new Error("JSON_PARSE_FAILED\n" + text.slice(0, 800)); }
+}
 
-/* ✅ 入力復元（LINEログイン戻り用） */
-(function restoreForm(){
-  const n = sessionStorage.getItem("tmp_name") || "";
-  const a = sessionStorage.getItem("tmp_age") || "";
-  const p = sessionStorage.getItem("tmp_phone") || "";
-  if(!nameInput.value) nameInput.value = n;
-  if(!ageInput.value) ageInput.value = a;
-  if(!phoneInput.value) phoneInput.value = p;
+/* ===== 入口の統一（超重要） =====
+   GitHubのregister.htmlを直接開かれたら、
+   1回だけLIFFのURLへ誘導して「正しい入口」に戻す
+*/
+(function forceLiffEntry(){
+  const u = new URL(location.href);
+  const from = u.searchParams.get("from");
+
+  // すでにLIFFから来てる or 既に誘導済みなら何もしない
+  if(from === "liff") return;
+
+  // PCで直接開かれた場合は、勝手に飛ばすと迷子になるので表示で案内
+  // ただし、スマホのブラウザで開かれた場合はLIFFへ送ってOK
+  const isProbablyMobile = /iPhone|Android|iPad|iPod/i.test(navigator.userAgent);
+  if(isProbablyMobile){
+    location.replace(LIFF_REGISTER_URL + "&from=liff");
+    return;
+  }
+  // PCは案内だけ出す
+  outsideNote.style.display = "block";
 })();
 
-/* ✅ LIFF初期化（ページ開いただけでloginしない） */
+/* ===== LIFF 初期化 ===== */
+let liffReady = false;
 (async function initLIFF(){
   try{
     await liff.init({ liffId: LIFF_ID });
     liffReady = true;
-    lineBtn.disabled = false;
+
+    // LINEアプリ内じゃないなら案内表示（PCはここに落ちることが多い）
+    if(!liff.isInClient()){
+      outsideNote.style.display = "block";
+    }
+
   }catch(e){
-    showErr("このページはLINEアプリ内で開いてください。");
+    // LIFF初期化すらできない = まず入口が違う
+    outsideNote.style.display = "block";
   }
 })();
 
-/* ✅ 新規登録 */
-lineBtn.addEventListener("click", async ()=>{
+/* ===== 新規登録 ===== */
+btn.addEventListener("click", async ()=>{
   hideErr();
-  if(!liffReady) return;
 
-  const name = String(nameInput.value||"").trim();
-  const ageStr = normNum(ageInput.value);
-  const age = Number(ageStr);
-  const phone = normPhone(phoneInput.value);
+  const name = (document.getElementById("name").value || "").trim();
+  const age  = normDigits(document.getElementById("age").value);
+  const phone= normDigits(document.getElementById("phone").value);
 
   if(!name){ showErr("お名前を入力してください。"); return; }
-  if(!ageStr || !Number.isFinite(age) || age < 18 || age > 99){
-    showErr("年齢を正しく入力してください（18〜99）。"); return;
-  }
-  if(phone.length < 10 || phone.length > 11){
-    showErr("電話番号を正しく入力してください。"); return;
+  if(!age || Number(age) < 18 || Number(age) > 99){ showErr("年齢を正しく入力してください（18〜99）。"); return; }
+  if(phone.length < 10){ showErr("電話番号を正しく入力してください。"); return; }
+
+  if(!liffReady){
+    showErr("このページはLINEアプリ内（LIFF）で開いてください。\n" + LIFF_REGISTER_URL);
+    outsideNote.style.display = "block";
+    return;
   }
 
   try{
-    lineBtn.disabled = true;
+    btn.disabled = true;
 
-    // ✅ ボタン押下時だけログイン（入力値保持）
+    // ボタン押下時のみログイン
     if(!liff.isLoggedIn()){
-      sessionStorage.setItem("tmp_name", name);
-      sessionStorage.setItem("tmp_age", ageStr);
-      sessionStorage.setItem("tmp_phone", phone);
       liff.login({ redirectUri: location.href });
       return;
     }
 
+    // userId取得（LINEアプリ内前提）
     const profile = await liff.getProfile();
+    const lineUserId = profile.userId;
 
     const url =
       `${SCRIPT_URL}?action=register_line` +
-      `&line_user_id=${encodeURIComponent(profile.userId)}` +
+      `&line_user_id=${encodeURIComponent(lineUserId)}` +
       `&name=${encodeURIComponent(name)}` +
-      `&age=${encodeURIComponent(ageStr)}` +
+      `&age=${encodeURIComponent(age)}` +
       `&phone=${encodeURIComponent(phone)}` +
       `&_=${Date.now()}`;
 
-    const res = await fetch(url, { method:"GET", cache:"no-store" });
-    const data = await res.json();
+    const data = await fetchJson(url);
 
     if(data.ok){
-      // 入力保持をクリア
-      sessionStorage.removeItem("tmp_name");
-      sessionStorage.removeItem("tmp_age");
-      sessionStorage.removeItem("tmp_phone");
-
       localStorage.setItem("member_ok","1");
       localStorage.setItem("member_id", data.member_id);
       location.href = "member.html";
       return;
     }
 
+    // 想定エラー
     if(data.error === "LINE_ALREADY_REGISTERED"){
-      showErr("このLINEは既に登録されています。ログインをご利用ください。");
-      lineBtn.disabled = false;
+      showErr("このLINEは既に登録されています。ログインしてください。");
+      setTimeout(()=> location.href="login.html", 500);
       return;
     }
     if(data.error === "PHONE_TAKEN"){
-      showErr("この電話番号は既に登録されています。別の電話番号をお試しください。");
-      lineBtn.disabled = false;
-      return;
-    }
-    if(data.error === "invalid_age"){
-      showErr("年齢が不正です。18〜99で入力してください。");
-      lineBtn.disabled = false;
-      return;
-    }
-    if(data.error === "invalid_phone"){
-      showErr("電話番号が不正です。10〜11桁で入力してください。");
-      lineBtn.disabled = false;
+      showErr("この電話番号は既に使用されています。別の番号でお試しください。");
+      btn.disabled = false;
       return;
     }
 
-    showErr("登録に失敗しました。（" + (data.error || "unknown") + "）");
-    lineBtn.disabled = false;
+    showErr("登録に失敗しました。\n" + (data.error || "unknown"));
+    btn.disabled = false;
 
   }catch(e){
-    showErr("通信エラーが発生しました。");
-    lineBtn.disabled = false;
+    // 原因が見えるように出す
+    showErr("通信エラー/設定エラーです。\n\n" + String(e && e.message ? e.message : e));
+    btn.disabled = false;
   }
 });
 </script>
