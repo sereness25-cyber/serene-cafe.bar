@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LINEで新規登録｜セレネス</title>
 
+<!-- LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <style>
 :root{
   --bg:#fbf6f1; --card:#fff; --text:#3b352e; --muted:#7a6f63;
@@ -43,6 +46,7 @@ p{margin:0;color:var(--muted);line-height:1.9}
   font-weight:800;
   cursor:pointer;
 }
+.line-btn[disabled]{opacity:.6;cursor:not-allowed}
 .line-btn img{width:24px;height:24px}
 
 .note{
@@ -51,6 +55,7 @@ p{margin:0;color:var(--muted);line-height:1.9}
   color:var(--muted);
   line-height:1.8;
 }
+.note a{color:#2563eb;text-decoration:underline}
 
 .err{
   margin-top:14px;
@@ -61,6 +66,7 @@ p{margin:0;color:var(--muted);line-height:1.9}
   color:#9b1c1c;
   font-size:13px;
   display:none;
+  line-height:1.8;
 }
 </style>
 </head>
@@ -70,21 +76,21 @@ p{margin:0;color:var(--muted);line-height:1.9}
   <div class="card">
     <h1>LINEで新規登録</h1>
     <p>
-      面倒な入力は不要です。<br>
-      LINEアカウントを使って、<br>
-      すぐに登録できます。
+      LINEアカウントで登録します。<br>
+      ※電話番号は取得できないため、登録後に入力します。
     </p>
 
-    <button class="line-btn" id="lineBtn">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg">
-      LINEで登録する
+    <!-- ✅ ページを開いた直後にLINE連携しないため、最初から押せる（LIFF未初期化時だけ無効化） -->
+    <button class="line-btn" id="lineBtn" disabled>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="">
+      LINEで新規登録
     </button>
 
     <div class="err" id="err"></div>
 
     <div class="note">
-      ※ LINEの表示名・電話番号を使用します<br>
-      ※ あとから設定変更できます
+      すでに登録済みの方は<br>
+      <a href="login.html">LINEでログイン</a>
     </div>
   </div>
 </div>
@@ -93,64 +99,70 @@ p{margin:0;color:var(--muted);line-height:1.9}
 /* =========================
  * 設定
  * ========================= */
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
-
-/* =========================
- * 仮LINEログイン（確認用）
- * ※ 本番では LIFF に置き換える
- * ========================= */
-function mockLineLogin(){
-  return {
-    line_user_id: "U_TEST_001",
-    name: "LINEユーザー",
-    phone: "09012345678"
-  };
-}
+const LIFF_ID = "2006846780-ojjmzQx9";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
 
 const errBox = document.getElementById("err");
+const lineBtn = document.getElementById("lineBtn");
+
 function showErr(msg){
   errBox.style.display="block";
   errBox.textContent=msg;
 }
+function hideErr(){
+  errBox.style.display="none";
+  errBox.textContent="";
+}
 
 /* =========================
- * LINE登録処理
+ * ✅ LIFF 初期化（ここでは login しない！）
+ * - initできたらボタンを押せるようにするだけ
  * ========================= */
-document.getElementById("lineBtn").addEventListener("click", async ()=>{
-  errBox.style.display="none";
+let liffReady = false;
 
-  // file:// 判定（超重要）
-  if(location.protocol === "file:"){
-    showErr("このページは file:// では動作しません。Live Server または Web公開してください。");
+async function initLIFF(){
+  try{
+    await liff.init({ liffId: LIFF_ID });
+    liffReady = true;
+    lineBtn.disabled = false;
+  }catch(e){
+    showErr("LIFF初期化に失敗しました。LINE内で開いているか確認してください。");
+  }
+}
+initLIFF();
+
+/* =========================
+ * ✅ 新規登録ボタン押下でLINE連携 → 登録
+ * - 未ログインなら、ここでだけ liff.login()
+ * - 既に登録済みなら login.html へ誘導
+ * - 成功したら member.html へ
+ * ========================= */
+lineBtn.addEventListener("click", async ()=>{
+  hideErr();
+  if(!liffReady){
+    showErr("読み込み中です。少し待ってからもう一度押してください。");
     return;
   }
 
   try{
-    const line = mockLineLogin();
+    lineBtn.disabled = true;
 
-    // ① 新規登録
-    let res = await fetch(
-      `${SCRIPT_URL}?action=register_line` +
-      `&line_user_id=${encodeURIComponent(line.line_user_id)}` +
-      `&name=${encodeURIComponent(line.name)}` +
-      `&phone=${encodeURIComponent(line.phone)}` +
-      `&_=${Date.now()}`,
-      { cache:"no-store" }
-    );
-
-    let data = await res.json();
-
-    // ② 既存ならログインに切替
-    if(!data.ok && data.error === "LINE_ALREADY_REGISTERED"){
-      res = await fetch(
-        `${SCRIPT_URL}?action=login_line` +
-        `&line_user_id=${encodeURIComponent(line.line_user_id)}` +
-        `&_=${Date.now()}`,
-        { cache:"no-store" }
-      );
-      data = await res.json();
+    // ★ページ開いただけでは飛ばない。押した時だけログインへ
+    if(!liff.isLoggedIn()){
+      liff.login({ redirectUri: location.href }); // 戻り先＝このページ
+      return;
     }
+
+    const profile = await liff.getProfile();
+
+    const url =
+      `${SCRIPT_URL}?action=register_line` +
+      `&line_user_id=${encodeURIComponent(profile.userId)}` +
+      `&name=${encodeURIComponent(profile.displayName || "LINEユーザー")}` +
+      `&_=${Date.now()}`;
+
+    const res = await fetch(url, { method:"GET", cache:"no-store" });
+    const data = await res.json();
 
     if(data.ok){
       localStorage.setItem("member_ok","1");
@@ -159,10 +171,24 @@ document.getElementById("lineBtn").addEventListener("click", async ()=>{
       return;
     }
 
-    showErr("登録・ログインに失敗しました：" + (data.error || "不明なエラー"));
+    if(data.error === "LINE_ALREADY_REGISTERED"){
+      showErr("このLINEアカウントは既に登録されています。ログインへ移動します。");
+      setTimeout(()=> location.href = "login.html", 600);
+      return;
+    }
+
+    if(data.error === "PHONE_TAKEN"){
+      showErr("この電話番号は既に使用されています。運営にお問い合わせください。");
+      lineBtn.disabled = false;
+      return;
+    }
+
+    showErr("登録に失敗しました。（" + (data.error || "unknown") + "）");
+    lineBtn.disabled = false;
 
   }catch(e){
     showErr("通信エラーが発生しました。");
+    lineBtn.disabled = false;
   }
 });
 </script>
