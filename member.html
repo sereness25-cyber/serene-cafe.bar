@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>会員ページ｜セレネス</title>
+
+<!-- ✅ LIFF SDK（退会時ログアウトのために追加） -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <style>
 :root{
   --bg:#fbf6f1;          /* 背景：やさしいベージュ */
@@ -118,6 +122,11 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
  * ========================= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
 
+/* ✅ あなたの「会員ページ」用 LIFF ID（分かれば入れる）
+   - 不明なら空のままでOK（logout時に initしない運用にする）
+*/
+const MEMBER_LIFF_ID = ""; // 例）"2006846780-xxxx"
+
 /* =========================
  * 共通
  * ========================= */
@@ -144,6 +153,32 @@ function hideMsg(){
 }
 function normPhone(v){
   return String(v||"").replace(/[^\d]/g,"");
+}
+
+/* ✅ storage全削除（退会/ログアウト共通で使う） */
+function clearAuthStorage(){
+  localStorage.removeItem("member_ok");
+  localStorage.removeItem("member_id");
+  // 登録ページで sessionStorage に保持してる場合もあるので消す
+  sessionStorage.removeItem("tmp_name");
+  sessionStorage.removeItem("tmp_age");
+  sessionStorage.removeItem("tmp_phone");
+}
+
+/* ✅ LIFFログアウト（可能なら） */
+async function liffLogoutIfPossible(){
+  try{
+    if(!window.liff) return;
+
+    // MEMBER_LIFF_ID があるなら初期化を試す（失敗しても握りつぶす）
+    if(MEMBER_LIFF_ID){
+      try{ await liff.init({ liffId: MEMBER_LIFF_ID }); }catch(_){}
+    }
+
+    if(liff.isLoggedIn && liff.isLoggedIn()){
+      liff.logout();
+    }
+  }catch(_){}
 }
 
 /* =========================
@@ -223,7 +258,6 @@ document.getElementById("savePhoneBtn").addEventListener("click", async ()=>{
 
     if(data.ok){
       showOk("保存しました。");
-      // ✅ reload せずに再取得 → 画面切替（これが一番確実）
       await refreshUI();
       return;
     }
@@ -247,16 +281,17 @@ document.getElementById("goProfileBtn").addEventListener("click", ()=>{
   location.href = "profile.html";
 });
 
-/* ログアウト */
-document.getElementById("logoutBtn").addEventListener("click", ()=>{
-  localStorage.removeItem("member_ok");
-  localStorage.removeItem("member_id");
-  location.href = "login.html";
+/* ログアウト（※退会ではない） */
+document.getElementById("logoutBtn").addEventListener("click", async ()=>{
+  clearAuthStorage();
+  // 通常ログアウトでは LIFF logout は任意（したければON）
+  await liffLogoutIfPossible();
+  location.replace("login.html");
 });
 
 /* =========================
- * 退会
- * - GAS側に action=withdraw が必要
+ * 退会（withdraw）
+ * - 成功したら storage削除 + LIFFログアウト + loginへ
  * ========================= */
 document.getElementById("withdrawBtn").addEventListener("click", async ()=>{
   if(!confirm("本当に退会しますか？\nこの操作は取り消せません。")){
@@ -273,10 +308,10 @@ document.getElementById("withdrawBtn").addEventListener("click", async ()=>{
     const data = await res.json();
 
     if(data.ok){
-      localStorage.removeItem("member_ok");
-      localStorage.removeItem("member_id");
+      clearAuthStorage();
+      await liffLogoutIfPossible(); // ✅ 退会時は必ずLINEログアウトを試す
       alert("退会が完了しました。ご利用ありがとうございました。");
-      location.href = "login.html";
+      location.replace("login.html");
       return;
     }
 
@@ -285,6 +320,7 @@ document.getElementById("withdrawBtn").addEventListener("click", async ()=>{
   }catch(e){
     alert("通信エラーが発生しました。");
   }
-});</script>
+});
+</script>
 </body>
 </html>

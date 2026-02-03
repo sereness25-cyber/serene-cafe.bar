@@ -46,11 +46,13 @@ p{margin:0;color:var(--muted);line-height:1.9}
   color:#b91c1c;
   font-size:13px;
   display:none;
+  line-height:1.8;
 }
 .note{
   margin-top:18px;
   font-size:12px;
   color:var(--muted);
+  line-height:1.8;
 }
 .note a{color:#2563eb;text-decoration:underline}
 </style>
@@ -67,46 +69,102 @@ p{margin:0;color:var(--muted);line-height:1.9}
 
     <div class="note">
       ※ まだ登録していない方は<br>
-      <a href="https://liff.line.me/2006846780-8WiFYZIr">
-        LINEで新規登録
-      </a>
+      <a id="registerLink" href="#">LINEで新規登録</a>
     </div>
   </div>
 </div>
 
 <script>
+/* ===== 設定 ===== */
 const LIFF_ID = "2006846780-ojjmzQx9";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
 
 const errBox = document.getElementById("err");
 const lineBtn = document.getElementById("lineBtn");
+const registerLink = document.getElementById("registerLink");
 
 function showErr(msg){
   errBox.style.display = "block";
   errBox.textContent = msg;
 }
+function hideErr(){
+  errBox.style.display = "none";
+  errBox.textContent = "";
+}
 
+/* ===== LIFF入口（統一してmodeで分岐） ===== */
+const LIFF_LOGIN_URL    = `https://liff.line.me/${LIFF_ID}?mode=login`;
+const LIFF_REGISTER_URL = `https://liff.line.me/${LIFF_ID}?mode=register`;
+registerLink.href = LIFF_REGISTER_URL;
+
+/* ===== mode判定：registerならregister.htmlへ ===== */
+function routeByMode(){
+  const params = new URLSearchParams(location.search);
+  const mode = (params.get("mode") || "").toLowerCase();
+
+  // 以前の /register 形式が紛れ込んでも拾う（保険）
+  const state = params.get("liff.state") || "";
+  if(mode === "register" || state.startsWith("/register")){
+    location.replace("register.html");
+    return true; // ルーティングした
+  }
+  return false;
+}
+
+/* ===== LIFF初期化（ページを開いただけではloginしない） ===== */
 async function initLIFF(){
   try{
     await liff.init({ liffId: LIFF_ID });
 
-    /* ===== ここから追加 ===== */
-    const params = new URLSearchParams(location.search);
-    const state = params.get("liff.state") || "";
+    // mode=register の場合はここで register.html に送る
+    if(routeByMode()) return;
 
-    // /register で開かれたら新規登録画面へ
-    if(state.startsWith("/register")){
-      location.replace("register.html");
-      return;
-    }
-    /* ===== ここまで追加 ===== */
-
+    // ここまで来たらログイン画面として使う
     lineBtn.disabled = false;
+
   }catch(e){
-    showErr("LINEアプリ内で開いてください。");
+    showErr("このページはLINEアプリ内で開いてください。");
   }
 }
 initLIFF();
+
+/* ===== ログイン処理（ボタン押下時のみ） ===== */
+lineBtn.addEventListener("click", async ()=>{
+  hideErr();
+
+  try{
+    lineBtn.disabled = true;
+
+    // ボタンを押した時だけLINEログイン
+    if(!liff.isLoggedIn()){
+      liff.login({ redirectUri: LIFF_LOGIN_URL });
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    const url =
+      `${SCRIPT_URL}?action=login_line` +
+      `&line_user_id=${encodeURIComponent(profile.userId)}` +
+      `&_=${Date.now()}`;
+
+    const res = await fetch(url, { method:"GET", cache:"no-store" });
+    const data = await res.json();
+
+    if(data.ok){
+      localStorage.setItem("member_ok","1");
+      localStorage.setItem("member_id", data.member_id);
+      location.href = "member.html";
+      return;
+    }
+
+    showErr("未登録のLINEアカウントです。新規登録してください。");
+    lineBtn.disabled = false;
+
+  }catch(e){
+    showErr("通信エラーが発生しました。");
+    lineBtn.disabled = false;
+  }
+});
 </script>
 </body>
 </html>

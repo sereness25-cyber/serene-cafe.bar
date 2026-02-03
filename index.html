@@ -166,6 +166,52 @@
     .card h3{margin:0 0 8px;font-size:15px}
     .card p{margin:0;color:var(--muted);line-height:1.8;font-size:13px}
 
+    /* ▼ 追加：紹介までの流れ（見出し/ステップカード） */
+    .sectionSub{
+      margin:18px 0 10px;
+      font-size:14px;
+      font-weight:1000;
+    }
+    .steps{
+      display:grid;
+      gap:12px;
+      grid-template-columns:1fr;
+    }
+    @media(min-width:900px){
+      .steps{grid-template-columns:repeat(2, 1fr)}
+    }
+    .stepCard{
+      background:color-mix(in srgb, var(--card) 92%, transparent);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:14px 14px;
+    }
+    .stepHead{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:0 0 6px;
+      font-weight:1000;
+      font-size:14px;
+    }
+    .stepNo{
+      width:28px;height:28px;
+      border-radius:10px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg, var(--pri), var(--acc));
+      color:#fff;
+      font-size:12px;
+      flex:0 0 auto;
+    }
+    .stepText{
+      margin:0;
+      color:var(--muted);
+      line-height:1.8;
+      font-size:13px;
+    }
+    /* ▲ 追加ここまで */
+
     .pricing{
       display:grid; gap:12px;
       grid-template-columns:1fr;
@@ -304,6 +350,40 @@
         <p>紹介・掲示板・診断など、必要な機能だけ増やせます。小さく始めて育てる運用に向きます。</p>
       </div>
     </div>
+
+    <!-- ▼ 追加：紹介までの流れ -->
+    <h3 class="sectionSub">紹介までの流れ（最短3分）</h3>
+    <p class="sectionDesc" style="margin-top:-6px">
+      登録して「譲れない軸」を整えるだけ。相性の近い人を1人ずつ丁寧にご案内します。
+    </p>
+
+    <div class="steps">
+      <div class="stepCard">
+        <div class="stepHead"><span class="stepNo">1</span>LINEで新規登録／ログイン</div>
+        <p class="stepText">面倒なID・パスワードは不要。LINEでサクッと開始できます。</p>
+      </div>
+
+      <div class="stepCard">
+        <div class="stepHead"><span class="stepNo">2</span>基本情報を入力</div>
+        <p class="stepText">名前・年齢・電話番号など、最低限だけ。安心して紹介できる状態に整えます。</p>
+      </div>
+
+      <div class="stepCard">
+        <div class="stepHead"><span class="stepNo">3</span>価値観を選ぶ（かんたん診断）</div>
+        <p class="stepText">「譲れない条件」を選ぶだけ。大事にしたい軸を可視化します。</p>
+      </div>
+
+      <div class="stepCard">
+        <div class="stepHead"><span class="stepNo">4</span>相性の良い人を紹介</div>
+        <p class="stepText">価値観の一致度が高い方をピックアップしてご案内します。</p>
+      </div>
+
+      <div class="stepCard">
+        <div class="stepHead"><span class="stepNo">5</span>連絡・日程調整へ</div>
+        <p class="stepText">気になったら次へ。やり取りの不安もこちらがサポートします。</p>
+      </div>
+    </div>
+    <!-- ▲ 追加ここまで -->
   </section>
 
   <section id="pricing">
