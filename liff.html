@@ -3,148 +3,98 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LIFF Router</title>
+  <title>LIFF Router (Debug)</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",system-ui,sans-serif;padding:16px}
+    pre{background:#f6f7fb;border:1px solid #e5e7eb;padding:12px;border-radius:12px;white-space:pre-wrap;word-break:break-all}
+  </style>
 </head>
 <body>
-<script>
-/* ======================
-   設定
-====================== */
-const LIFF_ID = "2006846780-ojjmzQx9";
+<h2>LIFF Router Debug</h2>
+<pre id="log">loading...</pre>
 
-// 行き先（あなたの構成）
+<script>
+const LIFF_ID = "2006846780-ojjmzQx9";
 const DEST_REGISTER = "register.html";
 const DEST_LOGIN    = "login.html";
-
-// sessionStorageキー（mode保持）
 const MODE_KEY = "serene_mode";
 
-// ループ防止（ログイン要求中フラグ）
-const LOGIN_TRY_KEY = "serene_login_try";
+const log = (m)=>{ document.getElementById("log").textContent += m + "\n"; };
 
-/* ======================
-   mode復元（超堅牢版）
-====================== */
-function normalizeMode(v){
-  const m = String(v || "").trim().toLowerCase();
-  return (m === "register") ? "register" : "login";
+function normalizeMode(m){
+  m = String(m||"").trim().toLowerCase();
+  return (m==="register") ? "register" : "login";
 }
 
-/**
- * 受け取った文字列から mode を抜く
- * - "?mode=register"
- * - "mode=register"
- * - "https://.../liff.html?mode=register"
- * - "mode=register&x=y"
- * - "liff.state" に入っている URL エンコード済み文字列
- */
-function extractMode(anyString){
-  if(!anyString) return null;
-
-  let s = String(anyString);
-
-  // URLが丸ごと入ってくる場合に備えて「?」以降だけを使う
-  const qIndex = s.indexOf("?");
-  if(qIndex >= 0) s = s.slice(qIndex + 1);
-
-  // 先頭の "?" を除去
-  s = s.replace(/^\?+/, "");
-
-  // ここでURLSearchParamsで安全に読む
-  try{
-    const p = new URLSearchParams(s);
-    const m = p.get("mode");
-    return m ? normalizeMode(m) : null;
-  }catch(e){
-    return null;
-  }
+function parseModeFromQS(qs){
+  if(!qs) return null;
+  const p = new URLSearchParams(qs.startsWith("?") ? qs.slice(1) : qs);
+  const m = p.get("mode");
+  return m ? normalizeMode(m) : null;
 }
 
 function getMode(){
   const p = new URLSearchParams(location.search);
 
-  // 1) 直で ?mode=register
   const direct = p.get("mode");
   if(direct){
     const m = normalizeMode(direct);
     sessionStorage.setItem(MODE_KEY, m);
-    return m;
+    return {mode:m, from:"direct(mode=)"};
   }
 
-  // 2) liff.state（ログイン戻りで mode がここに退避される）
   const st = p.get("liff.state");
   if(st){
     try{
       const decoded = decodeURIComponent(st);
-      const m = extractMode(decoded);
+      let m = parseModeFromQS(decoded);
+      if(!m && decoded.includes("?")) m = parseModeFromQS(decoded.split("?").pop());
       if(m){
         sessionStorage.setItem(MODE_KEY, m);
-        return m;
+        return {mode:m, from:"liff.state"};
       }
     }catch(e){}
   }
 
-  // 3) それでも無ければ最後のmode（保険）
   const last = sessionStorage.getItem(MODE_KEY);
-  if(last) return normalizeMode(last);
+  if(last) return {mode: normalizeMode(last), from:"sessionStorage"};
 
-  // 4) デフォルト
-  return "login";
+  return {mode:"login", from:"default"};
 }
 
-/* ======================
-   ルーティング
-====================== */
 function go(mode){
   const m = normalizeMode(mode);
-  const dest = (m === "register") ? DEST_REGISTER : DEST_LOGIN;
-
-  // ★ 遷移先にも mode を渡す（UIの表示ブレ防止）
+  const dest = (m==="register") ? DEST_REGISTER : DEST_LOGIN;
   location.replace(`${dest}?mode=${encodeURIComponent(m)}`);
 }
 
-/* ======================
-   「modeを保持したまま」ログインへ
-====================== */
-function buildReturnUrlWithMode(mode){
-  // liff.html の “素のURL” を作る（余計な liff.state を持ち越さない）
-  const base = location.origin + location.pathname; // .../liff.html
-  return `${base}?mode=${encodeURIComponent(normalizeMode(mode))}`;
-}
-
 (async ()=>{
-  // まず mode を確定
-  const mode = getMode();
+  document.getElementById("log").textContent = "";
+  log("location.href = " + location.href);
+
+  const r = getMode();
+  log("parsed mode = " + r.mode + " (from: " + r.from + ")");
 
   try{
     await liff.init({ liffId: LIFF_ID });
+    log("liff.init OK");
+    log("isInClient = " + liff.isInClient());
+    log("isLoggedIn = " + liff.isLoggedIn());
 
-    // 未ログインならログインへ
     if(!liff.isLoggedIn()){
-      // ループ防止：短時間で何度もlogin要求しない
-      const lastTry = Number(sessionStorage.getItem(LOGIN_TRY_KEY) || "0");
-      const now = Date.now();
-      if(now - lastTry < 2500){
-        // 2.5秒以内に再突入したら、いったん通常遷移（ユーザー操作に任せる）
-        go(mode);
-        return;
-      }
-      sessionStorage.setItem(LOGIN_TRY_KEY, String(now));
-
-      // ★ redirectUri は “必ず mode を含んだ liff.html” に固定
-      const returnUrl = buildReturnUrlWithMode(mode);
-      liff.login({ redirectUri: returnUrl });
+      log("-> liff.login()");
+      liff.login({ redirectUri: location.href });
       return;
     }
 
-    // ログイン済みならフラグ解除して遷移
-    sessionStorage.removeItem(LOGIN_TRY_KEY);
-    go(mode);
+    log("-> route to " + r.mode);
+    go(r.mode);
 
   }catch(e){
-    // LIFF初期化失敗でも mode で通常遷移
-    go(mode);
+    log("liff.init FAILED: " + (e && e.message ? e.message : e));
+    log("-> route anyway to " + r.mode);
+    go(r.mode);
   }
 })();
 </script>
