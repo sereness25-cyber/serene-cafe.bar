@@ -12,26 +12,28 @@
 :root{
   --bg:#fbf6f1; --card:#fff; --text:#3b352e; --muted:#7a6f63;
   --acc:#06c755; --shadow:0 14px 28px rgba(0,0,0,.08); --radius:28px;
+  --line:#e9dfd6;
 }
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;
-  background:var(--bg); color:var(--text)
-}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;background:var(--bg);color:var(--text)}
 .wrap{max-width:520px;margin:auto;padding:24px}
-.card{
-  background:var(--card);
-  padding:28px;
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  text-align:center;
-}
+.card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center}
 h1{margin:0 0 12px;font-size:20px}
 p{margin:0;color:var(--muted);line-height:1.9}
 
+.form{margin-top:16px;text-align:left}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+input{
+  width:100%;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  font-size:15px;
+  background:#fff;
+}
+
 .line-btn{
-  margin-top:28px;
+  margin-top:18px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -49,14 +51,6 @@ p{margin:0;color:var(--muted);line-height:1.9}
 .line-btn[disabled]{opacity:.6;cursor:not-allowed}
 .line-btn img{width:24px;height:24px}
 
-.note{
-  margin-top:18px;
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.8;
-}
-.note a{color:#2563eb;text-decoration:underline}
-
 .err{
   margin-top:14px;
   padding:10px 12px;
@@ -68,6 +62,13 @@ p{margin:0;color:var(--muted);line-height:1.9}
   display:none;
   line-height:1.8;
 }
+.note{
+  margin-top:18px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.8;
+}
+.note a{color:#2563eb;text-decoration:underline}
 </style>
 </head>
 
@@ -76,11 +77,20 @@ p{margin:0;color:var(--muted);line-height:1.9}
   <div class="card">
     <h1>LINEで新規登録</h1>
     <p>
-      LINEアカウントで登録します。<br>
-      ※電話番号は取得できないため、登録後に入力します。
+      名前・年齢・電話番号を入力して、LINE連携で登録します。
     </p>
 
-    <!-- ✅ ページを開いた直後にLINE連携しないため、最初から押せる（LIFF未初期化時だけ無効化） -->
+    <div class="form">
+      <label>お名前（ニックネーム可）</label>
+      <input id="nameInput" placeholder="例）けい">
+
+      <label>年齢</label>
+      <input id="ageInput" inputmode="numeric" placeholder="例）32">
+
+      <label>電話番号（ハイフンなし推奨）</label>
+      <input id="phoneInput" inputmode="numeric" placeholder="例）09012345678">
+    </div>
+
     <button class="line-btn" id="lineBtn" disabled>
       <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="">
       LINEで新規登録
@@ -90,66 +100,78 @@ p{margin:0;color:var(--muted);line-height:1.9}
 
     <div class="note">
       すでに登録済みの方は<br>
-      <a href="login.html">LINEでログイン</a>
+      <a href="https://liff.line.me/2006846780-ojjmzQx9">LINEでログイン</a>
     </div>
   </div>
 </div>
 
 <script>
-/* =========================
- * 設定
- * ========================= */
-const LIFF_ID = "2006846780-8WiFYZIr";
+/* ===== 設定 ===== */
+const LIFF_ID = "2006846780-8WiFYZIr"; // 登録LIFF
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
 
 const errBox = document.getElementById("err");
 const lineBtn = document.getElementById("lineBtn");
+const nameInput = document.getElementById("nameInput");
+const ageInput = document.getElementById("ageInput");
+const phoneInput = document.getElementById("phoneInput");
 
-function showErr(msg){
-  errBox.style.display="block";
-  errBox.textContent=msg;
-}
-function hideErr(){
-  errBox.style.display="none";
-  errBox.textContent="";
-}
+function showErr(msg){ errBox.style.display="block"; errBox.textContent=msg; }
+function hideErr(){ errBox.style.display="none"; errBox.textContent=""; }
 
-/* =========================
- * ✅ LIFF 初期化（ここでは login しない！）
- * - initできたらボタンを押せるようにするだけ
- * ========================= */
+function normNum(v){ return String(v||"").replace(/[^\d]/g,""); }
+function normPhone(v){ return normNum(v); }
+
 let liffReady = false;
 
-async function initLIFF(){
+/* ✅ 入力復元（LINEログイン戻り用） */
+(function restoreForm(){
+  const n = sessionStorage.getItem("tmp_name") || "";
+  const a = sessionStorage.getItem("tmp_age") || "";
+  const p = sessionStorage.getItem("tmp_phone") || "";
+  if(!nameInput.value) nameInput.value = n;
+  if(!ageInput.value) ageInput.value = a;
+  if(!phoneInput.value) phoneInput.value = p;
+})();
+
+/* ✅ LIFF初期化（ページ開いただけでloginしない） */
+(async function initLIFF(){
   try{
     await liff.init({ liffId: LIFF_ID });
     liffReady = true;
     lineBtn.disabled = false;
   }catch(e){
-    showErr("LIFF初期化に失敗しました。LINE内で開いているか確認してください。");
+    showErr("このページはLINEアプリ内で開いてください。");
   }
-}
-initLIFF();
+})();
 
-/* =========================
- * ✅ 新規登録ボタン押下でLINE連携 → 登録
- * - 未ログインなら、ここでだけ liff.login()
- * - 既に登録済みなら login.html へ誘導
- * - 成功したら member.html へ
- * ========================= */
+/* ✅ 新規登録 */
 lineBtn.addEventListener("click", async ()=>{
   hideErr();
-  if(!liffReady){
-    showErr("読み込み中です。少し待ってからもう一度押してください。");
-    return;
+  if(!liffReady) return;
+
+  const name = String(nameInput.value||"").trim();
+  const ageStr = normNum(ageInput.value);
+  const age = Number(ageStr);
+  const phone = normPhone(phoneInput.value);
+
+  if(!name){ showErr("お名前を入力してください。"); return; }
+  if(!ageStr || !Number.isFinite(age) || age < 18 || age > 99){
+    showErr("年齢を正しく入力してください（18〜99）。"); return;
+  }
+  if(phone.length < 10 || phone.length > 11){
+    showErr("電話番号を正しく入力してください。"); return;
   }
 
   try{
     lineBtn.disabled = true;
 
-    // ★ページ開いただけでは飛ばない。押した時だけログインへ
+    // ✅ ボタン押下時だけログイン（入力値保持）
     if(!liff.isLoggedIn()){
-      liff.login({ redirectUri: location.href }); // 戻り先＝このページ
+      sessionStorage.setItem("tmp_name", name);
+      sessionStorage.setItem("tmp_age", ageStr);
+      sessionStorage.setItem("tmp_phone", phone);
+      liff.login({ redirectUri: location.href });
       return;
     }
 
@@ -158,13 +180,20 @@ lineBtn.addEventListener("click", async ()=>{
     const url =
       `${SCRIPT_URL}?action=register_line` +
       `&line_user_id=${encodeURIComponent(profile.userId)}` +
-      `&name=${encodeURIComponent(profile.displayName || "LINEユーザー")}` +
+      `&name=${encodeURIComponent(name)}` +
+      `&age=${encodeURIComponent(ageStr)}` +
+      `&phone=${encodeURIComponent(phone)}` +
       `&_=${Date.now()}`;
 
     const res = await fetch(url, { method:"GET", cache:"no-store" });
     const data = await res.json();
 
     if(data.ok){
+      // 入力保持をクリア
+      sessionStorage.removeItem("tmp_name");
+      sessionStorage.removeItem("tmp_age");
+      sessionStorage.removeItem("tmp_phone");
+
       localStorage.setItem("member_ok","1");
       localStorage.setItem("member_id", data.member_id);
       location.href = "member.html";
@@ -172,13 +201,22 @@ lineBtn.addEventListener("click", async ()=>{
     }
 
     if(data.error === "LINE_ALREADY_REGISTERED"){
-      showErr("このLINEアカウントは既に登録されています。ログインへ移動します。");
-      setTimeout(()=> location.href = "login.html", 600);
+      showErr("このLINEは既に登録されています。ログインをご利用ください。");
+      lineBtn.disabled = false;
       return;
     }
-
     if(data.error === "PHONE_TAKEN"){
-      showErr("この電話番号は既に使用されています。運営にお問い合わせください。");
+      showErr("この電話番号は既に登録されています。別の電話番号をお試しください。");
+      lineBtn.disabled = false;
+      return;
+    }
+    if(data.error === "invalid_age"){
+      showErr("年齢が不正です。18〜99で入力してください。");
+      lineBtn.disabled = false;
+      return;
+    }
+    if(data.error === "invalid_phone"){
+      showErr("電話番号が不正です。10〜11桁で入力してください。");
       lineBtn.disabled = false;
       return;
     }
