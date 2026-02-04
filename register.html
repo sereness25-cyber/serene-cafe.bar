@@ -12,30 +12,49 @@
       --radius:14px; --shadow:0 10px 26px rgba(15,23,42,.08);
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;background:var(--bg);color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif
-    }
+    body{margin:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif}
     header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:10}
-    .wrap{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+    .wrap{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between}
     .brand{font-weight:900}
-    nav{display:flex;gap:8px}
+    nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     main{max-width:1100px;margin:0 auto;padding:18px 16px}
     h1{font-size:22px;margin:6px 0 14px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
-    .small{font-size:13px;color:var(--muted);line-height:1.6}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+      box-shadow:var(--shadow);padding:16px}
+
+    .grid2{display:grid;gap:14px;grid-template-columns:1fr}
+    @media(min-width:920px){.grid2{grid-template-columns:1.2fr .8fr}}
+
     .hr{height:1px;background:var(--line);margin:12px 0}
-    label{display:block;margin:10px 0 6px;font-weight:800}
-    input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .grid{display:grid;gap:12px}
-    .cols2{grid-template-columns:1fr}
-    @media(min-width:720px){.cols2{grid-template-columns:1fr 1fr}}
-    .btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
+
+    .small{font-size:13px;color:var(--muted);line-height:1.7}
+
+    .status{
+      background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;
+      border-radius:12px;padding:10px 12px;font-weight:800
+    }
+
+    label{display:block;margin:10px 0 6px;font-weight:900}
+    input{
+      width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .cols{display:grid;gap:12px;grid-template-columns:1fr}
+    @media(min-width:720px){.cols{grid-template-columns:1fr 1fr}}
+
+    .btn{
+      appearance:none;border:1px solid var(--line);background:#fff;border-radius:12px;
+      padding:10px 14px;font-weight:900;cursor:pointer;text-decoration:none;color:inherit;
+      display:inline-flex;align-items:center;justify-content:center
+    }
     .btn.primary{background:var(--pri);border-color:var(--pri);color:#fff}
-    .btn.primary:hover{background:var(--pri2)}
-    .okBox{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:12px}
-    .doneBox{background:#ecfdf5;border:1px solid #bbf7d0;color:#065f46;border-radius:12px;padding:12px}
+    .btn.primary:hover{background:var(--pri2);border-color:var(--pri2)}
+    .btn.block{width:100%}
+    .hintBox{
+      background:#fffdfb;border:1px solid var(--line);border-radius:12px;padding:12px
+    }
+    ol{margin:8px 0 0 18px}
   </style>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -57,152 +76,175 @@
 <main>
   <h1>新規登録（LINE連携）</h1>
 
-  <section class="card" style="max-width:760px">
-    <div id="lineBox" class="okBox">LINE認証中…</div>
+  <div class="grid2">
+    <!-- 左：申請フォーム（写真のUI寄せ） -->
+    <section class="card">
+      <div id="status" class="status">LINE認証中…</div>
 
-    <div class="hr"></div>
+      <div class="hr"></div>
 
-    <div class="small">
-      <b>安心して利用していただくために</b><br>
-      なりすまし防止のため、<b>面談での本人確認後に会員IDを発行</b>します。
-      <ol>
-        <li>新規登録（LINE連携＋入力）</li>
-        <li>担当者からご連絡</li>
-        <li>面談（対面 or オンライン）</li>
-        <li>会員ID発行</li>
-        <li>利用開始</li>
-      </ol>
-    </div>
-
-    <form id="formRegister" style="display:none;margin-top:14px">
-      <label>名前</label>
-      <input id="name" required>
-
-      <div class="grid cols2">
-        <div>
-          <label>年齢</label>
-          <input id="age" type="number" min="18" max="99" required>
-        </div>
-        <div>
-          <label>電話番号</label>
-          <input id="phone" inputmode="tel" required>
-        </div>
+      <div class="small">
+        <b>安心して利用していただくために</b><br>
+        なりすまし防止のため、<b>面談での本人確認後に会員IDを発行</b>します。
+        <ol>
+          <li>新規登録（LINE連携＋入力）</li>
+          <li>担当者からご連絡</li>
+          <li>面談（対面 or オンライン）</li>
+          <li>会員ID発行</li>
+          <li>利用開始（LINE連携＋会員IDでログイン）</li>
+        </ol>
       </div>
 
-      <div class="row" style="margin-top:14px">
-        <button class="btn primary" type="submit">申請する</button>
-        <a class="btn" href="index.html">戻る</a>
-      </div>
-    </form>
+      <form id="formRegister" style="margin-top:14px; display:none;">
+        <label>名前</label>
+        <input id="name" required placeholder="例：山田 太郎">
 
-    <div id="doneBox" class="doneBox" style="display:none;margin-top:14px">
-      <b>申請を受け付けました。</b><br>
-      続けて公式LINEへ送信してください。
-    </div>
-  </section>
+        <div class="cols">
+          <div>
+            <label>年齢</label>
+            <input id="age" type="number" min="18" max="99" required placeholder="例：35">
+          </div>
+          <div>
+            <label>電話番号</label>
+            <input id="phone" inputmode="tel" required placeholder="例：09012345678">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:14px">
+  <button class="btn primary" type="button" id="btnConnect">LINE連携して申請する</button>
+  <a class="btn" href="index.html">戻る</a>
+</div>
+
+        <p class="small" style="margin-top:10px">
+          ※申請後、LINEのトーク画面が開きます。内容を確認して送信してください（自動送信はできません）。
+        </p>
+      </form>
+    </section>
+
+    <!-- 右：友だち追加導線（となりに配置） -->
+    <aside class="card">
+      <h2 style="margin:0 0 10px;font-size:16px">まだLINE登録されていない方はこちら</h2>
+      <div class="hintBox small">
+        公式LINEを友だち追加してから申請するとスムーズです。
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <a class="btn primary block" id="btnAddFriend" href="https://lin.ee/oP0e2Kf" target="_blank" rel="noopener">
+          公式LINEを友だち追加
+        </a>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="small">
+        申請が完了すると、担当者から面談日程のご連絡をします。<br>
+        本人確認後に <b>会員ID（例：SRN-1234）</b> を発行します。
+      </div>
+    </aside>
+  </div>
 </main>
 
 <script>
 document.addEventListener("DOMContentLoaded", async ()=>{
-  const lineBox = document.getElementById("lineBox");
-  const form = document.getElementById("formRegister");
-  const doneBox = document.getElementById("doneBox");
+  const status = document.getElementById("status");
+  const form   = document.getElementById("formRegister");
+  const btnConnect = document.getElementById("btnConnect");
 
-  const nameEl  = document.getElementById("name");
-  const ageEl   = document.getElementById("age");
-  const phoneEl = document.getElementById("phone");
+  const show = (t)=> status.textContent = t;
+  const cleanUrl = location.origin + location.pathname;
 
-  const showError = (t)=>{
-    lineBox.textContent = t;
-    // デバッグしやすいように、最低フォームは出す
-    if(form) form.style.display = "block";
-  };
+  // app.js が読めてるか
+  if(typeof initLIFF !== "function"){
+    show("app.js が読み込めていません（initLIFFが無い）");
+    form.style.display = "block";
+    return;
+  }
 
-  try{
-    // 1) LIFF初期化
-    if(typeof initLIFF !== "function") return showError("app.js が読み込めていません（initLIFFが無い）");
-    const r = await initLIFF();
-    if(!r.ok) return showError(r.msg || "LIFF初期化に失敗しました");
+  // フォームは最初から表示（＝自動でLINEに行かない）
+  form.style.display = "block";
+  show("申請情報を入力してください。LINE連携はボタンを押した時に行います。");
 
-    // 2) LINE未ログイン → ログインへ（400回避の安全URL）
+  // LIFF初期化だけはしておく（ログインはしない）
+  const r = await initLIFF();
+  if(!r.ok){
+    show(r.msg || "LIFF初期化に失敗しました");
+    return;
+  }
+
+  btnConnect.addEventListener("click", async ()=>{
+    const name  = (document.getElementById("name").value || "").trim();
+    const age   = (document.getElementById("age").value || "").trim();
+    const phone = (document.getElementById("phone").value || "").trim();
+
+    if(!name || !age || !phone){
+      alert("名前・年齢・電話番号を入力してください");
+      return;
+    }
+
+    // まだLINE未ログインなら、ここで初めてログインへ
     if(!liff.isLoggedIn()){
-      const cleanUrl = location.origin + location.pathname;
+      // 入力値は一旦退避（ログイン後に復元）
+      sessionStorage.setItem("reg_name", name);
+      sessionStorage.setItem("reg_age", age);
+      sessionStorage.setItem("reg_phone", phone);
+
+      show("LINE連携に進みます…");
       liff.login({ redirectUri: cleanUrl });
       return;
     }
 
-    // 3) プロフィール取得
+    // ログイン済みならプロフィール取得
     const profile = await getLineProfileSafe();
     const lineUserId = profile.userId;
 
-    lineBox.textContent = `LINE連携OK：${profile.displayName || "ユーザー"} さん。申請情報を入力してください。`;
-    form.style.display = "block";
+    show("LINE連携OK。LINEトークを開きます…");
 
-    // 4) 申請送信
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-
-      const name  = (nameEl?.value || "").trim();
-      const age   = (ageEl?.value || "").trim();
-      const phone = (phoneEl?.value || "").trim();
-
-      if(!name || !age || !phone){
-        alert("名前・年齢・電話番号を入力してください");
-        return;
-      }
-
-      const submitBtn = form.querySelector('button[type="submit"]');
-      if(submitBtn) submitBtn.disabled = true;
-      lineBox.textContent = "申請を送信しています…";
-
-      // GASへ送信
-      if(typeof gasApply !== "function"){
-        alert("gasApply が見つかりません（app.jsの下部のGAS部分を確認）");
-        if(submitBtn) submitBtn.disabled = false;
-        return;
-      }
-
-      const res = await gasApply({
-        lineUserId,
-        displayName: profile.displayName || "",
-        name, age, phone
-      });
-
-      if(!res || !res.ok){
-        alert("申請送信に失敗しました。もう一度お試しください。");
-        if(submitBtn) submitBtn.disabled = false;
-        lineBox.textContent = "申請送信に失敗しました。";
-        return;
-      }
-
-      // 受付表示
-      form.style.display = "none";
-      doneBox.style.display = "block";
-      lineBox.textContent = "申請を受け付けました。続けて公式LINEへ送信してください。";
-
-      // 公式LINEへ（自動入力はoaMessageのみ）
-      const text =
+    const text =
 `【セレネスカフェ&バー申請】
 お名前：${name}
 年齢：${age}
-電話番号：${phone}`;
+電話番号：${phone}
 
-      const linEe = "https://lin.ee/oP0e2Kf";
-      const oaMsg = `https://line.me/R/oaMessage/@820theos/?${encodeURIComponent(text)}`;
+▼この後の流れ（安心のため）
+①担当者からご連絡（面談日程の調整）
+②面談（対面 or オンライン）で本人確認
+③会員ID発行
+④利用開始（LINE連携＋会員IDでログイン）
 
-      // まず友だち追加（lin.ee）
-      liff.openWindow({ url: linEe, external:true });
+※連絡しやすい時間帯があれば返信で教えてください。`;
 
-      // その後、文面入りトーク（oaMessage）
-      setTimeout(()=> liff.openWindow({ url: oaMsg, external:true }), 900);
+    const oaMsg = `https://line.me/R/oaMessage/@820theos/?${encodeURIComponent(text)}`;
 
-      // 審査中ページへ
-      setTimeout(()=> location.replace("waiting.html"), 1800);
-    });
+    // （任意）GASへも送る：失敗しても止めない
+    try{
+      if(typeof gasApply === "function"){
+        const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), 5000));
+        await Promise.race([
+          gasApply({ lineUserId, displayName: profile.displayName||"", name, age, phone }),
+          timeout
+        ]);
+      }
+    }catch(e){ console.warn(e); }
 
-  }catch(err){
-    console.error(err);
-    showError("エラーが発生しました。Safariの場合は一度ページを再読み込みしてください。");
+    if (window.liff && typeof liff.openWindow === "function") {
+      liff.openWindow({ url: oaMsg, external: true });
+    } else {
+      location.href = oaMsg;
+    }
+  });
+
+  // ログインから戻ってきた直後：入力値を復元
+  const n = sessionStorage.getItem("reg_name");
+  const a = sessionStorage.getItem("reg_age");
+  const p = sessionStorage.getItem("reg_phone");
+  if(n || a || p){
+    if(n) document.getElementById("name").value = n;
+    if(a) document.getElementById("age").value = a;
+    if(p) document.getElementById("phone").value = p;
+    sessionStorage.removeItem("reg_name");
+    sessionStorage.removeItem("reg_age");
+    sessionStorage.removeItem("reg_phone");
+    show("LINE連携の準備ができました。「LINE連携して申請する」を押してください。");
   }
 });
 </script>
