@@ -102,7 +102,7 @@ function renderHeaderAuth(){
   const label = "LINEログイン中";
 
   el.innerHTML = `
-    <span class="badge">${label}</span>
+    <span class="badge">${escapeHtml(label)}</span>
     <a class="btn" href="login.html">ログイン</a>
     <button class="btn" id="btnLogout">ログアウト</button>
   `;
@@ -113,6 +113,9 @@ document.addEventListener("DOMContentLoaded", renderHeaderAuth);
 // ===== LINE / LIFF helpers =====
 async function initLIFF(){
   if(!window.liff) return { ok:false, msg:"LIFF SDKが読み込まれていません" };
+  if(typeof LIFF_ID === "undefined" || !LIFF_ID){
+    return { ok:false, msg:"LIFF_ID が未設定です（liff-config.js を確認）" };
+  }
   try{
     await liff.init({ liffId: LIFF_ID });
     return { ok:true };
@@ -127,15 +130,28 @@ async function ensureLineLogin(){
   if(!r.ok) return r;
 
   if(!liff.isLoggedIn()){
-  const cleanUrl = location.origin + location.pathname;
-  liff.login({ redirectUri: cleanUrl });
-  return { ok:false, msg:"LINEログインへ遷移します" };
+    const cleanUrl = location.origin + location.pathname; // 400回避
+    liff.login({ redirectUri: cleanUrl });
+    return { ok:false, msg:"LINEログインへ遷移します" };
+  }
+  return { ok:true };
 }
 
 async function getLineProfileSafe(){
   const profile = await liff.getProfile();
   return profile; // { userId, displayName, pictureUrl, statusMessage }
 }
+
+async function safeLiffLogout(){
+  try{
+    if(window.liff && liff.isLoggedIn && liff.isLoggedIn()){
+      liff.logout();
+    }
+  }catch(e){
+    console.warn("LIFF logout failed", e);
+  }
+}
+
 // ===== Replies (thread + @mention) =====
 const K_REPLIES = "ma_board_replies"; // [{id, postId, lineUserId, body, replyTo:{name, lineUserId, replyId}, createdAt}]
 
@@ -163,16 +179,6 @@ function deleteReply(replyId, lineUserId){
   const replies = load(K_REPLIES, []);
   const next = replies.filter(r => !(r.id === replyId && r.lineUserId === lineUserId));
   save(K_REPLIES, next);
-}
-
-async function safeLiffLogout(){
-  try{
-    if(window.liff && liff.isLoggedIn && liff.isLoggedIn()){
-      liff.logout();
-    }
-  }catch(e){
-    console.warn("LIFF logout failed", e);
-  }
 }
 
 // ===== Application / Approval registry =====
