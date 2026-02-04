@@ -61,139 +61,79 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const btnLine = document.getElementById("btnLine");
   const formId = document.getElementById("formId");
 
-formId.addEventListener("submit", async (e)=>{
-  e.preventDefault();
-
-  const memberId = document.getElementById("memberId").value.trim();
-  const pin = document.getElementById("pin").value.trim();
-
-  if(!memberId || !pin){
-    alert("会員IDとPINを入力してください");
-    return;
-  }
-
-  // ===== 6-B：GASで照合 =====
-  const vr = await gasVerify(lineUserId, memberId, pin);
-
-  if(!vr.ok){
-    alert("会員IDまたはPINが違うか、承認が完了していません。");
-    return;
-  }
-
-  // OK → 会員セッション作成
-  setMemberSession(lineUserId, memberId);
-
-  // 会員ページへ
-  location.replace("member.html");
-});
-
-  // クリックでLINEログイン
+  // ① LINEログインボタン
   btnLine.addEventListener("click", async ()=>{
     const r = await initLIFF();
     if(!r.ok) return alert(r.msg);
-    if(!liff.isLoggedIn()) liff.login({ redirectUri: window.location.href });
+    if(!liff.isLoggedIn()){
+      const cleanUrl = location.origin + location.pathname;
+      liff.login({ redirectUri: cleanUrl });
+    }
   });
 
-  // LIFF初期化
+  // ② LIFF初期化
   const r = await initLIFF();
-  if(!r.ok){ msg.textContent = r.msg; return; }
-
-  // 未ログイン
-  if(!liff.isLoggedIn()){
-    msg.textContent = "LINEでログインしてください。";
+  if(!r.ok){
+    msg.textContent = r.msg;
     return;
   }
 
-  // LINEプロフィール取得
-const profile = await getLineProfileSafe();
-const lineUserId = profile.userId;
+  // ③ 未ログイン
+  if(!liff.isLoggedIn()){
+    msg.textContent = "LINEでログインしてください。（※登録済みの方のみ）";
+    return;
+  }
 
-// ===== 6-A：承認状態チェック =====
-const st = await gasStatus(lineUserId);
+  // ④ LINEプロフィール取得
+  const profile = await getLineProfileSafe();
+  const lineUserId = profile.userId;
 
-if(!st.ok){
-  msg.textContent = "状態確認に失敗しました。しばらくして再度お試しください。";
-  return;
-}
+  // ⑤ 承認状態チェック（GAS）
+  const st = await gasStatus(lineUserId);
 
-if(!st.exists){
-  msg.textContent = "申請がありません。新規登録ページへ移動します…";
-  location.replace("register.html");
-  return;
-}
+  if(!st.ok){
+    msg.textContent = "状態確認に失敗しました。";
+    return;
+  }
 
-if(st.status !== "approved"){
-  msg.textContent = "現在、確認中です。担当者からの連絡をお待ちください。";
-  location.replace("waiting.html");
-  return;
-}
-
-// ★ここまで来たら「承認済み」
-msg.innerHTML = `
-  承認済みです。<br>
-  <strong>会員IDとPIN</strong>を入力してください。
-`;
-
-// ID入力フォームを表示
-document.getElementById("formId").style.display = "block";
-  // LINEセッションは保持（本人確認のためのキー）
-  setLineSession(lineUserId);
-
-  // ① 承認済みか？
-  const approved = getApproved(lineUserId);
-
-  // 承認済みでない場合：申請状況で分岐
-  if(!approved || approved.status !== "approved"){
-    const app = getApplication(lineUserId);
-
-    if(app && app.status === "pending"){
-      msg.textContent = "現在、確認中です。担当者からの連絡をお待ちください…";
-      location.replace("waiting.html");
-      return;
-    }
-
-    // 申請自体がない
-    msg.textContent = "このLINEはまだ申請がありません。新規登録（申請）へ移動します…";
-    // session残しは好みだが、ここでは残してOK
+  if(!st.exists){
+    msg.textContent = "申請がありません。新規登録へ移動します…";
     location.replace("register.html");
     return;
   }
 
-  // ② 承認済み → ID入力フォーム表示
-  msg.innerHTML = `
-    承認済みです。<br>
-    <strong>会員IDとPIN</strong>を入力してログインしてください。
-  `;
-  formId.style.display = "block";
+  if(st.status !== "approved"){
+    msg.textContent = "現在、確認中です。担当者からの連絡をお待ちください。";
+    location.replace("waiting.html");
+    return;
+  }
 
-  // IDログイン
-  formId.addEventListener("submit", (e)=>{
+  // ⑥ 承認済み
+  msg.innerHTML = "承認済みです。<br>会員IDとPINを入力してください。";
+  formId.style.display = "block";
+  setLineSession(lineUserId);
+
+  // ⑦ IDログイン
+  formId.addEventListener("submit", async (e)=>{
     e.preventDefault();
+
     const memberId = document.getElementById("memberId").value.trim();
     const pin = document.getElementById("pin").value.trim();
+    if(!memberId || !pin) return alert("会員IDとPINを入力してください");
 
-    if(!memberId || !pin){
-      alert("会員IDとPINを入力してください");
-      return;
-    }
-
-    // 照合
-    if(memberId !== (approved.memberId || "") || pin !== (approved.pin || "")){
+    const vr = await gasVerify(lineUserId, memberId, pin);
+    if(!vr.ok){
       alert("会員IDまたはPINが違います");
       return;
     }
 
-    // 承認済み + ID一致 → 会員セッション作成
     setMemberSession(lineUserId, memberId);
-
-    // 会員ページへ
     location.replace("member.html");
   });
 
-  // LINEログアウト（必要なら）
+  // ⑧ ログアウト
   document.getElementById("btnLogout").addEventListener("click", async ()=>{
     clearMemberSession();
-    localStorage.removeItem("ma_session");
     if(typeof safeLiffLogout === "function") await safeLiffLogout();
     location.replace("index.html");
   });

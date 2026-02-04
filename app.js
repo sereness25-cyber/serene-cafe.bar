@@ -94,17 +94,16 @@ function renderHeaderAuth(){
   if(!s){
     el.innerHTML = `
       <a class="btn" href="login.html">LINEでログイン</a>
-      <a class="btn primary" href="register.html">LINE連携で新規登録</a>
+      <a class="btn primary" href="register.html">新規登録（申請）</a>
     `;
     return;
   }
 
-  const m = getMember(s.lineUserId);
-  const label = m?.displayName || "ログイン中";
+  const label = "LINEログイン中";
 
   el.innerHTML = `
-    <span class="badge">${escapeHtml(label)}</span>
-    <a class="btn" href="member.html">会員ページ</a>
+    <span class="badge">${label}</span>
+    <a class="btn" href="login.html">ログイン</a>
     <button class="btn" id="btnLogout">ログアウト</button>
   `;
   document.getElementById("btnLogout")?.addEventListener("click", logout);
@@ -128,10 +127,9 @@ async function ensureLineLogin(){
   if(!r.ok) return r;
 
   if(!liff.isLoggedIn()){
-    liff.login();
-    return { ok:false, msg:"LINEログインへ遷移します" };
-  }
-  return { ok:true };
+  const cleanUrl = location.origin + location.pathname;
+  liff.login({ redirectUri: cleanUrl });
+  return { ok:false, msg:"LINEログインへ遷移します" };
 }
 
 async function getLineProfileSafe(){
