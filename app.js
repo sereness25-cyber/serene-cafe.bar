@@ -166,3 +166,92 @@ function deleteReply(replyId, lineUserId){
   const next = replies.filter(r => !(r.id === replyId && r.lineUserId === lineUserId));
   save(K_REPLIES, next);
 }
+
+async function safeLiffLogout(){
+  try{
+    if(window.liff && liff.isLoggedIn && liff.isLoggedIn()){
+      liff.logout();
+    }
+  }catch(e){
+    console.warn("LIFF logout failed", e);
+  }
+}
+
+// ===== Application / Approval registry =====
+// 申請データ（pending）: { [lineUserId]: { status:"pending", ... } }
+const K_APPLY = "ma_applications";
+
+// 承認データ（approved）: { [lineUserId]: { status:"approved", memberId, pin, issuedAt } }
+const K_APPROVED = "ma_approved";
+
+// ログイン状態（承認後）: { lineUserId, memberId, loginAt }
+const K_MEMBER_SESSION = "ma_member_session";
+
+function getApplication(lineUserId){
+  const all = load(K_APPLY, {});
+  return all[lineUserId] ?? null;
+}
+function setApplication(app){
+  const all = load(K_APPLY, {});
+  all[app.lineUserId] = app;
+  save(K_APPLY, all);
+}
+
+function getApproved(lineUserId){
+  const all = load(K_APPROVED, {});
+  return all[lineUserId] ?? null;
+}
+function setApproved(approved){
+  const all = load(K_APPROVED, {});
+  all[approved.lineUserId] = approved;
+  save(K_APPROVED, all);
+}
+
+function setMemberSession(lineUserId, memberId){
+  save(K_MEMBER_SESSION, { lineUserId, memberId, loginAt: nowISO() });
+}
+function getMemberSession(){
+  return load(K_MEMBER_SESSION, null);
+}
+function clearMemberSession(){
+  localStorage.removeItem(K_MEMBER_SESSION);
+}
+
+// ===== GAS API（JSONP）=====
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+
+function jsonp(url){
+  return new Promise((resolve, reject)=>{
+    const cb = "cb_" + Math.random().toString(36).slice(2);
+    window[cb] = (data)=>{
+      try{ delete window[cb]; }catch(_){}
+      script.remove();
+      resolve(data);
+    };
+    const script = document.createElement("script");
+    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
+    script.onerror = ()=>{
+      try{ delete window[cb]; }catch(_){}
+      script.remove();
+      reject(new Error("jsonp_failed"));
+    };
+    document.body.appendChild(script);
+  });
+}
+
+function gasUrl(action, params={}){
+  const u = new URL(GAS_URL);
+  u.searchParams.set("action", action);
+  Object.entries(params).forEach(([k,v])=>u.searchParams.set(k, v));
+  return u.toString();
+}
+
+async function gasApply(app){
+  return await jsonp(gasUrl("apply", app));
+}
+async function gasStatus(lineUserId){
+  return await jsonp(gasUrl("status", { lineUserId }));
+}
+async function gasVerify(lineUserId, memberId, pin){
+  return await jsonp(gasUrl("verify", { lineUserId, memberId, pin }));
+}

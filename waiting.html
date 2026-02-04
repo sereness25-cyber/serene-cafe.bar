@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>確認中｜セレネス</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+  <style>
+    .steps{display:grid; gap:10px}
+    .stepNo{
+      width:28px;height:28px;border-radius:999px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:var(--pri-soft); border:1px solid #f2c7b6; color:#8a3f28;
+      font-weight:800; flex:0 0 auto;
+    }
+    .stepRow{display:flex; gap:10px; align-items:flex-start}
+    .stepBody{flex:1}
+    .callout{
+      background:#fff3ec;
+      border:1px solid #f1c7b4;
+      border-radius:12px;
+      padding:12px 14px;
+      color:#7a3f2b;
+      line-height:1.75;
+    }
+    .mutedBox{
+      background:#fffdfb;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+    }
+    .bigTitle{
+      font-size:20px;
+      font-weight:900;
+      margin:0 0 6px;
+      color:#4a3228;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">紹介サービス｜セレネス</div>
+    <nav>
+      <a class="btn ghost" href="index.html">ホーム</a>
+      <a class="btn ghost" href="login.html">ログイン</a>
+      <span data-auth class="row"></span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>仮登録ありがとうございます</h1>
+
+  <div class="grid cols2">
+    <section class="card">
+      <div class="bigTitle">確認中です（審査中）</div>
+
+      <div class="callout">
+        LINE連携と新規登録の申請を受け付けました。<br>
+        <strong>担当者よりLINEでご連絡しますので、しばらくお待ちください。</strong><br><br>
+        ※ご連絡まで少しお時間をいただく場合があります。<br>
+        （迷惑メッセージ防止・本人確認のため、事前に確認を行っています）
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row">
+        <a class="btn primary" href="index.html">ホームへ戻る</a>
+        <a class="btn" href="login.html">ログイン画面</a>
+      </div>
+
+      <p class="small" style="margin-top:10px">
+        連絡が届かない場合は、LINEの通知設定やトーク一覧をご確認ください。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>ご利用開始までの流れ</h2>
+
+      <div class="steps">
+        <div class="stepRow">
+          <div class="stepNo">1</div>
+          <div class="stepBody">
+            <div style="font-weight:800">新規登録（完了）</div>
+            <div class="small">LINE連携＋基本情報の申請を受け付けました。</div>
+          </div>
+        </div>
+
+        <div class="stepRow">
+          <div class="stepNo">2</div>
+          <div class="stepBody">
+            <div style="font-weight:800">担当者からLINEでご連絡</div>
+            <div class="small">内容確認のため、担当者がLINEでご連絡します。（必要に応じて確認事項をお伺いします）</div>
+          </div>
+        </div>
+
+        <div class="stepRow">
+          <div class="stepNo">3</div>
+          <div class="stepBody">
+            <div style="font-weight:800">面談（対面 または オンライン）</div>
+            <div class="small">安心・安全のため、本人確認を行います。ご希望に合わせて対面またはオンラインで実施します。</div>
+          </div>
+        </div>
+
+        <div class="stepRow">
+          <div class="stepNo">4</div>
+          <div class="stepBody">
+            <div style="font-weight:800">ID発行（本人確認完了後）</div>
+            <div class="small"><strong>ログイン用のID</strong>を発行し、LINEでお送りします。</div>
+          </div>
+        </div>
+
+        <div class="stepRow">
+          <div class="stepNo">5</div>
+          <div class="stepBody">
+            <div style="font-weight:800">利用開始</div>
+            <div class="small">LINE連携＋発行されたIDでログインできるようになります。（会員ページ・掲示板などが利用可能）</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>安心してご利用いただくために</h2>
+      <div class="mutedBox">
+        <p style="margin:0">
+          セレネスでは、安心して出会い・相談ができる環境を守るため、<br>
+          <strong>面談による本人確認 → ID発行 → 利用開始</strong>の流れを採用しています。<br><br>
+          「登録したらすぐ使える」よりも、<strong>安全性と信頼性</strong>を大切にしたい方に向けた仕組みです。
+        </p>
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>よくある質問</h2>
+      <div class="list">
+        <div class="item">
+          <div style="font-weight:800">Q. いつ連絡が来ますか？</div>
+          <div class="small">A. 担当者より順番にご連絡します。混雑状況によって前後します。</div>
+        </div>
+        <div class="item">
+          <div style="font-weight:800">Q. 先に会員ページへ入れますか？</div>
+          <div class="small">A. 本人確認とID発行が完了するまで、会員ページはご利用いただけません。</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+  // すでに「承認済み」セッション（例：運用で将来追加）を検知できるなら、
+  // ここで member.html に飛ばす…なども可能。
+  // いまは「勝手に会員ページへ入れない」方針なので何もしません。
+  </script>
+</main>
+</body>
+</html>

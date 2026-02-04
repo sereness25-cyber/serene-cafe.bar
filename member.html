@@ -57,6 +57,43 @@
 
   <script>
   document.addEventListener("DOMContentLoaded", async () => {
+/* ===== 管理者用：LINE userId 表示 ===== */
+const adminBox = document.createElement("div");
+adminBox.style.margin = "12px 0";
+adminBox.style.padding = "10px";
+adminBox.style.border = "1px dashed #e2b8a2";
+adminBox.style.background = "#fff7f2";
+adminBox.style.borderRadius = "12px";
+adminBox.innerHTML = `
+  <b>管理者用 LINE userId</b><br>
+  <span id="myLineUid" style="font-family:monospace"></span>
+  <button id="copyUid" style="margin-left:8px">コピー</button>
+`;
+document.querySelector("main").prepend(adminBox);
+
+// LINEログイン必須（すでにある前提）
+const s = requireLineLogin();
+if(!s) return;
+
+// 表示
+document.getElementById("myLineUid").textContent = s.lineUserId;
+
+// コピー
+document.getElementById("copyUid").addEventListener("click", async ()=>{
+  await navigator.clipboard.writeText(s.lineUserId);
+  alert("LINE userId をコピーしました");
+});
+
+// ===== 必須チェック：LINE + IDログイン済みでないと入れない =====
+const s = requireLineLogin();
+if(!s) return;
+
+const ms = getMemberSession();
+if(!ms || ms.lineUserId !== s.lineUserId){
+  // IDログインしていない、または別LINE
+  location.replace("login.html");
+  return;
+}
     const hint = document.getElementById("hint");
 
     // 1) まずLIFFで userId を取って session を補完する

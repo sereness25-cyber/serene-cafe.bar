@@ -61,6 +61,32 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const btnLine = document.getElementById("btnLine");
   const formId = document.getElementById("formId");
 
+formId.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  const memberId = document.getElementById("memberId").value.trim();
+  const pin = document.getElementById("pin").value.trim();
+
+  if(!memberId || !pin){
+    alert("会員IDとPINを入力してください");
+    return;
+  }
+
+  // ===== 6-B：GASで照合 =====
+  const vr = await gasVerify(lineUserId, memberId, pin);
+
+  if(!vr.ok){
+    alert("会員IDまたはPINが違うか、承認が完了していません。");
+    return;
+  }
+
+  // OK → 会員セッション作成
+  setMemberSession(lineUserId, memberId);
+
+  // 会員ページへ
+  location.replace("member.html");
+});
+
   // クリックでLINEログイン
   btnLine.addEventListener("click", async ()=>{
     const r = await initLIFF();
@@ -79,9 +105,37 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
 
   // LINEプロフィール取得
-  const profile = await getLineProfileSafe();
-  const lineUserId = profile.userId;
+const profile = await getLineProfileSafe();
+const lineUserId = profile.userId;
 
+// ===== 6-A：承認状態チェック =====
+const st = await gasStatus(lineUserId);
+
+if(!st.ok){
+  msg.textContent = "状態確認に失敗しました。しばらくして再度お試しください。";
+  return;
+}
+
+if(!st.exists){
+  msg.textContent = "申請がありません。新規登録ページへ移動します…";
+  location.replace("register.html");
+  return;
+}
+
+if(st.status !== "approved"){
+  msg.textContent = "現在、確認中です。担当者からの連絡をお待ちください。";
+  location.replace("waiting.html");
+  return;
+}
+
+// ★ここまで来たら「承認済み」
+msg.innerHTML = `
+  承認済みです。<br>
+  <strong>会員IDとPIN</strong>を入力してください。
+`;
+
+// ID入力フォームを表示
+document.getElementById("formId").style.display = "block";
   // LINEセッションは保持（本人確認のためのキー）
   setLineSession(lineUserId);
 
