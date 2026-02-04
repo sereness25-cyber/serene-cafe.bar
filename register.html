@@ -4,20 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>新規登録（LINE連携）</title>
-  <link rel="stylesheet" href="styles.css" />
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script defer src="liff-config.js"></script>
   <script defer src="app.js"></script>
 </head>
+
 <body>
 <header>
   <div class="wrap">
     <div class="brand">紹介サービス｜セレネス</div>
-    <nav>
-      <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="board.html">掲示板</a>
-      <span data-auth class="row"></span>
+    <nav class="row">
+      <a class="btn" href="index.html">ホーム</a>
+      <a class="btn" href="login.html">ログイン</a>
     </nav>
   </div>
 </header>
@@ -25,12 +24,27 @@
 <main>
   <h1>新規登録（LINE連携）</h1>
 
-  <section class="card" style="max-width:680px">
-    <div id="lineBox" class="item">LINE認証中…</div>
+  <section class="card" style="max-width:720px">
+    <div id="lineBox" class="ok">LINE認証中…</div>
 
-    <form id="formRegister" style="display:none; margin-top:12px">
+    <div class="hr"></div>
+
+    <div class="small">
+      <strong>安心して利用していただくために</strong><br>
+      当サービスは、なりすまし等を防ぐため、<b>面談での本人確認後に会員IDを発行</b>してから利用開始となります。<br>
+      登録フォーム送信だけでは、会員ページには入れません。
+      <ol>
+        <li>新規登録（LINE連携＋基本情報入力）</li>
+        <li>担当者からご連絡（面談日程の調整）</li>
+        <li>面談（対面 or オンライン）で本人確認</li>
+        <li>会員ID発行</li>
+        <li>利用開始（LINE連携＋会員IDでログイン）</li>
+      </ol>
+    </div>
+
+    <form id="formRegister" style="display:none; margin-top:14px">
       <label>名前</label>
-      <input id="name" required placeholder="例：竹内 圭" />
+      <input id="name" required placeholder="例：山田 太郎" />
 
       <div class="grid cols2">
         <div>
@@ -44,7 +58,7 @@
       </div>
 
       <div class="row" style="margin-top:14px">
-        <button class="btn primary" type="submit">登録する</button>
+        <button class="btn primary" type="submit">申請する（運営へ送信）</button>
         <a class="btn" href="index.html">戻る</a>
       </div>
 
@@ -52,48 +66,113 @@
         ※電話番号はLINEから取得できないため、入力していただきます。
       </p>
     </form>
+
+    <div id="doneBox" class="done" style="display:none; margin-top:14px">
+      <b>申請を受け付けました。</b><br>
+      担当者からご連絡しますので、お待ちください。<br><br>
+      <div class="small" style="margin:0">
+        <b>この後の流れ</b><br>
+        ① 面談日程の調整 → ② 面談（本人確認）→ ③ 会員ID発行 → ④ 利用開始
+      </div>
+    </div>
   </section>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async ()=>{
   const lineBox = document.getElementById("lineBox");
   const form = document.getElementById("formRegister");
+  const doneBox = document.getElementById("doneBox");
 
-  const r = await ensureLineLogin();
-  if(!r.ok) return;
-
-  const profile = await getLineProfileSafe();
-  const lineUserId = profile.userId;
-
-  // 既に登録済みならログイン扱いで会員ページへ
-  const existing = getMember(lineUserId);
-  if(existing){
-    setLineSession(lineUserId);
-    location.href = "member.html";
+  // 1) LIFF初期化
+  const r = await initLIFF();
+  if(!r.ok){
+    lineBox.textContent = r.msg;
     return;
   }
 
-  lineBox.innerHTML = `
-    <div><strong>LINE連携OK</strong></div>
-    <div class="small">LINE表示名：${escapeHtml(profile.displayName || "")}</div>
-  `;
+  // 2) LINE未ログインならログインへ
+  if(!liff.isLoggedIn()){
+  liff.login({ redirectUri: window.location.href });
+  return;
+}
 
-  document.getElementById("name").value = profile.displayName || "";
+  // 3) LINEプロフィール取得
+  const profile = await getLineProfileSafe();
+  const lineUserId = profile.userId;
+
+  // 4) 既に「申請済み」をローカルに残しておく（同端末向けの簡易ガード）
+  const K_APPLY = "ma_applications"; // { [lineUserId]: {status, ...} }
+  const all = load(K_APPLY, {});
+  if(all[lineUserId]?.status === "pending"){
+    lineBox.innerHTML = `申請済みです。<br>担当者からの連絡をお待ちください。`;
+    doneBox.style.display = "block";
+    return;
+  }
+
+  // 5) フォーム表示
+  lineBox.textContent = `LINE連携OK：${profile.displayName || "ユーザー"} さん。申請情報を入力してください。`;
   form.style.display = "block";
 
-  form.addEventListener("submit", (e) => {
+  // 6) 送信（運営へLINE通知）→ 申請済み表示
+  form.addEventListener("submit", async (e)=>{
     e.preventDefault();
-    upsertMember({
+
+    const name  = document.getElementById("name").value.trim();
+    const age   = document.getElementById("age").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if(!name || !age || !phone){
+      alert("名前・年齢・電話番号を入力してください");
+      return;
+    }
+
+    // (A) まずローカルに「申請中」を保存（同端末で二重申請しにくくするだけの簡易策）
+    all[lineUserId] = {
+      status: "pending",
       lineUserId,
       displayName: profile.displayName || "",
-      name: document.getElementById("name").value.trim(),
-      age: document.getElementById("age").value,
-      phone: document.getElementById("phone").value.trim(),
-      createdAt: new Date().toISOString()
-    });
-    setLineSession(lineUserId);
-    alert("登録しました！");
-    location.href = "member.html";
+      name, age, phone,
+      appliedAt: nowISO()
+    };
+    save(K_APPLY, all);
+
+    // (B) 運営へLINE通知
+    // 重要：公式LINE（トーク）やリッチメニューからLIFFを開いている場合、
+    // liff.sendMessages()で「今開いてるトーク」に送信できます。  [oai_citation:1‡LINE Developers](https://developers.line.biz/ja/docs/liff/developing-liff-apps/?utm_source=chatgpt.com)
+    try{
+      if(!liff.isInClient()){
+        // 外部ブラウザだと送れないケースがあるので、案内だけ出す
+        throw new Error("LINEアプリ内で開いていないため送信できません");
+      }
+
+      const text =
+`【新規登録申請（セレネス）】
+LINE表示名：${profile.displayName || ""}
+名前：${name}
+年齢：${age}
+電話：${phone}
+LINE userId：${lineUserId}
+申請日時：${new Date().toLocaleString("ja-JP")}
+
+（面談→本人確認→会員ID発行後に利用開始）`;
+
+      await liff.sendMessages([{ type:"text", text }]); // 現在のトークに送信  [oai_citation:2‡LINE Developers](https://developers.line.biz/ja/docs/liff/developing-liff-apps/?utm_source=chatgpt.com)
+
+      // 画面表示
+      form.style.display = "none";
+      lineBox.textContent = "送信しました。担当者からの連絡をお待ちください。";
+      doneBox.style.display = "block";
+
+      // 必要なら閉じる（LINE内で閉じられます）  [oai_citation:3‡LINE Developers](https://developers.line.biz/ja/reference/liff/)
+      // liff.closeWindow();
+
+    }catch(err){
+      console.error(err);
+      alert(
+        "申請は保存しましたが、運営へのLINE送信に失敗しました。\n" +
+        "公式LINEのトーク（またはリッチメニュー）から開き直して、もう一度送信してください。"
+      );
+    }
   });
 });
 </script>

@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   btnLine.addEventListener("click", async ()=>{
     const r = await initLIFF();
     if(!r.ok) return alert(r.msg);
-    if(!liff.isLoggedIn()) liff.login();
+    if(!liff.isLoggedIn()) liff.login({ redirectUri: window.location.href });
   });
 
   // LIFF初期化
