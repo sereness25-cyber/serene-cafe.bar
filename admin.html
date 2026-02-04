@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>管理者ページ｜セレネス</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+  <style>
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 14px}
+    .tab{padding:10px 12px; border:1px solid var(--line); background:#fff; border-radius:12px; cursor:pointer}
+    .tab.active{background:var(--pri-soft); border-color:#f2c7b6}
+    .table{width:100%; border-collapse:collapse; background:#fffdfb; border:1px solid var(--line); border-radius:14px; overflow:hidden}
+    .table th,.table td{padding:10px 10px; border-bottom:1px solid var(--line); text-align:left; font-size:13px; vertical-align:top}
+    .table th{background:#fff3ec; color:#5a3e32; font-weight:800}
+    .table tr:last-child td{border-bottom:none}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px}
+    .danger{background:#fff1f1; border-color:#fecaca}
+    .btn.danger{border-color:#fecaca; background:#fff; color:#7f1d1d}
+    .btn.danger:hover{background:#fff1f1}
+    .pill{display:inline-flex; gap:6px; align-items:center; padding:3px 8px; border-radius:999px; border:1px solid var(--line); background:#fff}
+    .right{display:flex; justify-content:flex-end}
+    .grow{flex:1}
+    textarea.export{min-height:220px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">管理者ページ｜セレネス</div>
+    <nav>
+      <a class="btn ghost" href="index.html">ホーム</a>
+      <a class="btn ghost" href="member.html">会員ページ</a>
+      <a class="btn ghost" href="board.html">掲示板</a>
+      <span data-auth class="row"></span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>admin.html（管理者専用）</h1>
+
+  <section class="card">
+    <h2>管理者チェック</h2>
+    <p class="small">
+      管理者の判定は、<strong>①LINEユーザーIDの許可リスト</strong> か <strong>②管理PIN</strong> のどちらかで通過できます。
+    </p>
+
+    <div class="grid cols2">
+      <div class="item">
+        <div style="font-weight:800">① LINEユーザーID許可リスト（おすすめ）</div>
+        <p class="small">あなたのLINE userIdを ADMIN_LINE_USER_IDS に入れてください。</p>
+        <div class="mono">ADMIN_LINE_USER_IDS = ["Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]</div>
+      </div>
+      <div class="item">
+        <div style="font-weight:800">② 管理PIN（予備）</div>
+        <p class="small">PINは localStorage に保存されます（手軽版）。公開運用ではサーバ側認証が推奨です。</p>
+        <div class="row">
+          <input id="pinInput" class="grow" placeholder="管理PINを入力" />
+          <button class="btn primary" id="btnPin">PINで入る</button>
+        </div>
+        <p class="small">※PINは初回だけ「設定」もできます（下のボタン）。</p>
+        <div class="row">
+          <button class="btn" id="btnSetPin">PINを設定/変更</button>
+          <button class="btn danger" id="btnClearPin">PINを削除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+    <div id="guardMsg" class="notice">チェック中…</div>
+  </section>
+
+  <section class="card" id="adminArea" style="display:none">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">管理メニュー</h2>
+      <div class="row">
+        <button class="btn" id="btnRefresh">更新</button>
+        <button class="btn" id="btnExport">JSONエクスポート</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="members">会員</button>
+      <button class="tab" data-tab="posts">投稿</button>
+      <button class="tab" data-tab="replies">返信</button>
+      <button class="tab" data-tab="tools">ツール</button>
+    </div>
+
+    <!-- 会員 -->
+    <div id="panel-members">
+      <div class="row" style="margin-bottom:10px">
+        <input id="memberSearch" class="grow" placeholder="検索：投稿名 / 登録名 / LINE表示名 / 電話" />
+      </div>
+      <div class="item" style="overflow:auto">
+        <table class="table" id="membersTable"></table>
+      </div>
+    </div>
+
+    <!-- 投稿 -->
+    <div id="panel-posts" style="display:none">
+      <div class="row" style="margin-bottom:10px">
+        <input id="postSearch" class="grow" placeholder="検索：タイトル / 本文 / 投稿者" />
+      </div>
+      <div class="item" style="overflow:auto">
+        <table class="table" id="postsTable"></table>
+      </div>
+    </div>
+
+    <!-- 返信 -->
+    <div id="panel-replies" style="display:none">
+      <div class="row" style="margin-bottom:10px">
+        <input id="replySearch" class="grow" placeholder="検索：本文 / 返信者 / @宛先" />
+      </div>
+      <div class="item" style="overflow:auto">
+        <table class="table" id="repliesTable"></table>
+      </div>
+    </div>
+
+    <!-- ツール -->
+    <div id="panel-tools" style="display:none">
+      <div class="grid cols2">
+        <div class="item">
+          <div style="font-weight:800">バックアップ（JSON）</div>
+          <p class="small">エクスポート内容がここに出ます。コピーして保管してください。</p>
+          <textarea class="export" id="exportBox" placeholder="ここにJSONが出ます" readonly></textarea>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnCopy">コピー</button>
+            <button class="btn" id="btnDownload">download.json を作る</button>
+          </div>
+        </div>
+
+        <div class="item danger">
+          <div style="font-weight:900">危険操作</div>
+          <p class="small">削除は取り消せません（localStorageから消えます）。</p>
+          <div class="row">
+            <button class="btn danger" id="btnClearPosts">投稿を全削除</button>
+            <button class="btn danger" id="btnClearReplies">返信を全削除</button>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn danger" id="btnClearMembers">会員を全削除</button>
+            <button class="btn danger" id="btnClearAll">全部初期化</button>
+          </div>
+          <p class="small">※「全部初期化」は会員/投稿/返信/プロフィール/セッションを消します。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<script>
+/* =======================
+   管理者ガード設定
+   ======================= */
+
+// ★おすすめ：あなたのLINE userIdをここに入れる
+// 例）const ADMIN_LINE_USER_IDS = ["Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"];
+const ADMIN_LINE_USER_IDS = [
+  // "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+];
+
+const K_ADMIN_PIN = "ma_admin_pin";
+const K_ADMIN_OK  = "ma_admin_ok"; // "1"ならPIN通過済み
+
+function isAdminByLine(){
+  const s = getLineSession();
+  if(!s) return false;
+  return ADMIN_LINE_USER_IDS.includes(s.lineUserId);
+}
+function isAdminByPin(){
+  return localStorage.getItem(K_ADMIN_OK) === "1";
+}
+function setAdminOk(){ localStorage.setItem(K_ADMIN_OK, "1"); }
+function clearAdminOk(){ localStorage.removeItem(K_ADMIN_OK); }
+
+function guardPass(){
+  document.getElementById("adminArea").style.display = "block";
+  document.getElementById("guardMsg").textContent = "管理者としてログイン済みです。";
+  renderAll();
+}
+function guardFail(msg){
+  document.getElementById("adminArea").style.display = "none";
+  document.getElementById("guardMsg").textContent = msg;
+}
+
+function checkGuard(){
+  // まず会員ログイン必須（セッションがないと管理できない）
+  const s = getLineSession();
+  if(!s){
+    guardFail("ログインが必要です。先に login.html でLINEログインしてください。");
+    return;
+  }
+
+  if(isAdminByLine() || isAdminByPin()){
+    guardPass();
+    return;
+  }
+
+  guardFail("管理者権限がありません。ADMIN_LINE_USER_IDS の設定 or 管理PINで入ってください。");
+}
+
+/* =======================
+   データ読み込み（localStorage）
+   ======================= */
+
+function getAllMembers(){
+  return load("ma_members", {});
+}
+function getAllProfiles(){
+  return load("ma_profile", {});
+}
+function getAllPosts(){
+  return load("ma_board_posts", []);
+}
+function getAllReplies(){
+  return load("ma_board_replies", []);
+}
+
+function posterName(lineUserId){
+  const profiles = getAllProfiles();
+  const p = profiles[lineUserId];
+  if(p && p.handle && p.handle.trim()) return p.handle.trim();
+
+  const members = getAllMembers();
+  const m = members[lineUserId];
+  if(m && m.name && m.name.trim()) return m.name.trim();
+  if(m && m.displayName && m.displayName.trim()) return m.displayName.trim();
+
+  return "会員";
+}
+
+/* =======================
+   レンダリング
+   ======================= */
+
+function renderMembers(){
+  const q = (document.getElementById("memberSearch").value || "").trim().toLowerCase();
+  const members = getAllMembers();
+  const profiles = getAllProfiles();
+
+  const rows = Object.values(members).map(m=>{
+    const p = profiles[m.lineUserId] || {};
+    return {
+      lineUserId: m.lineUserId,
+      displayName: m.displayName || "",
+      name: m.name || "",
+      age: m.age || "",
+      phone: m.phone || "",
+      handle: p.handle || "",
+      area: p.area || "",
+      createdAt: m.createdAt || ""
+    };
+  }).filter(r=>{
+    if(!q) return true;
+    const blob = `${r.displayName} ${r.name} ${r.phone} ${r.handle} ${r.area} ${r.lineUserId}`.toLowerCase();
+    return blob.includes(q);
+  });
+
+  const t = document.getElementById("membersTable");
+  t.innerHTML = `
+    <tr>
+      <th>投稿名</th>
+      <th>登録名</th>
+      <th>LINE表示名</th>
+      <th>年齢</th>
+      <th>電話</th>
+      <th class="mono">lineUserId</th>
+      <th>登録日</th>
+    </tr>
+    ${rows.map(r=>`
+      <tr>
+        <td><span class="pill">${escapeHtml(r.handle || "未設定")}</span></td>
+        <td>${escapeHtml(r.name)}</td>
+        <td>${escapeHtml(r.displayName)}</td>
+        <td>${escapeHtml(r.age)}</td>
+        <td>${escapeHtml(r.phone)}</td>
+        <td class="mono">${escapeHtml(r.lineUserId)}</td>
+        <td class="mono">${escapeHtml(r.createdAt)}</td>
+      </tr>
+    `).join("")}
+  `;
+}
+
+function renderPosts(){
+  const q = (document.getElementById("postSearch").value || "").trim().toLowerCase();
+  const posts = getAllPosts().slice().sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
+  const t = document.getElementById("postsTable");
+
+  const rows = posts.map(p=>{
+    const name = posterName(p.lineUserId);
+    return { ...p, name };
+  }).filter(r=>{
+    if(!q) return true;
+    const blob = `${r.title} ${r.body} ${r.name}`.toLowerCase();
+    return blob.includes(q);
+  });
+
+  t.innerHTML = `
+    <tr>
+      <th>タイトル</th>
+      <th>本文</th>
+      <th>投稿者</th>
+      <th>日時</th>
+      <th>操作</th>
+    </tr>
+    ${rows.map(p=>`
+      <tr>
+        <td style="min-width:160px"><strong>${escapeHtml(p.title)}</strong></td>
+        <td style="min-width:260px; white-space:pre-wrap">${escapeHtml(p.body)}</td>
+        <td><span class="pill">${escapeHtml(p.name)}</span></td>
+        <td class="mono">${escapeHtml(p.createdAt || "")}</td>
+        <td>
+          <button class="btn danger" data-del-post="${escapeHtml(p.id)}">削除</button>
+        </td>
+      </tr>
+    `).join("")}
+  `;
+
+  // bind delete
+  t.querySelectorAll("[data-del-post]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-del-post");
+      if(!confirm("この投稿を削除しますか？")) return;
+      // 管理者削除：lineUserIdを問わず消す
+      const posts2 = getAllPosts().filter(x=> x.id !== id);
+      save("ma_board_posts", posts2);
+      renderPosts();
+    });
+  });
+}
+
+function renderReplies(){
+  const q = (document.getElementById("replySearch").value || "").trim().toLowerCase();
+  const replies = getAllReplies().slice().sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
+  const t = document.getElementById("repliesTable");
+
+  const rows = replies.map(r=>{
+    const name = posterName(r.lineUserId);
+    const toName = (r.replyTo && r.replyTo.name) ? r.replyTo.name : "";
+    return { ...r, name, toName };
+  }).filter(r=>{
+    if(!q) return true;
+    const blob = `${r.body} ${r.name} ${r.toName}`.toLowerCase();
+    return blob.includes(q);
+  });
+
+  t.innerHTML = `
+    <tr>
+      <th>本文</th>
+      <th>返信者</th>
+      <th>@宛先</th>
+      <th>postId</th>
+      <th>日時</th>
+      <th>操作</th>
+    </tr>
+    ${rows.map(r=>`
+      <tr>
+        <td style="min-width:260px; white-space:pre-wrap">${escapeHtml(r.body)}</td>
+        <td><span class="pill">${escapeHtml(r.name)}</span></td>
+        <td>${r.toName ? `<span class="pill">@${escapeHtml(r.toName)}</span>` : `<span class="small">-</span>`}</td>
+        <td class="mono">${escapeHtml(r.postId || "")}</td>
+        <td class="mono">${escapeHtml(r.createdAt || "")}</td>
+        <td>
+          <button class="btn danger" data-del-reply="${escapeHtml(r.id)}">削除</button>
+        </td>
+      </tr>
+    `).join("")}
+  `;
+
+  t.querySelectorAll("[data-del-reply]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-del-reply");
+      if(!confirm("この返信を削除しますか？")) return;
+      const next = getAllReplies().filter(x=> x.id !== id);
+      save("ma_board_replies", next);
+      renderReplies();
+    });
+  });
+}
+
+function renderAll(){
+  renderMembers();
+  renderPosts();
+  renderReplies();
+}
+
+/* =======================
+   タブ切替
+   ======================= */
+
+function setTab(name){
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.classList.toggle("active", t.dataset.tab === name);
+  });
+  ["members","posts","replies","tools"].forEach(k=>{
+    document.getElementById("panel-"+k).style.display = (k===name) ? "block" : "none";
+  });
+}
+
+/* =======================
+   ツール：エクスポート/危険操作
+   ======================= */
+
+function makeExport(){
+  const data = {
+    exportedAt: nowISO(),
+    members: getAllMembers(),
+    profiles: getAllProfiles(),
+    posts: getAllPosts(),
+    replies: getAllReplies(),
+  };
+  return JSON.stringify(data, null, 2);
+}
+
+function downloadText(filename, text){
+  const blob = new Blob([text], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* =======================
+   PIN
+   ======================= */
+
+function getPin(){ return localStorage.getItem(K_ADMIN_PIN) || ""; }
+function setPin(pin){ localStorage.setItem(K_ADMIN_PIN, pin); }
+function clearPin(){ localStorage.removeItem(K_ADMIN_PIN); clearAdminOk(); }
+
+function pinEnter(pin){
+  const saved = getPin();
+  if(!saved){
+    alert("まだPINが設定されていません。先にPINを設定してください。");
+    return;
+  }
+  if(pin === saved){
+    setAdminOk();
+    alert("PIN認証OK");
+    checkGuard();
+  }else{
+    alert("PINが違います");
+  }
+}
+
+/* =======================
+   init
+   ======================= */
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  // tabs
+  document.getElementById("tabs").addEventListener("click", (e)=>{
+    const b = e.target.closest(".tab");
+    if(!b) return;
+    setTab(b.dataset.tab);
+  });
+
+  // search
+  document.getElementById("memberSearch").addEventListener("input", renderMembers);
+  document.getElementById("postSearch").addEventListener("input", renderPosts);
+  document.getElementById("replySearch").addEventListener("input", renderReplies);
+
+  // refresh/export
+  document.getElementById("btnRefresh").addEventListener("click", renderAll);
+  document.getElementById("btnExport").addEventListener("click", ()=>{
+    setTab("tools");
+    document.getElementById("exportBox").value = makeExport();
+  });
+
+  document.getElementById("btnCopy").addEventListener("click", async ()=>{
+    const text = document.getElementById("exportBox").value;
+    if(!text) return alert("先にエクスポートしてください");
+    await navigator.clipboard.writeText(text);
+    alert("コピーしました");
+  });
+
+  document.getElementById("btnDownload").addEventListener("click", ()=>{
+    const text = document.getElementById("exportBox").value;
+    if(!text) return alert("先にエクスポートしてください");
+    downloadText("sereness-backup.json", text);
+  });
+
+  // danger ops
+  document.getElementById("btnClearPosts").addEventListener("click", ()=>{
+    if(!confirm("投稿を全削除しますか？")) return;
+    save("ma_board_posts", []);
+    renderPosts();
+  });
+  document.getElementById("btnClearReplies").addEventListener("click", ()=>{
+    if(!confirm("返信を全削除しますか？")) return;
+    save("ma_board_replies", []);
+    renderReplies();
+  });
+  document.getElementById("btnClearMembers").addEventListener("click", ()=>{
+    if(!confirm("会員を全削除しますか？（プロフィールも残ります）")) return;
+    save("ma_members", {});
+    renderMembers();
+  });
+  document.getElementById("btnClearAll").addEventListener("click", ()=>{
+    if(!confirm("全部初期化しますか？（会員/投稿/返信/プロフィール/セッション）")) return;
+    save("ma_members", {});
+    save("ma_profile", {});
+    save("ma_board_posts", []);
+    save("ma_board_replies", []);
+    localStorage.removeItem("ma_session");
+    alert("初期化しました。ログインからやり直してください。");
+    location.href = "login.html";
+  });
+
+  // pin buttons
+  document.getElementById("btnPin").addEventListener("click", ()=>{
+    const pin = document.getElementById("pinInput").value.trim();
+    pinEnter(pin);
+  });
+
+  document.getElementById("btnSetPin").addEventListener("click", ()=>{
+    const pin = prompt("新しい管理PINを設定（4桁以上推奨）");
+    if(!pin) return;
+    setPin(pin.trim());
+    alert("PINを設定しました");
+  });
+
+  document.getElementById("btnClearPin").addEventListener("click", ()=>{
+    if(!confirm("管理PINを削除しますか？")) return;
+    clearPin();
+    alert("PINを削除しました");
+    checkGuard();
+  });
+
+  // start
+  checkGuard();
+});
+</script>
+
+</main>
+</body>
+</html>

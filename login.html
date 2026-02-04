@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ログイン（LINE）</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script defer src="liff-config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">会員アプリ</div>
+    <nav>
+      <a class="btn ghost" href="index.html">ホーム</a>
+      <a class="btn ghost" href="board.html">掲示板</a>
+      <span data-auth class="row"></span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>ログイン（LINE）</h1>
+
+  <section class="card" style="max-width:640px">
+    <div id="msg" class="item">LINEログイン確認中…</div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn primary" id="btnLine">LINEでログイン</button>
+      <a class="btn" href="register.html">新規登録へ</a>
+    </div>
+  </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", async ()=>{
+  const msg = document.getElementById("msg");
+  const btn = document.getElementById("btnLine");
+
+  btn.addEventListener("click", async ()=>{
+    const r = await initLIFF();
+    if(!r.ok) return alert(r.msg);
+    if(!liff.isLoggedIn()) liff.login();
+  });
+
+  const r = await initLIFF();
+  if(!r.ok){ msg.textContent = r.msg; return; }
+
+  if(!liff.isLoggedIn()){
+    msg.textContent = "LINEでログインしてください。";
+    return;
+  }
+
+  const profile = await getLineProfileSafe();
+  const m = getMember(profile.userId);
+  if(!m){
+    msg.innerHTML = `未登録です。<br>「新規登録へ」から登録してください。`;
+    return;
+  }
+
+  setLineSession(profile.userId);
+  location.href = "member.html";
+});
+</script>
+</main>
+</body>
+</html>

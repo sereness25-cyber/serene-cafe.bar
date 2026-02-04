@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>掲示板</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+
+  <style>
+    .post{display:grid; gap:10px}
+    .replies{margin-top:10px; display:grid; gap:8px}
+    .reply{
+      padding:10px; border:1px solid var(--line); border-radius:12px; background:#fafafa;
+    }
+    .reply .meta{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:6px}
+    .replyForm{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+    .replyForm textarea{min-height:70px}
+    .replyForm .grow{flex:1; min-width:240px}
+    .miniBtn{padding:8px 10px; border-radius:10px}
+    details summary{cursor:pointer; user-select:none}
+    .toBadge{
+      display:inline-flex; padding:3px 8px; border-radius:999px;
+      border:1px solid #d1d5db; background:#fff; font-size:12px; color:#374151;
+      margin-bottom:6px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">紹介サービス｜セレネス</div>
+    <nav>
+      <a class="btn ghost" href="index.html">ホーム</a>
+      <a class="btn ghost" href="board.html">掲示板</a>
+      <span data-auth class="row"></span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>掲示板（会員限定）</h1>
+
+  <div class="grid cols2">
+    <section class="card">
+      <h2>投稿する</h2>
+      <div class="notice">
+        投稿者名は「プロフィールの投稿名」が表示されます。未設定の場合は 会員登録名 → LINE表示名 の順です。
+      </div>
+
+      <div class="hr"></div>
+
+      <div id="who" class="item">読み込み中…</div>
+
+      <form id="formPost" style="margin-top:12px">
+        <label>タイトル</label>
+        <input id="title" required maxlength="60" placeholder="例：はじめまして！" />
+
+        <label>本文</label>
+        <textarea id="body" required maxlength="2000" placeholder="例：自己紹介や、募集など"></textarea>
+
+        <div class="row" style="margin-top:14px">
+          <button class="btn primary" type="submit">投稿</button>
+          <a class="btn" href="profile.html">投稿名を設定</a>
+          <a class="btn" href="member.html">会員ページ</a>
+        </div>
+      </form>
+
+      <p class="small" style="margin-top:10px">
+        ※公開運用する場合は、通報・承認制・NGワードなどの対策を追加しましょう。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>投稿一覧</h2>
+      <div id="list" class="list"></div>
+    </section>
+  </div>
+
+<script>
+function posterName(lineUserId){
+  const p = loadProfile(lineUserId);
+  if(p && p.handle && p.handle.trim()) return p.handle.trim();
+
+  const m = getMember(lineUserId);
+  if(m && m.name && m.name.trim()) return m.name.trim();
+  if(m && m.displayName && m.displayName.trim()) return m.displayName.trim();
+
+  return "会員";
+}
+
+function render(){
+  const s = requireLineLogin(); if(!s) return;
+
+  const me = getMember(s.lineUserId);
+  if(!me){
+    alert("登録情報が見つかりません。新規登録をお願いします。");
+    location.href = "register.html";
+    return;
+  }
+
+  const myName = posterName(s.lineUserId);
+  document.getElementById("who").innerHTML = `
+    <div>あなたの投稿者名：<strong>${escapeHtml(myName)}</strong></div>
+    <div class="small">変更する場合は「投稿名を設定」へ</div>
+  `;
+
+  const posts = listPosts();
+  const box = document.getElementById("list");
+  box.innerHTML = posts.length ? "" : `<div class="item">まだ投稿がありません</div>`;
+
+  posts.forEach(p => {
+    const mine = (p.lineUserId === s.lineUserId);
+    const name = posterName(p.lineUserId);
+
+    const replies = listReplies(p.id);
+    const replyCount = replies.length;
+
+    const el = document.createElement("div");
+    el.className = "item post";
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-weight:800">${escapeHtml(p.title)}</div>
+          <div style="white-space:pre-wrap; margin-top:6px">${escapeHtml(p.body)}</div>
+          <div style="margin-top:8px" class="row">
+            <span class="badge">${escapeHtml(name)}</span>
+            <span class="small">${escapeHtml(p.createdAt || "")}</span>
+            <span class="small">返信：${replyCount}件</span>
+            <button class="btn miniBtn" data-reply-to-post="${p.id}" data-reply-to-name="${escapeHtml(name)}" data-reply-to-user="${escapeHtml(p.lineUserId)}">この投稿者に返信</button>
+          </div>
+        </div>
+        ${mine ? `<button class="btn miniBtn" data-del-post="${p.id}">削除</button>` : ``}
+      </div>
+
+      <details ${replyCount ? "open" : ""}>
+        <summary class="small">返信を見る / 書く</summary>
+
+        <div class="replies" data-replies="${p.id}">
+          ${replyCount ? replies.map(r => replyHTML(r, s.lineUserId)).join("") : `<div class="small">まだ返信がありません</div>`}
+        </div>
+
+        <div class="small" data-to-info="${p.id}" style="margin-top:10px; display:none"></div>
+
+        <form class="replyForm" data-reply-form="${p.id}">
+          <input type="hidden" data-to-name value="">
+          <input type="hidden" data-to-user value="">
+          <input type="hidden" data-to-replyid value="">
+          <textarea class="grow" required maxlength="1000" placeholder="返信を書く…"></textarea>
+          <button class="btn primary miniBtn" type="submit">返信</button>
+          <button class="btn miniBtn" type="button" data-cancel-to>宛先解除</button>
+        </form>
+      </details>
+    `;
+    box.appendChild(el);
+  });
+
+  // 投稿削除
+  box.querySelectorAll("[data-del-post]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const s2 = requireLineLogin(); if(!s2) return;
+      const id = btn.getAttribute("data-del-post");
+      deletePost(id, s2.lineUserId);
+      render();
+    });
+  });
+
+  // 宛先セット（投稿者へ）
+  box.querySelectorAll("[data-reply-to-post]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const postId = btn.getAttribute("data-reply-to-post");
+      const toName = btn.getAttribute("data-reply-to-name");
+      const toUser = btn.getAttribute("data-reply-to-user");
+      setReplyTo(postId, { name: toName, lineUserId: toUser, replyId: "" });
+    });
+  });
+
+  // 返信送信
+  box.querySelectorAll("[data-reply-form]").forEach(form=>{
+    form.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const s2 = requireLineLogin(); if(!s2) return;
+
+      const postId = form.getAttribute("data-reply-form");
+      const ta = form.querySelector("textarea");
+      const body = ta.value.trim();
+      if(!body) return;
+
+      const toName = form.querySelector("[data-to-name]").value;
+      const toUser = form.querySelector("[data-to-user]").value;
+      const toRid  = form.querySelector("[data-to-replyid]").value;
+
+      const replyTo = (toName || toUser || toRid)
+        ? { name: toName || "", lineUserId: toUser || "", replyId: toRid || "" }
+        : null;
+
+      addReply(postId, s2.lineUserId, body, replyTo);
+
+      ta.value = "";
+      clearReplyTo(postId);
+      render();
+    });
+
+    // 宛先解除
+    form.querySelector("[data-cancel-to]")?.addEventListener("click", ()=>{
+      const postId = form.getAttribute("data-reply-form");
+      clearReplyTo(postId);
+    });
+  });
+
+  // 返信削除
+  box.querySelectorAll("[data-del-reply]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const s2 = requireLineLogin(); if(!s2) return;
+      const rid = btn.getAttribute("data-del-reply");
+      deleteReply(rid, s2.lineUserId);
+      render();
+    });
+  });
+
+  // 返信の「この人に返信」ボタン
+  box.querySelectorAll("[data-reply-to-reply]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const postId = btn.getAttribute("data-post");
+      const toName = btn.getAttribute("data-to-name");
+      const toUser = btn.getAttribute("data-to-user");
+      const toRid  = btn.getAttribute("data-to-replyid");
+      setReplyTo(postId, { name: toName, lineUserId: toUser, replyId: toRid });
+    });
+  });
+}
+
+function setReplyTo(postId, to){
+  const form = document.querySelector(`[data-reply-form="${cssEscape(postId)}"]`);
+  const info = document.querySelector(`[data-to-info="${cssEscape(postId)}"]`);
+  if(!form || !info) return;
+
+  form.querySelector("[data-to-name]").value = to.name || "";
+  form.querySelector("[data-to-user]").value = to.lineUserId || "";
+  form.querySelector("[data-to-replyid]").value = to.replyId || "";
+
+  info.style.display = "block";
+  info.innerHTML = `<span class="toBadge">@${escapeHtml(to.name || "宛先")}</span> に返信中`;
+
+  // フォーカス
+  form.querySelector("textarea")?.focus();
+}
+
+function clearReplyTo(postId){
+  const form = document.querySelector(`[data-reply-form="${cssEscape(postId)}"]`);
+  const info = document.querySelector(`[data-to-info="${cssEscape(postId)}"]`);
+  if(!form || !info) return;
+
+  form.querySelector("[data-to-name]").value = "";
+  form.querySelector("[data-to-user]").value = "";
+  form.querySelector("[data-to-replyid]").value = "";
+
+  info.style.display = "none";
+  info.innerHTML = "";
+}
+
+function replyHTML(r, myLineUserId){
+  return `
+  <div class="reply ${mine ? "mine" : ""}">
+  const name = posterName(r.lineUserId);
+
+  const to = r.replyTo && (r.replyTo.name || r.replyTo.lineUserId || r.replyTo.replyId)
+    ? r.replyTo
+    : null;
+
+  const toLine = to ? `<div class="toBadge">@${escapeHtml(to.name || "宛先")}</div>` : "";
+
+  return `
+    <div class="reply">
+      ${toLine}
+      <div style="white-space:pre-wrap">${escapeHtml(r.body)}</div>
+      <div class="meta">
+        <span class="badge">${escapeHtml(name)}</span>
+        <span class="small">${escapeHtml(r.createdAt || "")}</span>
+        <button class="btn miniBtn"
+          data-reply-to-reply
+          data-post="${escapeHtml(r.postId)}"
+          data-to-name="${escapeHtml(name)}"
+          data-to-user="${escapeHtml(r.lineUserId)}"
+          data-to-replyid="${escapeHtml(r.id)}"
+        >この人に返信</button>
+        ${mine ? `<button class="btn miniBtn" data-del-reply="${escapeHtml(r.id)}">削除</button>` : ``}
+      </div>
+    </div>
+  `;
+}
+
+// CSS.escape が無い環境向けの簡易版
+function cssEscape(s){
+  return (s || "").replace(/"/g, '\\"');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const s = requireLineLogin(); if(!s) return;
+
+  document.getElementById("formPost").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const s2 = requireLineLogin(); if(!s2) return;
+
+    addPost(
+      s2.lineUserId,
+      document.getElementById("title").value.trim(),
+      document.getElementById("body").value.trim()
+    );
+
+    document.getElementById("title").value = "";
+    document.getElementById("body").value = "";
+    render();
+  });
+
+  render();
+});
+</script>
+
+</main>
+</body>
+</html>

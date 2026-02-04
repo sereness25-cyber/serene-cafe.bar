@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>プロフィール作成</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">紹介サービス｜セレネス</div>
+    <nav>
+      <a class="btn ghost" href="index.html">ホーム</a>
+      <a class="btn ghost" href="board.html">掲示板</a>
+      <span data-auth class="row"></span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>プロフィール作成</h1>
+
+  <section class="card" style="max-width:780px">
+    <div class="notice">
+      掲示板の「投稿者名」は、ここで設定した <strong>投稿名</strong> が表示されます（LINE表示名ではありません）。
+    </div>
+
+    <form id="formProfile" style="margin-top:12px">
+      <h2>掲示板用の表示</h2>
+      <label>投稿名（掲示板に表示される名前）</label>
+      <input id="handle" maxlength="20" placeholder="例：けい / セレネス好き" />
+
+      <div class="hr"></div>
+      <h2>希望条件（紹介のため）</h2>
+
+      <label>譲れない条件（最大6つまで推奨）</label>
+      <textarea id="must" placeholder="例：・喫煙しない　・休日の過ごし方　・金銭感覚　など"></textarea>
+
+      <label>希望エリア</label>
+      <input id="area" placeholder="例：秋田市 / 秋田県内 / 全国" />
+
+      <label>希望年齢</label>
+      <input id="ageRange" placeholder="例：30〜45" />
+
+      <label>自己紹介（任意）</label>
+      <textarea id="bio" placeholder="例：普段は仕事中心ですが、休日はカフェ巡りが好きです。"></textarea>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" type="submit">保存する</button>
+        <a class="btn" href="member.html">会員ページへ</a>
+        <a class="btn" href="board.html">掲示板へ</a>
+      </div>
+
+      <p class="small" style="margin-top:10px">
+        ※ここで保存した内容は、まずはブラウザ内（localStorage）に保存されます。
+      </p>
+    </form>
+  </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const s = requireLineLogin(); if(!s) return;
+
+  // 登録がない場合は登録へ
+  const m = getMember(s.lineUserId);
+  if(!m){
+    alert("登録情報が見つかりません。新規登録をお願いします。");
+    location.href = "register.html";
+    return;
+  }
+
+  // 既存プロフィールを読み込み
+  const p = loadProfile(s.lineUserId) || {};
+  document.getElementById("handle").value   = p.handle || "";
+  document.getElementById("must").value     = p.must || "";
+  document.getElementById("area").value     = p.area || "";
+  document.getElementById("ageRange").value = p.ageRange || "";
+  document.getElementById("bio").value      = p.bio || "";
+
+  document.getElementById("formProfile").addEventListener("submit", (e) => {
+    e.preventDefault();
+    saveProfile(s.lineUserId, {
+      handle: document.getElementById("handle").value.trim(),
+      must: document.getElementById("must").value.trim(),
+      area: document.getElementById("area").value.trim(),
+      ageRange: document.getElementById("ageRange").value.trim(),
+      bio: document.getElementById("bio").value.trim()
+    });
+    alert("保存しました！");
+    location.href = "member.html";
+  });
+});
+</script>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>会員ページ</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- LIFFをmemberでも使う（これでuserIdが確実に取れる） -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script defer src="liff-config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">紹介サービス｜セレネス</div>
+    <nav>
+      <a class="btn ghost" href="index.html">ホーム</a>
+      <a class="btn ghost" href="board.html">掲示板</a>
+      <span data-auth class="row"></span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>会員ページ</h1>
+
+  <!-- 管理者用：LINE userId 表示（管理者だけ表示） -->
+  <div id="adminUidBox" class="item" style="display:none">
+    <strong>管理者用 LINE userId：</strong>
+    <span id="adminUid" class="mono"></span>
+    <button class="btn" id="copyUid">コピー</button>
+  </div>
+
+  <div class="grid cols2">
+    <section class="card">
+      <h2>登録情報</h2>
+      <div id="info" class="item">読み込み中…</div>
+      <div class="hr"></div>
+      <div class="row">
+        <a class="btn primary" href="profile.html">プロフィール詳細</a>
+        <a class="btn" href="board.html">掲示板</a>
+      </div>
+      <p class="small" id="hint" style="margin-top:10px"></p>
+    </section>
+
+    <section class="card">
+      <h2>料金</h2>
+      <div class="item">
+        <div style="font-weight:800;font-size:18px">紹介 1回：5,000円</div>
+        <div class="small">入会費・月会費：無料</div>
+      </div>
+      <p class="small">この欄は後で「紹介履歴」「支払い状況」などを足せます。</p>
+    </section>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const hint = document.getElementById("hint");
+
+    // 1) まずLIFFで userId を取って session を補完する
+    const r = await initLIFF();
+    if(!r.ok){
+      hint.textContent = r.msg;
+      // LIFFが使えない環境でも、sessionがあれば続行
+    }else{
+      if(!liff.isLoggedIn()){
+        hint.textContent = "LINEでログインしてください（必要に応じてログイン画面へ移動します）";
+        // 必要ならログインへ
+        liff.login();
+        return;
+      }
+      const profile = await getLineProfileSafe();
+      // sessionが無いなら補完
+      if(!getLineSession()){
+        setLineSession(profile.userId);
+      }
+    }
+
+    // 2) ここからは “session前提” の既存ロジック
+    const s = getLineSession();
+    if(!s){
+      alert("ログイン状態を確認できませんでした。login.html からログインしてください。");
+      location.href = "login.html";
+      return;
+    }
+
+    const m = getMember(s.lineUserId);
+    if(!m){
+      document.getElementById("info").innerHTML = `
+        <div>登録情報が見つかりません。</div>
+        <div class="small">先に「新規登録」してください。</div>
+      `;
+      hint.textContent = "register.html から登録してください。";
+      return;
+    }
+
+    document.getElementById("info").innerHTML = `
+      <div><strong>${escapeHtml(m.displayName || "")}</strong>（LINE表示名）</div>
+      <div class="hr"></div>
+      <div>名前：${escapeHtml(m.name || "")}</div>
+      <div>年齢：${escapeHtml(m.age || "")}</div>
+      <div>電話：${escapeHtml(m.phone || "")}</div>
+      <div class="small" style="margin-top:8px">登録日：${escapeHtml(m.createdAt || "")}</div>
+    `;
+
+    // 3) 管理者だけ userId 表示（初回は空配列＝自分を管理者扱い）
+    const ADMIN_LINE_USER_IDS = [
+      // "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    ];
+
+    const isAdmin = ADMIN_LINE_USER_IDS.length === 0
+      ? true
+      : ADMIN_LINE_USER_IDS.includes(s.lineUserId);
+
+    if(isAdmin){
+      const box = document.getElementById("adminUidBox");
+      const span = document.getElementById("adminUid");
+      box.style.display = "block";
+      span.textContent = s.lineUserId;
+
+      document.getElementById("copyUid").addEventListener("click", async ()=>{
+        await navigator.clipboard.writeText(s.lineUserId);
+        alert("LINE userId をコピーしました");
+      });
+    }
+  });
+  </script>
+
+</main>
+</body>
+</html>

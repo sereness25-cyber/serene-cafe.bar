@@ -1,0 +1,260 @@
+:root{
+  /* ===== 温かみベースカラー ===== */
+  --bg:#fbf7f3;          /* 全体背景：やさしい生成り */
+  --card:#ffffff;        /* カード背景 */
+  --line:#eadfd6;        /* 罫線：薄いベージュ */
+
+  --text:#3b2f2a;        /* 文字：濃いブラウン */
+  --muted:#8a7b72;       /* 補足文字：くすみブラウン */
+
+  --pri:#d97757;         /* メイン：温かいテラコッタ */
+  --pri-soft:#fde6dd;    /* メイン淡色 */
+
+  --radius:14px;
+  --shadow:0 8px 24px rgba(90,60,40,.12);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP",
+    system-ui,
+    sans-serif;
+}
+
+/* ===== Header ===== */
+header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:#fffaf6;
+  border-bottom:1px solid var(--line);
+}
+
+.wrap{
+  max-width:1100px;
+  margin:0 auto;
+  padding:12px 16px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.brand{
+  font-weight:800;
+  letter-spacing:.02em;
+  color:#5a3e32;
+}
+
+nav{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+/* ===== Buttons ===== */
+a.btn,
+button.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--text);
+  text-decoration:none;
+  cursor:pointer;
+  transition:all .15s ease;
+}
+
+a.btn:hover,
+button.btn:hover{
+  background:#fff6f1;
+}
+
+a.btn.primary,
+button.btn.primary{
+  background:var(--pri);
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 4px 12px rgba(217,119,87,.35);
+}
+
+a.btn.primary:hover,
+button.btn.primary:hover{
+  background:#cf6b4b;
+}
+
+a.btn.ghost{
+  background:transparent;
+}
+
+a.btn:active,
+button.btn:active{
+  transform:translateY(1px);
+}
+
+/* ===== Layout ===== */
+main{
+  max-width:1100px;
+  margin:0 auto;
+  padding:20px 16px 48px;
+}
+
+.grid{
+  display:grid;
+  gap:16px;
+}
+
+@media(min-width:900px){
+  .grid.cols2{grid-template-columns:1fr 1fr}
+  .grid.cols3{grid-template-columns:1fr 1fr 1fr}
+}
+
+/* ===== Cards ===== */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
+}
+
+/* ===== Text ===== */
+h1{
+  font-size:22px;
+  margin:6px 0 16px;
+  color:#4a3228;
+}
+
+h2{
+  font-size:16px;
+  margin:0 0 10px;
+  color:#5a3e32;
+}
+
+p{
+  margin:8px 0;
+  color:var(--muted);
+  line-height:1.75;
+}
+
+.small{
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* ===== Utility ===== */
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.badge{
+  display:inline-flex;
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:var(--pri-soft);
+  color:#8a3f28;
+  border:1px solid #f2c7b6;
+}
+
+.hr{
+  height:1px;
+  background:var(--line);
+  margin:14px 0;
+}
+
+/* ===== Forms ===== */
+label{
+  display:block;
+  font-size:13px;
+  color:#6f5a50;
+  margin:12px 0 6px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fffdfb;
+  font-size:14px;
+  color:var(--text);
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  outline:none;
+  border-color:#e6b8a6;
+  box-shadow:0 0 0 3px rgba(217,119,87,.15);
+}
+
+textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+/* ===== Lists ===== */
+.list{
+  display:grid;
+  gap:10px;
+}
+
+.item{
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fffdfb;
+}
+
+/* ===== Notice ===== */
+.notice{
+  padding:12px 14px;
+  background:#fff3ec;
+  border:1px solid #f1c7b4;
+  border-radius:12px;
+  color:#7a3f2b;
+}
+
+/* ===== 掲示板：返信を少し濃くして会話感を出す ===== */
+
+/* 返信全体の背景を一段濃く */
+.reply{
+  background:#fff1e8;              /* カードより一段濃い温色 */
+  border:1px solid #efc2ae;
+}
+
+/* 自分の返信はさらに少しだけ強調（ほんのり） */
+.reply.mine{
+  background:#fde6da;
+  border-color:#e6a88f;
+}
+
+/* 返信内の @宛先バッジ */
+.reply .toBadge{
+  background:#fff;
+  border:1px solid #e3b29c;
+  color:#8a3f28;
+}
+
+/* 返信メタ情報（名前・日時・ボタン） */
+.reply .meta{
+  color:#7a5a4d;
+}

@@ -1,175 +1,102 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LINEで新規登録｜セレネス</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>新規登録（LINE連携）</title>
+  <link rel="stylesheet" href="styles.css" />
 
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
-<style>
-:root{
-  --bg:#fbf6f1; --card:#fff; --text:#3b352e; --muted:#7a6f63;
-  --acc:#06c755; --shadow:0 14px 28px rgba(0,0,0,.08); --radius:28px;
-  --line:#e9dfd6;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;background:var(--bg);color:var(--text)}
-.wrap{max-width:560px;margin:auto;padding:24px}
-.card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;border:1px solid var(--line)}
-h1{margin:0 0 8px;font-size:20px}
-p{margin:0;color:var(--muted);line-height:1.9}
-
-.form{margin-top:14px;text-align:left}
-label{display:block;margin:10px 0 6px;font-size:12px;color:var(--muted)}
-input{
-  width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);font-size:15px;
-}
-
-.btn{
-  margin-top:18px;width:100%;padding:16px;border-radius:999px;border:none;
-  background:var(--acc);color:#fff;font-size:16px;font-weight:900;cursor:pointer;
-}
-.btn[disabled]{opacity:.6;cursor:not-allowed}
-
-.err{
-  margin-top:12px;padding:10px 12px;border-radius:12px;
-  background:#fff3f3;border:1px solid #ffd1d1;color:#9b1c1c;
-  font-size:13px;display:none;line-height:1.8;white-space:pre-wrap;text-align:left;
-}
-.note{margin-top:16px;font-size:12px;color:var(--muted);line-height:1.8}
-.note a{color:#2563eb;text-decoration:underline}
-.smallbtn{
-  display:inline-block;margin-top:10px;padding:10px 12px;border-radius:12px;
-  border:1px solid var(--line);text-decoration:none;color:var(--text);
-  font-weight:800;background:#fff;
-}
-</style>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script defer src="liff-config.js"></script>
+  <script defer src="app.js"></script>
 </head>
-
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>LINEで新規登録</h1>
-    <p>名前・年齢・電話番号を入力して、LINE連携で登録します。</p>
-
-    <div class="form">
-      <label>お名前（ニックネーム可）</label>
-      <input id="name">
-
-      <label>年齢</label>
-      <input id="age" inputmode="numeric">
-
-      <label>電話番号</label>
-      <input id="phone" inputmode="numeric">
-    </div>
-
-    <button class="btn" id="registerBtn">LINEで新規登録</button>
-
-    <div class="err" id="err"></div>
-
-    <div class="note">
-      すでに登録済みの方は<br>
-      <a href="https://liff.line.me/2006846780-ojjmzQx9?mode=login">LINEでログイン</a>
-    </div>
-
-    <div class="note" id="outsideNote" style="display:none;">
-      <b>※この画面はLINEアプリ内（LIFF）で開く必要があります。</b><br>
-      <a class="smallbtn"
-         href="https://liff.line.me/2006846780-ojjmzQx9?mode=register">
-        LINEで新規登録を開く
-      </a>
-    </div>
+<header>
+  <div class="wrap">
+    <div class="brand">紹介サービス｜セレネス</div>
+    <nav>
+      <a class="btn ghost" href="index.html">ホーム</a>
+      <a class="btn ghost" href="board.html">掲示板</a>
+      <span data-auth class="row"></span>
+    </nav>
   </div>
-</div>
+</header>
+
+<main>
+  <h1>新規登録（LINE連携）</h1>
+
+  <section class="card" style="max-width:680px">
+    <div id="lineBox" class="item">LINE認証中…</div>
+
+    <form id="formRegister" style="display:none; margin-top:12px">
+      <label>名前</label>
+      <input id="name" required placeholder="例：竹内 圭" />
+
+      <div class="grid cols2">
+        <div>
+          <label>年齢</label>
+          <input id="age" type="number" min="18" max="99" required placeholder="例：35" />
+        </div>
+        <div>
+          <label>電話番号</label>
+          <input id="phone" required inputmode="tel" placeholder="例：09012345678" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" type="submit">登録する</button>
+        <a class="btn" href="index.html">戻る</a>
+      </div>
+
+      <p class="small" style="margin-top:10px">
+        ※電話番号はLINEから取得できないため、入力していただきます。
+      </p>
+    </form>
+  </section>
 
 <script>
-/* ===== 設定 ===== */
-const LIFF_ID = "2006846780-ojjmzQx9";
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+document.addEventListener("DOMContentLoaded", async () => {
+  const lineBox = document.getElementById("lineBox");
+  const form = document.getElementById("formRegister");
 
-const $ = id => document.getElementById(id);
-const errBox = $("err");
-const outsideNote = $("outsideNote");
-const btn = $("registerBtn");
+  const r = await ensureLineLogin();
+  if(!r.ok) return;
 
-const norm = v => String(v||"").replace(/[^\d]/g,"");
-const showErr = m => { errBox.style.display="block"; errBox.textContent=m; };
-const hideErr = () => { errBox.style.display="none"; errBox.textContent=""; };
+  const profile = await getLineProfileSafe();
+  const lineUserId = profile.userId;
 
-/* ===== LIFF 初期化 ===== */
-let liffReady=false;
-
-(async ()=>{
-  try{
-    await liff.init({ liffId: LIFF_ID });
-    liffReady=true;
-
-    if(!liff.isInClient()){
-      outsideNote.style.display="block";
-    }
-  }catch(e){
-    outsideNote.style.display="block";
-  }
-})();
-
-/* ===== 新規登録 ===== */
-btn.addEventListener("click", async ()=>{
-  hideErr();
-
-  const name = $("name").value.trim();
-  const age  = norm($("age").value);
-  const phone= norm($("phone").value);
-
-  if(!name) return showErr("お名前を入力してください。");
-  if(!age || age<18 || age>99) return showErr("年齢を正しく入力してください。");
-  if(phone.length < 10) return showErr("電話番号を正しく入力してください。");
-
-  if(!liffReady){
-    outsideNote.style.display="block";
-    return showErr("LINEアプリ内で開いてください。");
-  }
-
-  if(!liff.isLoggedIn()){
-    liff.login({ redirectUri: location.href });
+  // 既に登録済みならログイン扱いで会員ページへ
+  const existing = getMember(lineUserId);
+  if(existing){
+    setLineSession(lineUserId);
+    location.href = "member.html";
     return;
   }
 
-  try{
-    btn.disabled=true;
+  lineBox.innerHTML = `
+    <div><strong>LINE連携OK</strong></div>
+    <div class="small">LINE表示名：${escapeHtml(profile.displayName || "")}</div>
+  `;
 
-    const profile = await liff.getProfile();
-    const url =
-      `${SCRIPT_URL}?action=register_line` +
-      `&line_user_id=${encodeURIComponent(profile.userId)}` +
-      `&name=${encodeURIComponent(name)}` +
-      `&age=${encodeURIComponent(age)}` +
-      `&phone=${encodeURIComponent(phone)}` +
-      `&_=${Date.now()}`;
+  document.getElementById("name").value = profile.displayName || "";
+  form.style.display = "block";
 
-    const res = await fetch(url, { cache:"no-store" });
-    const data = await res.json();
-
-    if(data.ok){
-      localStorage.setItem("member_ok","1");
-      localStorage.setItem("member_id",data.member_id);
-      location.href="member.html";
-      return;
-    }
-
-    if(data.error==="LINE_ALREADY_REGISTERED"){
-      showErr("このLINEは既に登録されています。ログインしてください。");
-      return;
-    }
-
-    showErr("登録に失敗しました。\n"+(data.error||"unknown"));
-    btn.disabled=false;
-
-  }catch(e){
-    showErr("通信エラーが発生しました。");
-    btn.disabled=false;
-  }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    upsertMember({
+      lineUserId,
+      displayName: profile.displayName || "",
+      name: document.getElementById("name").value.trim(),
+      age: document.getElementById("age").value,
+      phone: document.getElementById("phone").value.trim(),
+      createdAt: new Date().toISOString()
+    });
+    setLineSession(lineUserId);
+    alert("登録しました！");
+    location.href = "member.html";
+  });
 });
 </script>
+</main>
 </body>
 </html>
