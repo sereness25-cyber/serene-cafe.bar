@@ -254,3 +254,13 @@ async function gasVerify(lineUserId, memberId, pin){
 async function gasLogin(memberId, name, age, phone){
   return await jsonp(gasUrl("login", { memberId, name, age, phone }));
 }
+
+// ===== 会員IDログイン（LINE不要）=====
+async function gasLogin(memberId, name, age, phone){
+  return await jsonp(gasUrl("login", {
+    memberId,
+    name,
+    age,
+    phone
+  }));
+}

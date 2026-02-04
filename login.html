@@ -55,51 +55,40 @@
   </section>
 
   <script>
-  document.addEventListener("DOMContentLoaded", ()=>{
-    const form = document.getElementById("formLogin");
-    const msg  = document.getElementById("msg");
+  document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
 
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
+  const memberId = document.getElementById("memberId").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const age = document.getElementById("age").value.trim();
+  const phone = document.getElementById("phone").value.trim();
 
-      const memberId = document.getElementById("memberId").value.trim();
-      const name     = document.getElementById("name").value.trim();
-      const age      = document.getElementById("age").value.trim();
-      const phone    = document.getElementById("phone").value.trim();
+  if(!memberId || !name || !age || !phone){
+    alert("すべて入力してください");
+    return;
+  }
 
-      if(!memberId || !name || !age || !phone){
-        alert("会員ID・名前・年齢・電話番号を入力してください");
-        return;
-      }
+  try{
+    const res = await gasLogin(memberId, name, age, phone);
 
-      msg.textContent = "照合中…";
+    if(!res || !res.ok){
+      alert("ログインできませんでした。入力内容をご確認ください。");
+      return;
+    }
 
-      try{
-        if(typeof gasLogin !== "function"){
-          alert("gasLogin が見つかりません（app.jsに追記が必要）");
-          msg.textContent = "設定エラー：gasLoginがありません";
-          return;
-        }
+    // memberとしてログイン
+    localStorage.setItem("ma_member_session", JSON.stringify({
+      memberId,
+      loginAt: new Date().toISOString()
+    }));
 
-        const r = await gasLogin(memberId, name, age, phone);
+    location.href = "member.html";
 
-        if(!r || !r.ok){
-          alert("ログインに失敗しました。入力内容をご確認ください。");
-          msg.textContent = "ログインできませんでした。";
-          return;
-        }
-
-        // OK：会員セッション作成（lineUserId は不要）
-        setMemberSession("", memberId);
-
-        location.replace("member.html");
-      }catch(err){
-        console.error(err);
-        alert("通信エラーが発生しました。しばらくして再度お試しください。");
-        msg.textContent = "通信エラー";
-      }
-    });
-  });
+  }catch(err){
+    console.error(err);
+    alert("通信エラーが発生しました");
+  }
+});
   </script>
 </main>
 </body>
