@@ -3,77 +3,79 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>管理者ページ｜セレネス</title>
+  <title>管理者｜申請・承認・ID発行</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script defer src="liff-config.js"></script>
   <script defer src="app.js"></script>
+
   <style>
-    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 14px}
-    .tab{padding:10px 12px; border:1px solid var(--line); background:#fff; border-radius:12px; cursor:pointer}
-    .tab.active{background:var(--pri-soft); border-color:#f2c7b6}
-    .table{width:100%; border-collapse:collapse; background:#fffdfb; border:1px solid var(--line); border-radius:14px; overflow:hidden}
-    .table th,.table td{padding:10px 10px; border-bottom:1px solid var(--line); text-align:left; font-size:13px; vertical-align:top}
-    .table th{background:#fff3ec; color:#5a3e32; font-weight:800}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+    .tab{padding:10px 12px;border:1px solid var(--line);background:#fff;border-radius:12px;cursor:pointer}
+    .tab.active{background:var(--pri-soft);border-color:#f2c7b6}
+    .table{width:100%;border-collapse:collapse;background:#fffdfb;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+    .table th,.table td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}
+    .table th{background:#fff3ec;color:#5a3e32;font-weight:900}
     .table tr:last-child td{border-bottom:none}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px}
-    .danger{background:#fff1f1; border-color:#fecaca}
-    .btn.danger{border-color:#fecaca; background:#fff; color:#7f1d1d}
-    .btn.danger:hover{background:#fff1f1}
-    .pill{display:inline-flex; gap:6px; align-items:center; padding:3px 8px; border-radius:999px; border:1px solid var(--line); background:#fff}
-    .right{display:flex; justify-content:flex-end}
-    .grow{flex:1}
-    textarea.export{min-height:220px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;font-size:12px}
+    .pill{display:inline-flex;gap:6px;align-items:center;padding:3px 8px;border-radius:999px;border:1px solid var(--line);background:#fff}
+    .muted{color:var(--muted)}
+    .dangerBox{background:#fff1f1;border:1px solid #fecaca;border-radius:12px;padding:12px}
+    .okBox{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px}
+    .rowEnd{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    textarea{width:100%;min-height:180px;border:1px solid var(--line);border-radius:12px;padding:12px}
+    input[type="text"], input[type="number"]{width:100%}
+    .mini{font-size:12px}
+    .grid2{display:grid;gap:12px}
+    @media(min-width:900px){ .grid2{grid-template-columns:1fr 1fr;} }
   </style>
 </head>
+
 <body>
 <header>
   <div class="wrap">
-    <div class="brand">管理者ページ｜セレネス</div>
+    <div class="brand">管理者｜申請・承認・ID発行</div>
     <nav>
       <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="member.html">会員ページ</a>
-      <a class="btn ghost" href="board.html">掲示板</a>
+      <a class="btn ghost" href="waiting.html">審査中ページ</a>
+      <a class="btn ghost" href="login.html">ログイン</a>
       <span data-auth class="row"></span>
     </nav>
   </div>
 </header>
 
 <main>
-  <h1>admin.html（管理者専用）</h1>
+  <h1>管理者ページ</h1>
 
   <section class="card">
     <h2>管理者チェック</h2>
-    <p class="small">
-      管理者の判定は、<strong>①LINEユーザーIDの許可リスト</strong> か <strong>②管理PIN</strong> のどちらかで通過できます。
-    </p>
+    <div id="guardMsg" class="item">チェック中…</div>
 
-    <div class="grid cols2">
+    <div class="grid cols2" style="margin-top:10px">
       <div class="item">
-        <div style="font-weight:800">① LINEユーザーID許可リスト（おすすめ）</div>
-        <p class="small">あなたのLINE userIdを ADMIN_LINE_USER_IDS に入れてください。</p>
-        <div class="mono">ADMIN_LINE_USER_IDS = ["Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]</div>
+        <div style="font-weight:900">方法A：LINE userId の許可リスト（おすすめ）</div>
+        <div class="small">あなたの userId を ADMIN_LINE_USER_IDS に入れてください。</div>
+        <div class="mono">ADMIN_LINE_USER_IDS = ["Uxxxxxxxx..."]</div>
       </div>
       <div class="item">
-        <div style="font-weight:800">② 管理PIN（予備）</div>
-        <p class="small">PINは localStorage に保存されます（手軽版）。公開運用ではサーバ側認証が推奨です。</p>
+        <div style="font-weight:900">方法B：管理PIN（予備）</div>
         <div class="row">
-          <input id="pinInput" class="grow" placeholder="管理PINを入力" />
+          <input id="pinInput" placeholder="管理PIN" />
           <button class="btn primary" id="btnPin">PINで入る</button>
         </div>
-        <p class="small">※PINは初回だけ「設定」もできます（下のボタン）。</p>
-        <div class="row">
+        <div class="row" style="margin-top:10px">
           <button class="btn" id="btnSetPin">PINを設定/変更</button>
-          <button class="btn danger" id="btnClearPin">PINを削除</button>
+          <button class="btn" id="btnClearPin">PINを削除</button>
         </div>
+        <p class="small">※PINはこの端末のlocalStorageに保存されます（簡易版）。</p>
       </div>
     </div>
-
-    <div class="hr"></div>
-    <div id="guardMsg" class="notice">チェック中…</div>
   </section>
 
   <section class="card" id="adminArea" style="display:none">
     <div class="row" style="justify-content:space-between">
-      <h2 style="margin:0">管理メニュー</h2>
+      <h2 style="margin:0">申請・承認</h2>
       <div class="row">
         <button class="btn" id="btnRefresh">更新</button>
         <button class="btn" id="btnExport">JSONエクスポート</button>
@@ -81,332 +83,406 @@
     </div>
 
     <div class="tabs" id="tabs">
-      <button class="tab active" data-tab="members">会員</button>
-      <button class="tab" data-tab="posts">投稿</button>
-      <button class="tab" data-tab="replies">返信</button>
+      <button class="tab active" data-tab="pending">申請中</button>
+      <button class="tab" data-tab="approved">承認済み</button>
       <button class="tab" data-tab="tools">ツール</button>
     </div>
 
-    <!-- 会員 -->
-    <div id="panel-members">
+    <!-- 申請中 -->
+    <div id="panel-pending">
       <div class="row" style="margin-bottom:10px">
-        <input id="memberSearch" class="grow" placeholder="検索：投稿名 / 登録名 / LINE表示名 / 電話" />
+        <input id="qPending" style="flex:1" placeholder="検索：名前 / LINE表示名 / 電話 / userId" />
       </div>
       <div class="item" style="overflow:auto">
-        <table class="table" id="membersTable"></table>
+        <table class="table" id="tblPending"></table>
       </div>
+      <p class="small" style="margin-top:10px">
+        ※承認すると <span class="pill">SRN-1234</span> と PIN を発行し、送信用メッセージが生成されます（コピーしてLINEで送ってください）。
+      </p>
     </div>
 
-    <!-- 投稿 -->
-    <div id="panel-posts" style="display:none">
+    <!-- 承認済み -->
+    <div id="panel-approved" style="display:none">
       <div class="row" style="margin-bottom:10px">
-        <input id="postSearch" class="grow" placeholder="検索：タイトル / 本文 / 投稿者" />
+        <input id="qApproved" style="flex:1" placeholder="検索：会員ID / 名前 / LINE表示名 / userId" />
       </div>
       <div class="item" style="overflow:auto">
-        <table class="table" id="postsTable"></table>
-      </div>
-    </div>
-
-    <!-- 返信 -->
-    <div id="panel-replies" style="display:none">
-      <div class="row" style="margin-bottom:10px">
-        <input id="replySearch" class="grow" placeholder="検索：本文 / 返信者 / @宛先" />
-      </div>
-      <div class="item" style="overflow:auto">
-        <table class="table" id="repliesTable"></table>
+        <table class="table" id="tblApproved"></table>
       </div>
     </div>
 
     <!-- ツール -->
     <div id="panel-tools" style="display:none">
-      <div class="grid cols2">
+      <div class="grid2">
         <div class="item">
-          <div style="font-weight:800">バックアップ（JSON）</div>
-          <p class="small">エクスポート内容がここに出ます。コピーして保管してください。</p>
-          <textarea class="export" id="exportBox" placeholder="ここにJSONが出ます" readonly></textarea>
+          <div style="font-weight:900">ID採番の設定</div>
+          <div class="small">次の会員IDの番号（4桁）を変更できます。</div>
+          <div class="row" style="margin-top:10px">
+            <input id="nextNo" type="number" min="1" placeholder="例：1" style="flex:1" />
+            <button class="btn" id="btnSaveNo">保存</button>
+          </div>
+          <div class="small" id="noHint" style="margin-top:8px"></div>
+
+          <div class="hr"></div>
+          <div style="font-weight:900">エクスポート（バックアップ）</div>
+          <textarea id="exportBox" readonly placeholder="ここにJSONが出ます"></textarea>
           <div class="row" style="margin-top:10px">
             <button class="btn" id="btnCopy">コピー</button>
-            <button class="btn" id="btnDownload">download.json を作る</button>
+            <button class="btn" id="btnDownload">download.json</button>
           </div>
         </div>
 
-        <div class="item danger">
+        <div class="dangerBox">
           <div style="font-weight:900">危険操作</div>
           <p class="small">削除は取り消せません（localStorageから消えます）。</p>
           <div class="row">
-            <button class="btn danger" id="btnClearPosts">投稿を全削除</button>
-            <button class="btn danger" id="btnClearReplies">返信を全削除</button>
+            <button class="btn" id="btnClearPending">申請中を全削除</button>
+            <button class="btn" id="btnClearApproved">承認済みを全削除</button>
           </div>
           <div class="row" style="margin-top:10px">
-            <button class="btn danger" id="btnClearMembers">会員を全削除</button>
-            <button class="btn danger" id="btnClearAll">全部初期化</button>
+            <button class="btn" id="btnClearAll">全部初期化</button>
           </div>
-          <p class="small">※「全部初期化」は会員/投稿/返信/プロフィール/セッションを消します。</p>
         </div>
       </div>
     </div>
+
+    <!-- 承認モーダル -->
+    <dialog id="dlgApprove" style="border:none;border-radius:16px;max-width:760px;width:96%;">
+      <form method="dialog">
+        <h3 style="margin:0 0 10px">面談完了 → 承認してID発行</h3>
+        <div class="okBox">
+          <div class="small">
+            ここで <b>会員ID（SRN-1234）</b> と <b>PIN</b> を発行します。<br>
+            生成された「送信用メッセージ」をコピーして、担当者がLINEで送ってください。
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-top:12px">
+          <div class="item">
+            <div style="font-weight:900">申請者情報</div>
+            <div id="apInfo" class="small"></div>
+            <div class="hr"></div>
+
+            <label>会員ID（自動）</label>
+            <input id="apMemberId" />
+
+            <label style="margin-top:10px">PIN（4桁）</label>
+            <input id="apPin" inputmode="numeric" />
+
+            <div class="rowEnd" style="margin-top:12px">
+              <button class="btn" id="btnGenPin" type="button">PIN再生成</button>
+              <button class="btn" id="btnGenId" type="button">ID再生成</button>
+            </div>
+          </div>
+
+          <div class="item">
+            <div style="font-weight:900">送信用メッセージ（コピーして送る）</div>
+            <textarea id="apMsg" readonly></textarea>
+            <div class="rowEnd" style="margin-top:10px">
+              <button class="btn" id="btnCopyMsg" type="button">メッセージコピー</button>
+            </div>
+
+            <div class="hr"></div>
+            <div class="rowEnd">
+              <button class="btn" value="cancel" type="submit">キャンセル</button>
+              <button class="btn primary" id="btnApproveDo" value="ok" type="submit">承認して保存</button>
+            </div>
+            <p class="small" style="margin-top:8px">
+              ※「承認して保存」後、申請は承認済みに移動します。
+            </p>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
   </section>
 
 <script>
-/* =======================
-   管理者ガード設定
-   ======================= */
-
-// ★おすすめ：あなたのLINE userIdをここに入れる
-// 例）const ADMIN_LINE_USER_IDS = ["Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"];
+/* =====================
+   管理者ガード
+===================== */
 const ADMIN_LINE_USER_IDS = [
   // "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 ];
 
 const K_ADMIN_PIN = "ma_admin_pin";
-const K_ADMIN_OK  = "ma_admin_ok"; // "1"ならPIN通過済み
+const K_ADMIN_OK  = "ma_admin_ok";
 
 function isAdminByLine(){
   const s = getLineSession();
   if(!s) return false;
   return ADMIN_LINE_USER_IDS.includes(s.lineUserId);
 }
-function isAdminByPin(){
-  return localStorage.getItem(K_ADMIN_OK) === "1";
-}
+function isAdminByPin(){ return localStorage.getItem(K_ADMIN_OK) === "1"; }
 function setAdminOk(){ localStorage.setItem(K_ADMIN_OK, "1"); }
 function clearAdminOk(){ localStorage.removeItem(K_ADMIN_OK); }
 
-function guardPass(){
-  document.getElementById("adminArea").style.display = "block";
-  document.getElementById("guardMsg").textContent = "管理者としてログイン済みです。";
-  renderAll();
+function setGuard(ok, text){
+  document.getElementById("guardMsg").textContent = text;
+  document.getElementById("adminArea").style.display = ok ? "block" : "none";
 }
-function guardFail(msg){
-  document.getElementById("adminArea").style.display = "none";
-  document.getElementById("guardMsg").textContent = msg;
-}
+
+function getPin(){ return localStorage.getItem(K_ADMIN_PIN) || ""; }
+function setPin(pin){ localStorage.setItem(K_ADMIN_PIN, pin); }
+function clearPin(){ localStorage.removeItem(K_ADMIN_PIN); clearAdminOk(); }
 
 function checkGuard(){
-  // まず会員ログイン必須（セッションがないと管理できない）
   const s = getLineSession();
   if(!s){
-    guardFail("ログインが必要です。先に login.html でLINEログインしてください。");
+    setGuard(false, "ログインが必要です。先に login.html でLINEログインしてください。");
     return;
   }
-
   if(isAdminByLine() || isAdminByPin()){
-    guardPass();
+    setGuard(true, "管理者としてログイン済みです。");
+    renderAll();
     return;
   }
-
-  guardFail("管理者権限がありません。ADMIN_LINE_USER_IDS の設定 or 管理PINで入ってください。");
+  setGuard(false, "管理者権限がありません。ADMIN_LINE_USER_IDS に追加するか、管理PINで入ってください。");
 }
 
-/* =======================
-   データ読み込み（localStorage）
-   ======================= */
+/* =====================
+   データ
+===================== */
+const K_APPLY = "ma_applications";   // { [lineUserId]: {..., status:"pending"} }
+const K_APPROVED = "ma_approved";    // { [lineUserId]: {status:"approved", memberId, pin, ...} }
+const K_NEXT_NO = "ma_next_member_no"; // number
 
-function getAllMembers(){
-  return load("ma_members", {});
-}
-function getAllProfiles(){
-  return load("ma_profile", {});
-}
-function getAllPosts(){
-  return load("ma_board_posts", []);
-}
-function getAllReplies(){
-  return load("ma_board_replies", []);
-}
+function loadObj(key, def){ return load(key, def); }
+function saveObj(key, val){ save(key, val); }
 
-function posterName(lineUserId){
-  const profiles = getAllProfiles();
-  const p = profiles[lineUserId];
-  if(p && p.handle && p.handle.trim()) return p.handle.trim();
-
-  const members = getAllMembers();
-  const m = members[lineUserId];
-  if(m && m.name && m.name.trim()) return m.name.trim();
-  if(m && m.displayName && m.displayName.trim()) return m.displayName.trim();
-
-  return "会員";
+function listPending(){
+  const all = loadObj(K_APPLY, {});
+  return Object.values(all).filter(x=>x && x.status==="pending");
+}
+function listApproved(){
+  const all = loadObj(K_APPROVED, {});
+  return Object.values(all).filter(x=>x && x.status==="approved");
 }
 
-/* =======================
+function removePending(lineUserId){
+  const all = loadObj(K_APPLY, {});
+  delete all[lineUserId];
+  saveObj(K_APPLY, all);
+}
+function addApproved(rec){
+  const all = loadObj(K_APPROVED, {});
+  all[rec.lineUserId] = rec;
+  saveObj(K_APPROVED, all);
+}
+
+function getNextNo(){
+  const n = parseInt(localStorage.getItem(K_NEXT_NO) || "1", 10);
+  return Number.isFinite(n) && n>0 ? n : 1;
+}
+function setNextNo(n){ localStorage.setItem(K_NEXT_NO, String(n)); }
+
+function pad4(n){ return String(n).padStart(4,"0"); }
+function genMemberId(){
+  const n = getNextNo();
+  return `SRN-${pad4(n)}`;
+}
+function bumpNo(){
+  const n = getNextNo();
+  setNextNo(n+1);
+}
+function genPin(){
+  const n = Math.floor(1000 + Math.random()*9000);
+  return String(n);
+}
+
+function escape(s){
+  return (s??"").toString()
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function makeSendMessage(app, memberId, pin){
+  return `【セレネス｜面談完了のお知らせ】
+${app.displayName ? `LINE表示名：${app.displayName}\n` : ""}${app.name ? `お名前：${app.name}\n` : ""}
+
+本人確認が完了しましたので、会員IDを発行しました。
+下記でログインしてご利用を開始できます。
+
+会員ID：${memberId}
+PIN：${pin}
+
+ログイン：${location.origin}${location.pathname.replace(/\/[^\/]+$/, "/")}login.html
+
+【ご利用開始までの流れ】
+1) LINEでログイン
+2) 会員IDとPINを入力
+3) 会員ページ・掲示板が利用可能になります
+
+安心してご利用いただくために、面談で本人確認後にID発行としております。
+ご不明点があればこのLINEでお気軽にどうぞ。`;
+}
+
+/* =====================
    レンダリング
-   ======================= */
+===================== */
+let currentApproveApp = null;
 
-function renderMembers(){
-  const q = (document.getElementById("memberSearch").value || "").trim().toLowerCase();
-  const members = getAllMembers();
-  const profiles = getAllProfiles();
+function renderPending(){
+  const q = (document.getElementById("qPending").value || "").trim().toLowerCase();
+  const rows = listPending().sort((a,b)=> (b.appliedAt||"").localeCompare(a.appliedAt||""))
+    .filter(a=>{
+      if(!q) return true;
+      const blob = `${a.displayName||""} ${a.name||""} ${a.phone||""} ${a.lineUserId||""}`.toLowerCase();
+      return blob.includes(q);
+    });
 
-  const rows = Object.values(members).map(m=>{
-    const p = profiles[m.lineUserId] || {};
-    return {
-      lineUserId: m.lineUserId,
-      displayName: m.displayName || "",
-      name: m.name || "",
-      age: m.age || "",
-      phone: m.phone || "",
-      handle: p.handle || "",
-      area: p.area || "",
-      createdAt: m.createdAt || ""
-    };
-  }).filter(r=>{
-    if(!q) return true;
-    const blob = `${r.displayName} ${r.name} ${r.phone} ${r.handle} ${r.area} ${r.lineUserId}`.toLowerCase();
-    return blob.includes(q);
-  });
-
-  const t = document.getElementById("membersTable");
+  const t = document.getElementById("tblPending");
   t.innerHTML = `
     <tr>
-      <th>投稿名</th>
-      <th>登録名</th>
-      <th>LINE表示名</th>
-      <th>年齢</th>
-      <th>電話</th>
+      <th>申請者</th>
+      <th>連絡先</th>
       <th class="mono">lineUserId</th>
-      <th>登録日</th>
-    </tr>
-    ${rows.map(r=>`
-      <tr>
-        <td><span class="pill">${escapeHtml(r.handle || "未設定")}</span></td>
-        <td>${escapeHtml(r.name)}</td>
-        <td>${escapeHtml(r.displayName)}</td>
-        <td>${escapeHtml(r.age)}</td>
-        <td>${escapeHtml(r.phone)}</td>
-        <td class="mono">${escapeHtml(r.lineUserId)}</td>
-        <td class="mono">${escapeHtml(r.createdAt)}</td>
-      </tr>
-    `).join("")}
-  `;
-}
-
-function renderPosts(){
-  const q = (document.getElementById("postSearch").value || "").trim().toLowerCase();
-  const posts = getAllPosts().slice().sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
-  const t = document.getElementById("postsTable");
-
-  const rows = posts.map(p=>{
-    const name = posterName(p.lineUserId);
-    return { ...p, name };
-  }).filter(r=>{
-    if(!q) return true;
-    const blob = `${r.title} ${r.body} ${r.name}`.toLowerCase();
-    return blob.includes(q);
-  });
-
-  t.innerHTML = `
-    <tr>
-      <th>タイトル</th>
-      <th>本文</th>
-      <th>投稿者</th>
-      <th>日時</th>
+      <th>申請日時</th>
       <th>操作</th>
     </tr>
-    ${rows.map(p=>`
+    ${rows.map(a=>`
       <tr>
-        <td style="min-width:160px"><strong>${escapeHtml(p.title)}</strong></td>
-        <td style="min-width:260px; white-space:pre-wrap">${escapeHtml(p.body)}</td>
-        <td><span class="pill">${escapeHtml(p.name)}</span></td>
-        <td class="mono">${escapeHtml(p.createdAt || "")}</td>
         <td>
-          <button class="btn danger" data-del-post="${escapeHtml(p.id)}">削除</button>
+          <div><span class="pill">${escape(a.displayName || "LINE")}</span></div>
+          <div class="mini">名前：${escape(a.name||"")}</div>
+          <div class="mini">年齢：${escape(a.age||"")}</div>
+        </td>
+        <td>
+          <div>電話：${escape(a.phone||"")}</div>
+        </td>
+        <td class="mono">${escape(a.lineUserId||"")}</td>
+        <td class="mono">${escape(a.appliedAt||"")}</td>
+        <td>
+          <div class="row" style="gap:8px">
+            <button class="btn primary" data-approve="${escape(a.lineUserId)}">面談完了→承認</button>
+            <button class="btn" data-reject="${escape(a.lineUserId)}">却下/取り下げ</button>
+          </div>
         </td>
       </tr>
     `).join("")}
   `;
 
-  // bind delete
-  t.querySelectorAll("[data-del-post]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const id = btn.getAttribute("data-del-post");
-      if(!confirm("この投稿を削除しますか？")) return;
-      // 管理者削除：lineUserIdを問わず消す
-      const posts2 = getAllPosts().filter(x=> x.id !== id);
-      save("ma_board_posts", posts2);
-      renderPosts();
+  t.querySelectorAll("[data-approve]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const id = b.getAttribute("data-approve");
+      openApprove(id);
+    });
+  });
+  t.querySelectorAll("[data-reject]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const id = b.getAttribute("data-reject");
+      if(!confirm("この申請を取り下げ/却下として削除しますか？")) return;
+      removePending(id);
+      renderPending();
     });
   });
 }
 
-function renderReplies(){
-  const q = (document.getElementById("replySearch").value || "").trim().toLowerCase();
-  const replies = getAllReplies().slice().sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
-  const t = document.getElementById("repliesTable");
+function renderApproved(){
+  const q = (document.getElementById("qApproved").value || "").trim().toLowerCase();
+  const rows = listApproved().sort((a,b)=> (b.issuedAt||"").localeCompare(a.issuedAt||""))
+    .filter(a=>{
+      if(!q) return true;
+      const blob = `${a.memberId||""} ${a.displayName||""} ${a.name||""} ${a.lineUserId||""}`.toLowerCase();
+      return blob.includes(q);
+    });
 
-  const rows = replies.map(r=>{
-    const name = posterName(r.lineUserId);
-    const toName = (r.replyTo && r.replyTo.name) ? r.replyTo.name : "";
-    return { ...r, name, toName };
-  }).filter(r=>{
-    if(!q) return true;
-    const blob = `${r.body} ${r.name} ${r.toName}`.toLowerCase();
-    return blob.includes(q);
-  });
-
+  const t = document.getElementById("tblApproved");
   t.innerHTML = `
     <tr>
-      <th>本文</th>
-      <th>返信者</th>
-      <th>@宛先</th>
-      <th>postId</th>
-      <th>日時</th>
+      <th>会員ID</th>
+      <th>会員</th>
+      <th class="mono">lineUserId</th>
+      <th>発行日時</th>
       <th>操作</th>
     </tr>
-    ${rows.map(r=>`
+    ${rows.map(a=>`
       <tr>
-        <td style="min-width:260px; white-space:pre-wrap">${escapeHtml(r.body)}</td>
-        <td><span class="pill">${escapeHtml(r.name)}</span></td>
-        <td>${r.toName ? `<span class="pill">@${escapeHtml(r.toName)}</span>` : `<span class="small">-</span>`}</td>
-        <td class="mono">${escapeHtml(r.postId || "")}</td>
-        <td class="mono">${escapeHtml(r.createdAt || "")}</td>
+        <td><span class="pill"><b>${escape(a.memberId||"")}</b></span></td>
         <td>
-          <button class="btn danger" data-del-reply="${escapeHtml(r.id)}">削除</button>
+          <div><span class="pill">${escape(a.displayName||"LINE")}</span></div>
+          <div class="mini">名前：${escape(a.name||"")}</div>
+        </td>
+        <td class="mono">${escape(a.lineUserId||"")}</td>
+        <td class="mono">${escape(a.issuedAt||"")}</td>
+        <td>
+          <button class="btn" data-copy="${escape(a.lineUserId)}">送信用メッセージ生成</button>
         </td>
       </tr>
     `).join("")}
   `;
 
-  t.querySelectorAll("[data-del-reply]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const id = btn.getAttribute("data-del-reply");
-      if(!confirm("この返信を削除しますか？")) return;
-      const next = getAllReplies().filter(x=> x.id !== id);
-      save("ma_board_replies", next);
-      renderReplies();
+  t.querySelectorAll("[data-copy]").forEach(b=>{
+    b.addEventListener("click", async ()=>{
+      const lineUserId = b.getAttribute("data-copy");
+      const all = loadObj(K_APPROVED, {});
+      const rec = all[lineUserId];
+      if(!rec) return;
+      const text = makeSendMessage(rec, rec.memberId, rec.pin);
+      await navigator.clipboard.writeText(text);
+      alert("送信用メッセージをコピーしました（LINEで貼り付けて送ってください）");
     });
   });
 }
 
 function renderAll(){
-  renderMembers();
-  renderPosts();
-  renderReplies();
+  renderPending();
+  renderApproved();
+  document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
 }
 
-/* =======================
-   タブ切替
-   ======================= */
+/* =====================
+   承認モーダル
+===================== */
+function openApprove(lineUserId){
+  const all = loadObj(K_APPLY, {});
+  const app = all[lineUserId];
+  if(!app) return;
 
+  currentApproveApp = app;
+
+  const memberId = genMemberId();
+  const pin = genPin();
+
+  document.getElementById("apInfo").innerHTML = `
+    <div>LINE表示名：<b>${escape(app.displayName||"")}</b></div>
+    <div>名前：<b>${escape(app.name||"")}</b>　年齢：<b>${escape(app.age||"")}</b></div>
+    <div>電話：<b>${escape(app.phone||"")}</b></div>
+    <div class="mono" style="margin-top:6px">lineUserId：${escape(app.lineUserId||"")}</div>
+    <div class="mono">申請日時：${escape(app.appliedAt||"")}</div>
+  `;
+
+  document.getElementById("apMemberId").value = memberId;
+  document.getElementById("apPin").value = pin;
+  document.getElementById("apMsg").value = makeSendMessage(app, memberId, pin);
+
+  document.getElementById("dlgApprove").showModal();
+}
+
+function refreshApproveMsg(){
+  const memberId = document.getElementById("apMemberId").value.trim();
+  const pin = document.getElementById("apPin").value.trim();
+  document.getElementById("apMsg").value = makeSendMessage(currentApproveApp, memberId, pin);
+}
+
+/* =====================
+   タブ・ツール
+===================== */
 function setTab(name){
   document.querySelectorAll(".tab").forEach(t=>{
     t.classList.toggle("active", t.dataset.tab === name);
   });
-  ["members","posts","replies","tools"].forEach(k=>{
+  ["pending","approved","tools"].forEach(k=>{
     document.getElementById("panel-"+k).style.display = (k===name) ? "block" : "none";
   });
 }
 
-/* =======================
-   ツール：エクスポート/危険操作
-   ======================= */
-
 function makeExport(){
   const data = {
     exportedAt: nowISO(),
-    members: getAllMembers(),
-    profiles: getAllProfiles(),
-    posts: getAllPosts(),
-    replies: getAllReplies(),
+    applications: loadObj(K_APPLY, {}),
+    approved: loadObj(K_APPROVED, {}),
+    nextMemberNo: getNextNo()
   };
   return JSON.stringify(data, null, 2);
 }
@@ -415,42 +491,20 @@ function downloadText(filename, text){
   const blob = new Blob([text], {type:"application/json"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
+  a.href = url; a.download = filename;
   document.body.appendChild(a);
-  a.click();
-  a.remove();
+  a.click(); a.remove();
   URL.revokeObjectURL(url);
 }
 
-/* =======================
-   PIN
-   ======================= */
-
-function getPin(){ return localStorage.getItem(K_ADMIN_PIN) || ""; }
-function setPin(pin){ localStorage.setItem(K_ADMIN_PIN, pin); }
-function clearPin(){ localStorage.removeItem(K_ADMIN_PIN); clearAdminOk(); }
-
-function pinEnter(pin){
-  const saved = getPin();
-  if(!saved){
-    alert("まだPINが設定されていません。先にPINを設定してください。");
-    return;
-  }
-  if(pin === saved){
-    setAdminOk();
-    alert("PIN認証OK");
-    checkGuard();
-  }else{
-    alert("PINが違います");
-  }
-}
-
-/* =======================
+/* =====================
    init
-   ======================= */
+===================== */
+document.addEventListener("DOMContentLoaded", async ()=>{
+  // 検索
+  document.getElementById("qPending").addEventListener("input", renderPending);
+  document.getElementById("qApproved").addEventListener("input", renderApproved);
 
-document.addEventListener("DOMContentLoaded", ()=>{
   // tabs
   document.getElementById("tabs").addEventListener("click", (e)=>{
     const b = e.target.closest(".tab");
@@ -458,12 +512,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     setTab(b.dataset.tab);
   });
 
-  // search
-  document.getElementById("memberSearch").addEventListener("input", renderMembers);
-  document.getElementById("postSearch").addEventListener("input", renderPosts);
-  document.getElementById("replySearch").addEventListener("input", renderReplies);
-
-  // refresh/export
+  // 更新・エクスポ
   document.getElementById("btnRefresh").addEventListener("click", renderAll);
   document.getElementById("btnExport").addEventListener("click", ()=>{
     setTab("tools");
@@ -476,53 +525,131 @@ document.addEventListener("DOMContentLoaded", ()=>{
     await navigator.clipboard.writeText(text);
     alert("コピーしました");
   });
-
   document.getElementById("btnDownload").addEventListener("click", ()=>{
     const text = document.getElementById("exportBox").value;
     if(!text) return alert("先にエクスポートしてください");
-    downloadText("sereness-backup.json", text);
+    downloadText("sereness-admin-backup.json", text);
   });
 
-  // danger ops
-  document.getElementById("btnClearPosts").addEventListener("click", ()=>{
-    if(!confirm("投稿を全削除しますか？")) return;
-    save("ma_board_posts", []);
-    renderPosts();
+  // 次番号
+  document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
+  document.getElementById("nextNo").value = getNextNo();
+  document.getElementById("btnSaveNo").addEventListener("click", ()=>{
+    const n = parseInt(document.getElementById("nextNo").value, 10);
+    if(!Number.isFinite(n) || n<1) return alert("1以上の数値を入れてください");
+    setNextNo(n);
+    alert("保存しました");
+    document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
   });
-  document.getElementById("btnClearReplies").addEventListener("click", ()=>{
-    if(!confirm("返信を全削除しますか？")) return;
-    save("ma_board_replies", []);
-    renderReplies();
+
+  // 危険操作
+  document.getElementById("btnClearPending").addEventListener("click", ()=>{
+    if(!confirm("申請中を全削除しますか？")) return;
+    saveObj(K_APPLY, {});
+    renderPending();
   });
-  document.getElementById("btnClearMembers").addEventListener("click", ()=>{
-    if(!confirm("会員を全削除しますか？（プロフィールも残ります）")) return;
-    save("ma_members", {});
-    renderMembers();
+  document.getElementById("btnClearApproved").addEventListener("click", ()=>{
+    if(!confirm("承認済みを全削除しますか？")) return;
+    saveObj(K_APPROVED, {});
+    renderApproved();
   });
   document.getElementById("btnClearAll").addEventListener("click", ()=>{
-    if(!confirm("全部初期化しますか？（会員/投稿/返信/プロフィール/セッション）")) return;
-    save("ma_members", {});
-    save("ma_profile", {});
-    save("ma_board_posts", []);
-    save("ma_board_replies", []);
+    if(!confirm("全部初期化しますか？（申請/承認/次番号/セッション等）")) return;
+    saveObj(K_APPLY, {});
+    saveObj(K_APPROVED, {});
+    localStorage.removeItem(K_NEXT_NO);
     localStorage.removeItem("ma_session");
-    alert("初期化しました。ログインからやり直してください。");
-    location.href = "login.html";
+    localStorage.removeItem("ma_member_session");
+    alert("初期化しました");
+    location.replace("index.html");
   });
 
-  // pin buttons
+  // 承認モーダル操作
+  document.getElementById("btnGenPin").addEventListener("click", ()=>{
+    document.getElementById("apPin").value = genPin();
+    refreshApproveMsg();
+  });
+  document.getElementById("btnGenId").addEventListener("click", ()=>{
+    document.getElementById("apMemberId").value = genMemberId();
+    refreshApproveMsg();
+  });
+  document.getElementById("apMemberId").addEventListener("input", refreshApproveMsg);
+  document.getElementById("apPin").addEventListener("input", refreshApproveMsg);
+
+  document.getElementById("btnCopyMsg").addEventListener("click", async ()=>{
+    const text = document.getElementById("apMsg").value;
+    await navigator.clipboard.writeText(text);
+    alert("コピーしました（LINEで貼り付けて送ってください）");
+  });
+
+  // 「承認して保存」＝dialog submit(ok)
+  document.getElementById("dlgApprove").addEventListener("close", ()=>{
+    // closeのみ（submit結果はフォーム側で処理したいがdialog標準が薄いのでここは使わない）
+  });
+
+  // 実際の承認保存（dialogの「承認して保存」ボタンが押された時）
+  document.getElementById("btnApproveDo").addEventListener("click", ()=>{
+    if(!currentApproveApp) return;
+
+    const memberId = document.getElementById("apMemberId").value.trim();
+    const pin = document.getElementById("apPin").value.trim();
+
+    if(!/^SRN-\d{4}$/.test(memberId)){
+      alert("会員IDは SRN-1234 の形式にしてください");
+      return;
+    }
+    if(!/^\d{4}$/.test(pin)){
+      alert("PINは4桁で入力してください");
+      return;
+    }
+
+    // 承認レコード保存
+    const rec = {
+      status:"approved",
+      lineUserId: currentApproveApp.lineUserId,
+      displayName: currentApproveApp.displayName || "",
+      name: currentApproveApp.name || "",
+      age: currentApproveApp.age || "",
+      phone: currentApproveApp.phone || "",
+      memberId,
+      pin,
+      issuedAt: nowISO()
+    };
+    addApproved(rec);
+
+    // 申請から削除（承認済みへ移動）
+    removePending(currentApproveApp.lineUserId);
+
+    // 採番を進める（memberIdが自動生成IDだった場合も、手動でも“次へ進む”でOK）
+    // 次番号が同じままだと連番が詰まるので進める
+    bumpNo();
+    document.getElementById("nextNo").value = getNextNo();
+    document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
+
+    alert("承認して保存しました。送信用メッセージをコピーしてLINEで送ってください。");
+    currentApproveApp = null;
+    // dialogは自動で閉じる（form method=dialog）
+  });
+
+  // 管理PIN
   document.getElementById("btnPin").addEventListener("click", ()=>{
     const pin = document.getElementById("pinInput").value.trim();
-    pinEnter(pin);
+    const saved = getPin();
+    if(!saved) return alert("まだPINが設定されていません。先にPINを設定してください。");
+    if(pin === saved){
+      setAdminOk();
+      alert("PIN認証OK");
+      checkGuard();
+    }else{
+      alert("PINが違います");
+    }
   });
-
   document.getElementById("btnSetPin").addEventListener("click", ()=>{
-    const pin = prompt("新しい管理PINを設定（4桁以上推奨）");
+    const pin = prompt("新しい管理PIN（4桁以上推奨）");
     if(!pin) return;
     setPin(pin.trim());
     alert("PINを設定しました");
   });
-
   document.getElementById("btnClearPin").addEventListener("click", ()=>{
     if(!confirm("管理PINを削除しますか？")) return;
     clearPin();
@@ -530,11 +657,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
     checkGuard();
   });
 
-  // start
+  // guard
   checkGuard();
 });
 </script>
-
 </main>
 </body>
 </html>
