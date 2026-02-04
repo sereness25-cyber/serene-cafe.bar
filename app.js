@@ -10,7 +10,7 @@ function save(key, value){
 }
 
 // ===== Keys =====
-const K_SESSION  = "ma_session";   // { lineUserId, loginAt }
+const K_SESSION  = "ma_session";   // { lineUserId, loginAt }   ※LINEセッション（使う場合のみ）
 const K_MEMBERS  = "ma_members";   // { [lineUserId]: {lineUserId, displayName, name, age, phone, createdAt} }
 const K_PROFILE  = "ma_profile";   // { [lineUserId]: {bio, area, contact, updatedAt...} }
 const K_BOARD    = "ma_board_posts"; // [{id, lineUserId, title, body, createdAt}]
@@ -90,27 +90,17 @@ function renderHeaderAuth(){
   const el = document.querySelector("[data-auth]");
   if(!el) return;
 
-  const s = getLineSession();
-  if(!s){
-    el.innerHTML = `
-      <a class="btn" href="login.html">LINEでログイン</a>
-      <a class="btn primary" href="register.html">新規登録（申請）</a>
-    `;
-    return;
-  }
-
-  const label = "LINEログイン中";
-
+  // ※ログイン条件からLINEを外したので、ヘッダーはシンプルでOK
+  // （必要なら「ログイン中表示」など後で作り込めます）
   el.innerHTML = `
-    <span class="badge">${escapeHtml(label)}</span>
     <a class="btn" href="login.html">ログイン</a>
-    <button class="btn" id="btnLogout">ログアウト</button>
+    <a class="btn primary" href="register.html">新規登録（申請）</a>
   `;
-  document.getElementById("btnLogout")?.addEventListener("click", logout);
 }
 document.addEventListener("DOMContentLoaded", renderHeaderAuth);
 
 // ===== LINE / LIFF helpers =====
+// ※registerでLINE連携を使う場合のみ必要（loginがLINE不要でも残してOK）
 async function initLIFF(){
   if(!window.liff) return { ok:false, msg:"LIFF SDKが読み込まれていません" };
   if(typeof LIFF_ID === "undefined" || !LIFF_ID){
@@ -182,13 +172,8 @@ function deleteReply(replyId, lineUserId){
 }
 
 // ===== Application / Approval registry =====
-// 申請データ（pending）: { [lineUserId]: { status:"pending", ... } }
 const K_APPLY = "ma_applications";
-
-// 承認データ（approved）: { [lineUserId]: { status:"approved", memberId, pin, issuedAt } }
 const K_APPROVED = "ma_approved";
-
-// ログイン状態（承認後）: { lineUserId, memberId, loginAt }
 const K_MEMBER_SESSION = "ma_member_session";
 
 function getApplication(lineUserId){
@@ -250,12 +235,22 @@ function gasUrl(action, params={}){
   return u.toString();
 }
 
+// 申請（LINE連携で使うなら）
 async function gasApply(app){
   return await jsonp(gasUrl("apply", app));
 }
+
+// 状態確認（LINE連携で使うなら）
 async function gasStatus(lineUserId){
   return await jsonp(gasUrl("status", { lineUserId }));
 }
+
+// 承認済み照合（LINE連携 + memberId + pin）
 async function gasVerify(lineUserId, memberId, pin){
   return await jsonp(gasUrl("verify", { lineUserId, memberId, pin }));
+}
+
+// ★LINE不要ログイン（memberId + name + age + phone）
+async function gasLogin(memberId, name, age, phone){
+  return await jsonp(gasUrl("login", { memberId, name, age, phone }));
 }

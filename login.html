@@ -3,11 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ログイン（LINE＋ID）</title>
+  <title>ログイン（会員ID）</title>
   <link rel="stylesheet" href="styles.css" />
-
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script defer src="liff-config.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
@@ -23,122 +20,87 @@
 </header>
 
 <main>
-  <h1>ログイン（LINE＋ID）</h1>
+  <h1>ログイン（会員ID）</h1>
 
-  <section class="card" style="max-width:680px">
-    <div id="msg" class="item">LINEログイン確認中…</div>
+  <section class="card" style="max-width:720px">
+    <div id="msg" class="item">会員IDでログインしてください。</div>
 
-    <div class="row" style="margin-top:14px">
-      <button class="btn primary" id="btnLine">LINEでログイン</button>
-      <a class="btn" href="register.html">新規登録（申請）</a>
-    </div>
-
-    <!-- 承認済みだけ表示するID入力 -->
-    <form id="formId" style="display:none; margin-top:14px">
-      <div class="hr"></div>
-      <h2 style="margin:0 0 10px">会員IDでログイン</h2>
-
+    <form id="formLogin" style="margin-top:14px">
       <label>会員ID</label>
       <input id="memberId" required placeholder="例：SRN-1234" />
 
-      <label style="margin-top:10px">PIN（暗証番号）</label>
-      <input id="pin" required inputmode="numeric" placeholder="例：1234" />
+      <div class="grid cols2">
+        <div>
+          <label>名前</label>
+          <input id="name" required placeholder="例：山田 太郎" />
+        </div>
+        <div>
+          <label>年齢</label>
+          <input id="age" type="number" min="18" max="99" required placeholder="例：35" />
+        </div>
+      </div>
+
+      <label>電話番号</label>
+      <input id="phone" required inputmode="tel" placeholder="例：09012345678" />
 
       <div class="row" style="margin-top:14px">
-        <button class="btn primary" type="submit">ログインする</button>
-        <button class="btn" type="button" id="btnLogout">LINEログアウト</button>
+        <button class="btn primary" type="submit">ログイン</button>
+        <a class="btn" href="register.html">新規登録（申請）</a>
       </div>
 
       <p class="small" style="margin-top:10px">
-        ※会員IDは、面談で本人確認後に発行されます。
+        ※会員IDは、面談後に運営が発行します。
       </p>
     </form>
   </section>
 
-<script>
-document.addEventListener("DOMContentLoaded", async ()=>{
-  const msg = document.getElementById("msg");
-  const btnLine = document.getElementById("btnLine");
-  const formId = document.getElementById("formId");
+  <script>
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const form = document.getElementById("formLogin");
+    const msg  = document.getElementById("msg");
 
-  // ① LINEログインボタン
-  btnLine.addEventListener("click", async ()=>{
-    const r = await initLIFF();
-    if(!r.ok) return alert(r.msg);
-    if(!liff.isLoggedIn()){
-      const cleanUrl = location.origin + location.pathname;
-      liff.login({ redirectUri: cleanUrl });
-    }
+    form.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+
+      const memberId = document.getElementById("memberId").value.trim();
+      const name     = document.getElementById("name").value.trim();
+      const age      = document.getElementById("age").value.trim();
+      const phone    = document.getElementById("phone").value.trim();
+
+      if(!memberId || !name || !age || !phone){
+        alert("会員ID・名前・年齢・電話番号を入力してください");
+        return;
+      }
+
+      msg.textContent = "照合中…";
+
+      try{
+        if(typeof gasLogin !== "function"){
+          alert("gasLogin が見つかりません（app.jsに追記が必要）");
+          msg.textContent = "設定エラー：gasLoginがありません";
+          return;
+        }
+
+        const r = await gasLogin(memberId, name, age, phone);
+
+        if(!r || !r.ok){
+          alert("ログインに失敗しました。入力内容をご確認ください。");
+          msg.textContent = "ログインできませんでした。";
+          return;
+        }
+
+        // OK：会員セッション作成（lineUserId は不要）
+        setMemberSession("", memberId);
+
+        location.replace("member.html");
+      }catch(err){
+        console.error(err);
+        alert("通信エラーが発生しました。しばらくして再度お試しください。");
+        msg.textContent = "通信エラー";
+      }
+    });
   });
-
-  // ② LIFF初期化
-  const r = await initLIFF();
-  if(!r.ok){
-    msg.textContent = r.msg;
-    return;
-  }
-
-  // ③ 未ログイン
-  if(!liff.isLoggedIn()){
-    msg.textContent = "LINEでログインしてください。（※登録済みの方のみ）";
-    return;
-  }
-
-  // ④ LINEプロフィール取得
-  const profile = await getLineProfileSafe();
-  const lineUserId = profile.userId;
-
-  // ⑤ 承認状態チェック（GAS）
-  const st = await gasStatus(lineUserId);
-
-  if(!st.ok){
-    msg.textContent = "状態確認に失敗しました。";
-    return;
-  }
-
-  if(!st.exists){
-    msg.textContent = "申請がありません。新規登録へ移動します…";
-    location.replace("register.html");
-    return;
-  }
-
-  if(st.status !== "approved"){
-    msg.textContent = "現在、確認中です。担当者からの連絡をお待ちください。";
-    location.replace("waiting.html");
-    return;
-  }
-
-  // ⑥ 承認済み
-  msg.innerHTML = "承認済みです。<br>会員IDとPINを入力してください。";
-  formId.style.display = "block";
-  setLineSession(lineUserId);
-
-  // ⑦ IDログイン
-  formId.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-
-    const memberId = document.getElementById("memberId").value.trim();
-    const pin = document.getElementById("pin").value.trim();
-    if(!memberId || !pin) return alert("会員IDとPINを入力してください");
-
-    const vr = await gasVerify(lineUserId, memberId, pin);
-    if(!vr.ok){
-      alert("会員IDまたはPINが違います");
-      return;
-    }
-
-    setMemberSession(lineUserId, memberId);
-    location.replace("member.html");
-  });
-
-  // ⑧ ログアウト
-  document.getElementById("btnLogout").addEventListener("click", async ()=>{
-    clearMemberSession();
-    if(typeof safeLiffLogout === "function") await safeLiffLogout();
-    location.replace("index.html");
-  });
-});
-</script>
+  </script>
 </main>
 </body>
 </html>

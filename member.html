@@ -55,7 +55,12 @@
     </section>
   </div>
 
-  <script>
+  <script.>
+const ms = getMemberSession();
+if(!ms || !ms.memberId){
+  alert("ログインが必要です");
+  location.replace("login.html");
+}
   document.addEventListener("DOMContentLoaded", async () => {
 /* ===== 管理者用：LINE userId 表示 ===== */
 const adminBox = document.createElement("div");
