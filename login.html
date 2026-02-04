@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ログイン（LINE）</title>
+  <title>ログイン（LINE＋ID）</title>
   <link rel="stylesheet" href="styles.css" />
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -23,44 +23,126 @@
 </header>
 
 <main>
-  <h1>ログイン（LINE）</h1>
+  <h1>ログイン（LINE＋ID）</h1>
 
-  <section class="card" style="max-width:640px">
+  <section class="card" style="max-width:680px">
     <div id="msg" class="item">LINEログイン確認中…</div>
+
     <div class="row" style="margin-top:14px">
       <button class="btn primary" id="btnLine">LINEでログイン</button>
-      <a class="btn" href="register.html">新規登録へ</a>
+      <a class="btn" href="register.html">新規登録（申請）</a>
     </div>
+
+    <!-- 承認済みだけ表示するID入力 -->
+    <form id="formId" style="display:none; margin-top:14px">
+      <div class="hr"></div>
+      <h2 style="margin:0 0 10px">会員IDでログイン</h2>
+
+      <label>会員ID</label>
+      <input id="memberId" required placeholder="例：SRN-1234" />
+
+      <label style="margin-top:10px">PIN（暗証番号）</label>
+      <input id="pin" required inputmode="numeric" placeholder="例：1234" />
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" type="submit">ログインする</button>
+        <button class="btn" type="button" id="btnLogout">LINEログアウト</button>
+      </div>
+
+      <p class="small" style="margin-top:10px">
+        ※会員IDは、面談で本人確認後に発行されます。
+      </p>
+    </form>
   </section>
 
 <script>
 document.addEventListener("DOMContentLoaded", async ()=>{
   const msg = document.getElementById("msg");
-  const btn = document.getElementById("btnLine");
+  const btnLine = document.getElementById("btnLine");
+  const formId = document.getElementById("formId");
 
-  btn.addEventListener("click", async ()=>{
+  // クリックでLINEログイン
+  btnLine.addEventListener("click", async ()=>{
     const r = await initLIFF();
     if(!r.ok) return alert(r.msg);
     if(!liff.isLoggedIn()) liff.login();
   });
 
+  // LIFF初期化
   const r = await initLIFF();
   if(!r.ok){ msg.textContent = r.msg; return; }
 
+  // 未ログイン
   if(!liff.isLoggedIn()){
     msg.textContent = "LINEでログインしてください。";
     return;
   }
 
+  // LINEプロフィール取得
   const profile = await getLineProfileSafe();
-  const m = getMember(profile.userId);
-  if(!m){
-    msg.innerHTML = `未登録です。<br>「新規登録へ」から登録してください。`;
+  const lineUserId = profile.userId;
+
+  // LINEセッションは保持（本人確認のためのキー）
+  setLineSession(lineUserId);
+
+  // ① 承認済みか？
+  const approved = getApproved(lineUserId);
+
+  // 承認済みでない場合：申請状況で分岐
+  if(!approved || approved.status !== "approved"){
+    const app = getApplication(lineUserId);
+
+    if(app && app.status === "pending"){
+      msg.textContent = "現在、確認中です。担当者からの連絡をお待ちください…";
+      location.replace("waiting.html");
+      return;
+    }
+
+    // 申請自体がない
+    msg.textContent = "このLINEはまだ申請がありません。新規登録（申請）へ移動します…";
+    // session残しは好みだが、ここでは残してOK
+    location.replace("register.html");
     return;
   }
 
-  setLineSession(profile.userId);
-  location.href = "member.html";
+  // ② 承認済み → ID入力フォーム表示
+  msg.innerHTML = `
+    承認済みです。<br>
+    <strong>会員IDとPIN</strong>を入力してログインしてください。
+  `;
+  formId.style.display = "block";
+
+  // IDログイン
+  formId.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const memberId = document.getElementById("memberId").value.trim();
+    const pin = document.getElementById("pin").value.trim();
+
+    if(!memberId || !pin){
+      alert("会員IDとPINを入力してください");
+      return;
+    }
+
+    // 照合
+    if(memberId !== (approved.memberId || "") || pin !== (approved.pin || "")){
+      alert("会員IDまたはPINが違います");
+      return;
+    }
+
+    // 承認済み + ID一致 → 会員セッション作成
+    setMemberSession(lineUserId, memberId);
+
+    // 会員ページへ
+    location.replace("member.html");
+  });
+
+  // LINEログアウト（必要なら）
+  document.getElementById("btnLogout").addEventListener("click", async ()=>{
+    clearMemberSession();
+    localStorage.removeItem("ma_session");
+    if(typeof safeLiffLogout === "function") await safeLiffLogout();
+    location.replace("index.html");
+  });
 });
 </script>
 </main>
