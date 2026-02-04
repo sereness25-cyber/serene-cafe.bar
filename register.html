@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   lineBox.textContent = `LINE連携OK：${profile.displayName || "ユーザー"} さん。申請情報を入力してください。`;
   form.style.display = "block";
 
-  fform.addEventListener("submit", async (e)=>{
+  form.addEventListener("submit", async (e)=>{
   e.preventDefault();
 
   const name  = document.getElementById("name").value.trim();
