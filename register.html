@@ -38,7 +38,7 @@
     }
     .btn.primary{background:var(--pri);border-color:var(--pri);color:#fff}
     .btn.primary:hover{background:var(--pri2);border-color:var(--pri2)}
-    .btn.primary:disabled{background:#ccc; border-color:#ccc; cursor:not-allowed;} /* 無効化スタイル */
+    .btn.primary:disabled{background:#ccc; border-color:#ccc; cursor:not-allowed;}
     .btn.ghost{background:#fff}
     .okBox{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:12px}
     .doneBox{background:#ecfdf5;border:1px solid #bbf7d0;color:#065f46;border-radius:12px;padding:12px}
@@ -133,13 +133,13 @@
       </div>
 
       <div class="row" style="margin-top:14px">
-        <button class="btn primary" id="btnApply" type="submit" disabled>LINE連携して申請する</button>
+        <button class="btn primary" id="btnApply" type="submit" disabled>申請する（LINE起動）</button>
         <a class="btn" href="index.html">戻る</a>
       </div>
 
       <p class="small" style="margin-top:10px">
         ※LINE連携が完了すると、申請ボタンが押せるようになります。<br>
-        ※申請後、LINEのトーク画面が開きます。内容を確認して送信してください。
+        ※申請ボタンを押すとLINEが起動します。入力内容が自動で入っていますので、そのまま送信してください。
       </p>
     </form>
 
@@ -162,34 +162,31 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const doneBox = document.getElementById("doneBox");
   const btnOpenTalk = document.getElementById("btnOpenTalk");
   const agreeCheck = document.getElementById("agreeCheck");
-  const btnApply = document.getElementById("btnApply"); // ✅ 追加
+  const btnApply = document.getElementById("btnApply");
 
   let lineUserId = null;
   let displayName = "";
 
   const cleanUrl = location.origin + location.pathname;
+  // 公式LINEのID（@マーク込み）
   const OA_ID = "@820theos";
 
-  // ✅ 修正：ボタンを有効化するだけの関数に変更
   function activateSubmit(){
     btnApply.disabled = false;
-    btnApply.textContent = "申請する";
+    btnApply.textContent = "申請する（LINE起動）";
   }
 
+  // LINEトーク用のURLを作成する関数
   function makeTalkUrl(name, age, phone){
-    const text =
+    const text = 
 `【セレネスカフェ&バー申請】
 お名前：${name}
 年齢：${age}
 電話番号：${phone}
 
-▼この後の流れ
-①担当者からご連絡（面談日程の調整）
-②面談（対面 or オンライン）で本人確認
-③会員ID発行
-④利用開始
-
-※連絡しやすい時間帯があれば返信で教えてください。`;
+申請します。今後の流れについて案内をお願いします。`;
+    
+    // oaMessageスキームを使って、公式アカウントとのトーク画面を開き、テキストを入力状態にする
     return `https://line.me/R/oaMessage/${OA_ID}/?${encodeURIComponent(text)}`;
   }
 
@@ -205,7 +202,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         lineUserId = p.userId;
         displayName = p.displayName || "";
         lineBox.textContent = `LINE連携OK：${displayName || "ユーザー"} さん`;
-        activateSubmit(); // ✅ ボタン有効化
+        activateSubmit();
       }
     }
   }catch(e){
@@ -232,7 +229,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       lineUserId = p.userId;
       displayName = p.displayName || "";
       lineBox.textContent = `LINE連携OK：${displayName || "ユーザー"} さん`;
-      activateSubmit(); // ✅ ボタン有効化
+      activateSubmit();
       
     } catch(err) {
       console.error(err);
@@ -259,17 +256,21 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const phone = document.getElementById("phone").value.trim();
     if(!name || !age || !phone) return alert("すべての項目を入力してください");
 
+    // ★ここでトークURLを作成
     const talkUrl = makeTalkUrl(name, age, phone);
     btnOpenTalk.href = talkUrl;
 
+    // ★重要：ユーザーのアクション（submitクリック）の直後に開くことでブロックを防ぐ
     const win = window.open(talkUrl, "_blank");
 
     btnApply.disabled = true;
     btnApply.textContent = "送信処理中...";
     lineBox.textContent = "申請を送信しています…";
 
+    // 裏側でGASにも送っておく（もしLINE送信を忘れてもデータが残るように）
     try{
       if(typeof gasApply === "function"){
+        // 8秒でタイムアウトさせる（GASが遅くてもLINE遷移を邪魔しないように）
         const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), 8000));
         await Promise.race([
           gasApply({ lineUserId, displayName, name, age, phone }),
@@ -277,11 +278,11 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         ]);
       }
     }catch(err){
-      console.warn(err);
+      console.warn(err); // GAS送信失敗しても、LINEが開いていればOKとする
     }
 
     doneBox.style.display = "block";
-    lineBox.textContent = "申請を受け付けました。LINEトークを確認してください。";
+    lineBox.textContent = "申請を受け付けました。LINEトーク画面を確認し、メッセージを送信してください。";
     btnApply.textContent = "申請完了";
     
     if(!win){
