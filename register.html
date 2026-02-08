@@ -41,30 +41,18 @@
     .btn.primary:disabled{background:#ccc; border-color:#ccc; cursor:not-allowed;}
     .btn.ghost{background:#fff}
     .okBox{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:12px}
-    .doneBox{background:#ecfdf5;border:1px solid #bbf7d0;color:#065f46;border-radius:12px;padding:12px}
     ol{margin:8px 0 0 18px}
     .hint{font-size:12px;color:var(--muted)}
 
-    /* 同意チェックボックスのデザイン */
+    /* 同意チェックボックス */
     .agreeBox {
-      margin-top: 16px;
-      padding: 12px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
+      margin-top: 16px; padding: 12px; background: #f9fafb;
+      border: 1px solid #e5e7eb; border-radius: 12px;
+      display: flex; align-items: flex-start; gap: 10px;
     }
-    .agreeBox input {
-      width: 20px; height: 20px; margin-top: 2px;
-    }
-    .agreeLabel {
-      font-size: 14px; line-height: 1.6; font-weight: normal; margin: 0;
-    }
-    .agreeLink {
-      color: var(--pri); text-decoration: underline; cursor: pointer;
-    }
+    .agreeBox input { width: 20px; height: 20px; margin-top: 2px; }
+    .agreeLabel { font-size: 14px; line-height: 1.6; font-weight: normal; margin: 0; }
+    .agreeLink { color: var(--pri); text-decoration: underline; cursor: pointer; }
   </style>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -93,7 +81,7 @@
 
     <div class="small">
       <b>安心して利用していただくために</b><br>
-      なりすまし防止のため、<b>面談での本人確認後に会員IDを発行</b>します。登録フォーム送信だけでは会員ページに入れません。
+      なりすまし防止のため、<b>面談での本人確認後に会員IDを発行</b>します。
       <ol>
         <li>新規登録（LINE連携＋入力）</li>
         <li>担当者からご連絡（面談日程調整）</li>
@@ -107,7 +95,7 @@
 
     <div class="row">
       <button class="btn primary" id="btnConnectLine" type="button">LINE連携する</button>
-      <a class="btn" href="https://lin.ee/oP0e2Kf" target="_blank" rel="noopener">まだ友だち追加していない方はこちら</a>
+      <span class="hint">※LINE連携後、入力フォームが使えるようになります</span>
     </div>
 
     <form id="formRegister" style="margin-top:14px;">
@@ -138,20 +126,11 @@
       </div>
 
       <p class="small" style="margin-top:10px">
-        ※LINE連携が完了すると、申請ボタンが押せるようになります。<br>
-        ※申請ボタンを押すとLINEが起動します。入力内容が自動で入っていますので、そのまま送信してください。
+        ※ボタンを押すとLINEが起動します。入力内容が自動で入っていますので、そのまま送信してください。
       </p>
     </form>
 
-    <div id="doneBox" class="doneBox" style="display:none;margin-top:14px">
-      <b>申請を受け付けました。</b><br>
-      LINEトークが開いていない場合は、下のボタンから開いてください。
-      <div class="row" style="margin-top:10px">
-        <a class="btn primary" id="btnOpenTalk" href="#" target="_blank" rel="noopener">トークを開く（文面入り）</a>
-        <a class="btn" href="https://lin.ee/oP0e2Kf" target="_blank" rel="noopener">友だち追加</a>
-      </div>
-    </div>
-  </section>
+    </section>
 </main>
 
 <script>
@@ -159,8 +138,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const lineBox = document.getElementById("lineBox");
   const btnConnect = document.getElementById("btnConnectLine");
   const form = document.getElementById("formRegister");
-  const doneBox = document.getElementById("doneBox");
-  const btnOpenTalk = document.getElementById("btnOpenTalk");
   const agreeCheck = document.getElementById("agreeCheck");
   const btnApply = document.getElementById("btnApply");
 
@@ -168,15 +145,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   let displayName = "";
 
   const cleanUrl = location.origin + location.pathname;
-  // 公式LINEのID（@マーク込み）
-  const OA_ID = "@820theos";
+  const OA_ID = "@820theos"; // 公式LINE ID
 
   function activateSubmit(){
     btnApply.disabled = false;
     btnApply.textContent = "申請する（LINE起動）";
   }
 
-  // LINEトーク用のURLを作成する関数
   function makeTalkUrl(name, age, phone){
     const text = 
 `【セレネスカフェ&バー申請】
@@ -186,7 +161,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
 申請します。今後の流れについて案内をお願いします。`;
     
-    // oaMessageスキームを使って、公式アカウントとのトーク画面を開き、テキストを入力状態にする
+    // LINEトーク画面を開くURL
     return `https://line.me/R/oaMessage/${OA_ID}/?${encodeURIComponent(text)}`;
   }
 
@@ -212,7 +187,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   // クリック時だけログイン
   btnConnect.addEventListener("click", async ()=>{
     if(typeof initLIFF !== "function"){
-      alert("エラー：app.js が読み込まれていません。ファイルの設置を確認してください。");
+      alert("エラー：app.js が読み込まれていません。");
       return;
     }
     
@@ -233,7 +208,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       
     } catch(err) {
       console.error(err);
-      alert("LINE連携中にエラーが発生しました。\nブラウザを変えてお試しください。");
+      alert("LINE連携中にエラーが発生しました。");
     }
   });
 
@@ -256,21 +231,23 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const phone = document.getElementById("phone").value.trim();
     if(!name || !age || !phone) return alert("すべての項目を入力してください");
 
-    // ★ここでトークURLを作成
+    // トークURL作成
     const talkUrl = makeTalkUrl(name, age, phone);
-    btnOpenTalk.href = talkUrl;
 
-    // ★重要：ユーザーのアクション（submitクリック）の直後に開くことでブロックを防ぐ
+    // ★重要：ここですぐにLINEを開く
     const win = window.open(talkUrl, "_blank");
 
+    // UI更新（完了ボタンなどは出さない）
     btnApply.disabled = true;
-    btnApply.textContent = "送信処理中...";
-    lineBox.textContent = "申請を送信しています…";
+    btnApply.textContent = "LINE起動中...";
+    lineBox.textContent = "LINEが開きます。画面に従ってメッセージを送信してください。";
+    lineBox.style.color = "#c86b00";
+    lineBox.style.borderColor = "#c86b00";
+    lineBox.style.background = "#fffaf0";
 
-    // 裏側でGASにも送っておく（もしLINE送信を忘れてもデータが残るように）
+    // 裏側でGAS送信（ログ用）
     try{
       if(typeof gasApply === "function"){
-        // 8秒でタイムアウトさせる（GASが遅くてもLINE遷移を邪魔しないように）
         const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), 8000));
         await Promise.race([
           gasApply({ lineUserId, displayName, name, age, phone }),
@@ -278,15 +255,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         ]);
       }
     }catch(err){
-      console.warn(err); // GAS送信失敗しても、LINEが開いていればOKとする
+      console.warn(err);
     }
-
-    doneBox.style.display = "block";
-    lineBox.textContent = "申請を受け付けました。LINEトーク画面を確認し、メッセージを送信してください。";
-    btnApply.textContent = "申請完了";
+    
+    // 完了後のUI調整
+    btnApply.textContent = "起動しました";
     
     if(!win){
-      alert("トーク画面がブロックされました。画面下の「トークを開く」ボタンを押してください。");
+      // ブロックされた場合の救済リンク（ボタンではなくテキストリンクで控えめに）
+      lineBox.innerHTML = `LINEが自動で開かない場合は <a href="${talkUrl}" target="_blank" style="color:#c86b00;text-decoration:underline">こちらをタップ</a> してください。`;
     }
   });
 });
