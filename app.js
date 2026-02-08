@@ -1,266 +1,237 @@
-// ===== Basic storage helpers =====
-const nowISO = () => new Date().toISOString();
+/* app.js - Serenes simple app core (session + board + helpers + LINE/GAS)
+   localStorage で動く、ファイルだけで完結する版
+*/
 
-function load(key, fallback){
-  try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-  catch(e){ return fallback; }
-}
-function save(key, value){
-  localStorage.setItem(key, JSON.stringify(value));
-}
+/* =============================================
+   ⚙️ 重要設定
+   ============================================= */
+// ✅ 設定済み：いただいたLIFF ID
+const MY_LIFF_ID = "2006846780-ojjmzQx9"; 
 
-// ===== Keys =====
-const K_SESSION  = "ma_session";   // { lineUserId, loginAt }   ※LINEセッション（使う場合のみ）
-const K_MEMBERS  = "ma_members";   // { [lineUserId]: {lineUserId, displayName, name, age, phone, createdAt} }
-const K_PROFILE  = "ma_profile";   // { [lineUserId]: {bio, area, contact, updatedAt...} }
-const K_BOARD    = "ma_board_posts"; // [{id, lineUserId, title, body, createdAt}]
+// ↓ GASのウェブアプリURL（login.htmlと同じもの）
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+/* ============================================= */
 
-// ===== Session =====
-function getSession(){ return load(K_SESSION, null); }
 
-function setLineSession(lineUserId){
-  save(K_SESSION, { lineUserId, loginAt: nowISO() });
-}
-function getLineSession(){
-  const s = getSession();
-  if(!s || !s.lineUserId) return null;
-  return s;
-}
-function requireLineLogin(){
-  const s = getLineSession();
-  if(!s){
-    alert("ログインが必要です");
-    location.href = "login.html";
-    return null;
+/* ===== HTML Escape ===== */
+window.escapeHtml = function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+};
+
+/* ===== Popup (optional) ===== */
+window.showPopup = window.showPopup || function(body, title){
+  const pop = document.getElementById("popup");
+  const t = document.getElementById("popupTitle");
+  const b = document.getElementById("popupBody");
+  const c = document.getElementById("popupClose");
+  if(!pop || !t || !b) { alert((title?title+"\n":"") + body); return; }
+  t.textContent = title || "お知らせ";
+  b.innerHTML = body || "";
+  pop.style.display = "block";
+  if(c){
+    c.onclick = ()=> (pop.style.display = "none");
   }
-  return s;
-}
-function logout(){
-  localStorage.removeItem(K_SESSION);
-  location.href = "index.html";
-}
+};
 
-// ===== Members =====
-function upsertMember(member){
-  const all = load(K_MEMBERS, {});
-  all[member.lineUserId] = member;
-  save(K_MEMBERS, all);
-}
-function getMember(lineUserId){
-  const all = load(K_MEMBERS, {});
-  return all[lineUserId] ?? null;
-}
+/* ===== Member Session ===== */
+const SESSION_KEYS = ["ma_member_session", "member_session", "ma_session"];
 
-// ===== Profile (detail) =====
-function loadProfile(lineUserId){
-  const all = load(K_PROFILE, {});
-  return all[lineUserId] ?? null;
-}
-function saveProfile(lineUserId, profile){
-  const all = load(K_PROFILE, {});
-  all[lineUserId] = { ...(all[lineUserId]||{}), ...profile, updatedAt: nowISO() };
-  save(K_PROFILE, all);
-}
+window.getMemberSession = function getMemberSession(){
+  for(const k of SESSION_KEYS){
+    try{
+      const obj = JSON.parse(localStorage.getItem(k) || "null");
+      if(obj && obj.memberId) return obj;
+    }catch(e){}
+  }
+  return null;
+};
 
-// ===== Board =====
-const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+window.setMemberSession = function setMemberSession(sessionObj){
+  localStorage.setItem("ma_member_session", JSON.stringify(sessionObj || {}));
+};
 
-function listPosts(){
-  return load(K_BOARD, []).sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
-}
-function addPost(lineUserId, title, body){
-  const posts = load(K_BOARD, []);
-  posts.push({ id: uid(), lineUserId, title, body, createdAt: nowISO() });
-  save(K_BOARD, posts);
-}
-function deletePost(id, lineUserId){
-  const posts = load(K_BOARD, []);
-  const next = posts.filter(p => !(p.id === id && p.lineUserId === lineUserId));
-  save(K_BOARD, next);
-}
+window.clearMemberSession = function clearMemberSession(){
+  for(const k of SESSION_KEYS){
+    localStorage.removeItem(k);
+  }
+};
 
-// ===== UI helpers =====
-function escapeHtml(str){
-  return (str ?? "").replace(/[&<>"']/g, (m)=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
-}
+/* ===== Admin (optional) ===== */
+window.isAdminUser = window.isAdminUser || function isAdminUser(memberId){
+  return false;
+};
 
-function renderHeaderAuth(){
-  const el = document.querySelector("[data-auth]");
-  if(!el) return;
-
-  // ※ログイン条件からLINEを外したので、ヘッダーはシンプルでOK
-  // （必要なら「ログイン中表示」など後で作り込めます）
-  el.innerHTML = `
-    <a class="btn" href="login.html">ログイン</a>
-    <a class="btn primary" href="register.html">新規登録（申請）</a>
-  `;
-}
-document.addEventListener("DOMContentLoaded", renderHeaderAuth);
-
-// ===== LINE / LIFF helpers =====
-// ※registerでLINE連携を使う場合のみ必要（loginがLINE不要でも残してOK）
-async function initLIFF(){
-  if(!window.liff) return { ok:false, msg:"LIFF SDKが読み込まれていません" };
-  if(typeof LIFF_ID === "undefined" || !LIFF_ID){
-    return { ok:false, msg:"LIFF_ID が未設定です（liff-config.js を確認）" };
+/* ===== LIFF (LINE連携) Functions ===== */
+window.initLIFF = async function(){
+  if(!window.liff){ 
+    return {ok:false, msg:"LIFF SDKがロードされていません。インターネット接続を確認してください。"}; 
   }
   try{
-    await liff.init({ liffId: LIFF_ID });
-    return { ok:true };
+    if(!MY_LIFF_ID || MY_LIFF_ID.includes("YOUR_LIFF_ID")){
+      return {ok:false, msg:"LIFF IDが正しく設定されていません。"};
+    }
+    await liff.init({ liffId: MY_LIFF_ID });
+    return {ok:true};
+  }catch(e){
+    console.error("LIFF Init Error:", e);
+    return {ok:false, msg: "LIFF初期化エラー: " + e.message};
+  }
+};
+
+window.getLineProfileSafe = async function(){
+  try{
+    const p = await liff.getProfile();
+    return p;
   }catch(e){
     console.error(e);
-    return { ok:false, msg:"LIFF初期化に失敗しました（Endpoint URLやLIFF IDを確認）" };
+    return {userId:"", displayName:""};
   }
-}
+};
 
-async function ensureLineLogin(){
-  const r = await initLIFF();
-  if(!r.ok) return r;
-
-  if(!liff.isLoggedIn()){
-    const cleanUrl = location.origin + location.pathname; // 400回避
-    liff.login({ redirectUri: cleanUrl });
-    return { ok:false, msg:"LINEログインへ遷移します" };
+/* ===== GAS API (申請送信) ===== */
+window.gasApply = async function(data){
+  if(!GAS_API_URL){
+    console.warn("GAS_API_URL is missing");
+    return;
   }
-  return { ok:true };
+  const url = new URL(GAS_API_URL);
+  url.searchParams.append("action", "register");
+  url.searchParams.append("lineUserId", data.lineUserId || "");
+  url.searchParams.append("displayName", data.displayName || "");
+  url.searchParams.append("name", data.name || "");
+  url.searchParams.append("age", data.age || "");
+  url.searchParams.append("phone", data.phone || "");
+  
+  // no-corsで送信
+  await fetch(url.toString(), {mode: 'no-cors'});
+  return true; 
+};
+
+
+/* ===== Board Storage ===== */
+const POST_KEY = "ma_board_posts_v1";
+const REPLY_KEY = "ma_board_replies_v1";
+
+function _load(key){
+  try{ return JSON.parse(localStorage.getItem(key) || "[]"); }catch(e){ return []; }
+}
+function _save(key, arr){
+  localStorage.setItem(key, JSON.stringify(arr || []));
+}
+function _now(){
+  return new Date().toLocaleString();
+}
+function _uid(){
+  return "id_" + Math.random().toString(36).slice(2) + "_" + Date.now().toString(36);
 }
 
-async function getLineProfileSafe(){
-  const profile = await liff.getProfile();
-  return profile; // { userId, displayName, pictureUrl, statusMessage }
-}
+/* ===== Posts API ===== */
+window.listPosts = function listPosts(){
+  const posts = _load(POST_KEY);
+  posts.sort((a,b)=> (b.createdAtEpoch||0) - (a.createdAtEpoch||0));
+  return posts;
+};
 
-async function safeLiffLogout(){
-  try{
-    if(window.liff && liff.isLoggedIn && liff.isLoggedIn()){
-      liff.logout();
+window.addPost = function addPost(memberId, title, body){
+  const posts = _load(POST_KEY);
+  const p = {
+    id: _uid(),
+    lineUserId: String(memberId||""),
+    title: String(title||""),
+    body: String(body||""),
+    createdAt: _now(),
+    createdAtEpoch: Date.now()
+  };
+  posts.push(p);
+  _save(POST_KEY, posts);
+  return p;
+};
+
+window.deletePost = function deletePost(postId, byMemberId){
+  const posts = _load(POST_KEY);
+  const idx = posts.findIndex(p => String(p.id) === String(postId));
+  if(idx === -1) return false;
+
+  const post = posts[idx];
+  const isOwner = String(post.lineUserId) === String(byMemberId);
+  const isAdmin = window.isAdminUser(byMemberId);
+
+  if(!isOwner && !isAdmin) return false;
+
+  posts.splice(idx,1);
+  _save(POST_KEY, posts);
+
+  const replies = _load(REPLY_KEY).filter(r => String(r.postId) !== String(postId));
+  _save(REPLY_KEY, replies);
+
+  return true;
+};
+
+/* ===== Replies API ===== */
+window.listReplies = function listReplies(postId){
+  const replies = _load(REPLY_KEY);
+  const filtered = postId ? replies.filter(r => String(r.postId) === String(postId)) : replies;
+  filtered.sort((a,b)=> (a.createdAtEpoch||0) - (b.createdAtEpoch||0));
+  return filtered;
+};
+
+window.addReply = function addReply(postId, memberId, body, replyTo){
+  const replies = _load(REPLY_KEY);
+  const r = {
+    id: _uid(),
+    postId: String(postId||""),
+    lineUserId: String(memberId||""),
+    body: String(body||""),
+    createdAt: _now(),
+    createdAtEpoch: Date.now(),
+    replyTo: replyTo || null
+  };
+  replies.push(r);
+  _save(REPLY_KEY, replies);
+  return r;
+};
+
+window.deleteReply = function deleteReply(replyId, byMemberId){
+  const replies = _load(REPLY_KEY);
+  const idx = replies.findIndex(r => String(r.id) === String(replyId));
+  if(idx === -1) return false;
+
+  const r = replies[idx];
+  const isOwner = String(r.lineUserId) === String(byMemberId);
+  const isAdmin = window.isAdminUser(byMemberId);
+
+  if(!isOwner && !isAdmin) return false;
+
+  replies.splice(idx, 1);
+  _save(REPLY_KEY, replies);
+  return true;
+};
+
+/* ===== UI auth slot fill ===== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  const slot = document.querySelector("[data-auth]");
+  if(!slot) return;
+
+  const ms = window.getMemberSession();
+  if(ms && ms.memberId){
+    slot.innerHTML = `
+      <span class="small">ID: ${window.escapeHtml(ms.memberId)}</span>
+      <a class="btn ghost" href="member.html">会員</a>
+      <button class="btn ghost" type="button" id="btnLogout">ログアウト</button>
+    `;
+    const btn = document.getElementById("btnLogout");
+    if(btn){
+      btn.onclick = ()=>{
+        window.clearMemberSession();
+        location.replace("login.html");
+      };
     }
-  }catch(e){
-    console.warn("LIFF logout failed", e);
+  }else{
+    slot.innerHTML = `<a class="btn primary" href="login.html">ログイン</a>`;
   }
-}
-
-// ===== Replies (thread + @mention) =====
-const K_REPLIES = "ma_board_replies"; // [{id, postId, lineUserId, body, replyTo:{name, lineUserId, replyId}, createdAt}]
-
-function listReplies(postId){
-  const all = load(K_REPLIES, []);
-  return all
-    .filter(r => r.postId === postId)
-    .sort((a,b)=> (a.createdAt||"").localeCompare(b.createdAt||"")); // 古い→新しい
-}
-
-function addReply(postId, lineUserId, body, replyTo){
-  const replies = load(K_REPLIES, []);
-  replies.push({
-    id: uid(),
-    postId,
-    lineUserId,
-    body,
-    replyTo: replyTo || null, // {name, lineUserId, replyId}
-    createdAt: nowISO()
-  });
-  save(K_REPLIES, replies);
-}
-
-function deleteReply(replyId, lineUserId){
-  const replies = load(K_REPLIES, []);
-  const next = replies.filter(r => !(r.id === replyId && r.lineUserId === lineUserId));
-  save(K_REPLIES, next);
-}
-
-// ===== Application / Approval registry =====
-const K_APPLY = "ma_applications";
-const K_APPROVED = "ma_approved";
-const K_MEMBER_SESSION = "ma_member_session";
-
-function getApplication(lineUserId){
-  const all = load(K_APPLY, {});
-  return all[lineUserId] ?? null;
-}
-function setApplication(app){
-  const all = load(K_APPLY, {});
-  all[app.lineUserId] = app;
-  save(K_APPLY, all);
-}
-
-function getApproved(lineUserId){
-  const all = load(K_APPROVED, {});
-  return all[lineUserId] ?? null;
-}
-function setApproved(approved){
-  const all = load(K_APPROVED, {});
-  all[approved.lineUserId] = approved;
-  save(K_APPROVED, all);
-}
-
-function setMemberSession(lineUserId, memberId){
-  save(K_MEMBER_SESSION, { lineUserId, memberId, loginAt: nowISO() });
-}
-function getMemberSession(){
-  return load(K_MEMBER_SESSION, null);
-}
-function clearMemberSession(){
-  localStorage.removeItem(K_MEMBER_SESSION);
-}
-
-// ===== GAS API（JSONP）=====
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
-
-function jsonp(url){
-  return new Promise((resolve, reject)=>{
-    const cb = "cb_" + Math.random().toString(36).slice(2);
-    window[cb] = (data)=>{
-      try{ delete window[cb]; }catch(_){}
-      script.remove();
-      resolve(data);
-    };
-    const script = document.createElement("script");
-    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
-    script.onerror = ()=>{
-      try{ delete window[cb]; }catch(_){}
-      script.remove();
-      reject(new Error("jsonp_failed"));
-    };
-    document.body.appendChild(script);
-  });
-}
-
-function gasUrl(action, params={}){
-  const u = new URL(GAS_URL);
-  u.searchParams.set("action", action);
-  Object.entries(params).forEach(([k,v])=>u.searchParams.set(k, v));
-  return u.toString();
-}
-
-// 申請（LINE連携で使うなら）
-async function gasApply(app){
-  return await jsonp(gasUrl("apply", app));
-}
-
-// 状態確認（LINE連携で使うなら）
-async function gasStatus(lineUserId){
-  return await jsonp(gasUrl("status", { lineUserId }));
-}
-
-// 承認済み照合（LINE連携 + memberId + pin）
-async function gasVerify(lineUserId, memberId, pin){
-  return await jsonp(gasUrl("verify", { lineUserId, memberId, pin }));
-}
-
-// ★LINE不要ログイン（memberId + name + age + phone）
-async function gasLogin(memberId, name, age, phone){
-  return await jsonp(gasUrl("login", { memberId, name, age, phone }));
-}
-
-// ===== 会員IDログイン（LINE不要）=====
-async function gasLogin(memberId, name, age, phone){
-  return await jsonp(gasUrl("login", {
-    memberId,
-    name,
-    age,
-    phone
-  }));
-}
+});

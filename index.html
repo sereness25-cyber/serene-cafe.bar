@@ -3,110 +3,290 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>紹介サービス｜セレネス</title>
+  <title>セレネスCafe &amp; Bar｜価値観でつながる、審査制コミュニティ</title>
+
   <link rel="stylesheet" href="styles.css" />
   <script defer src="app.js"></script>
+
+  <style>
+    .lpWrap{max-width:1100px;margin:0 auto;padding:18px 16px}
+
+    .hero, .card{
+      padding:18px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:var(--card,#fff);
+      box-shadow:var(--shadow,0 10px 26px rgba(15,23,42,.08));
+    }
+
+    .heroTop{display:grid;gap:14px}
+    @media(min-width:920px){
+      .heroTop{grid-template-columns:1.2fr .8fr}
+    }
+
+    .hTitle{font-size:26px;font-weight:900;margin:0}
+    .hSub{margin:10px 0 0;color:var(--muted);line-height:1.8}
+
+    .roundBadge{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:7px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(79,124,255,.14);
+      font-weight:900;font-size:12px;
+    }
+
+    .hTitleRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+    .featureList{margin:14px 0 0;padding-left:18px}
+    .featureList li{margin:8px 0;line-height:1.7}
+    .featureList b{font-weight:900}
+
+    .ctaBox{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:color-mix(in srgb,var(--card,#fff) 92%,transparent);
+    }
+
+    .ctaTitle{font-weight:900;margin:0 0 6px}
+    .ctaText{margin:0;color:var(--muted);line-height:1.7}
+    .ctaActions{margin-top:12px}
+
+    .section{margin-top:18px}
+    .secTitle{font-size:18px;font-weight:900;margin:0 0 12px}
+
+    /* ===== Menu（料金） ===== */
+    .menuGrid{display:grid;gap:12px}
+    @media(min-width:920px){
+      .menuGrid{grid-template-columns:1fr 1fr 1fr}
+    }
+
+    .menuCard{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      background:var(--card,#fff);
+    }
+
+    .menuName{font-weight:900;font-size:16px;margin:6px 0}
+    .menuPrice{font-size:26px;font-weight:900;margin:4px 0}
+    .menuNote{color:var(--muted);line-height:1.7}
+
+    .menuHighlight{
+      border:2px solid rgba(79,124,255,.4);
+      background:rgba(79,124,255,.06);
+    }
+
+    /* ===== FAQ ===== */
+    details.faq{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 14px;
+      background:var(--card,#fff);
+    }
+    details.faq summary{
+      font-weight:900;
+      cursor:pointer;
+    }
+    details.faq .a{
+      margin-top:10px;
+      color:var(--muted);
+      line-height:1.75;
+    }
+
+    .night-bg{display:none}
+    body.night .night-bg{
+      display:block;
+      position:fixed;inset:0;z-index:-1;
+      background:
+        linear-gradient(rgba(8,10,14,.4),rgba(8,10,14,.6)),
+        url("images/serenes_bar_counter.png");
+      background-size:cover;
+      background-position:center bottom;
+    }
+  </style>
 </head>
+
 <body>
+<div class="night-bg" aria-hidden="true"></div>
+
 <header>
   <div class="wrap">
-    <div class="brand">紹介サービス｜セレネス</div>
-    <nav>
-      <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="board.html">掲示板</a>
-      <span data-auth class="row"></span>
-    </nav>
+    <div class="brand" data-brand>セレネスCafe &amp; Bar</div>
   </div>
 </header>
 
-<main>
-  <h1>入会費・月会費0円。紹介された時だけのお支払い。</h1>
+<main class="lpWrap">
 
-  <div class="grid cols2">
-    <section class="card">
-      <h2>サービス内容</h2>
-      <p>
-        希望条件（価値観・譲れない条件など）をもとに、相性の良いお相手を「紹介」します。<br>
-        無理な勧誘や月額課金なし。必要な時だけ利用できる仕組みです。
+<!-- HERO -->
+<section class="hero">
+  <div class="heroTop">
+    <div>
+      <div class="hTitleRow">
+        <span class="roundBadge">全国対応</span>
+        <h1 class="hTitle">セレネスCafe &amp; Bar｜価値観でつながる、審査制コミュニティ</h1>
+      </div>
+
+      <p class="hSub" style="font-weight:900">
+        「知り合いの紹介」のような安心感を、オンラインの手軽さで。
       </p>
 
-      <!-- 追記OK：ホームページ作成フォルダの文章をここに貼ると完成度が上がる -->
-      <div class="hr"></div>
-
-      <div class="row" id="ctaRow">
-        <a class="btn primary" href="register.html">LINE連携で新規登録</a>
-        <a class="btn" href="login.html">LINEでログイン</a>
-      </div>
-
-      <p class="small" id="ctaNote" style="margin-top:10px">
-        ※LINE連携登録では「名前・年齢・電話番号」を入力していただきます。
+      <p class="hSub">
+        顔写真やスペックだけで判断されることに、違和感はありませんか？<br>
+        内面（価値観）を大切にした、真剣だけど重たくない出会いの場です。
       </p>
-    </section>
 
-    <section class="card">
-      <h2>料金</h2>
+      <ul class="featureList">
+        <li><b>守られた空間：</b> 審査・招待制のクローズドな安心感</li>
+        <li><b>人柄が見える交流：</b> 投稿や言葉から伝わる雰囲気</li>
+        <li><b>押し付けない紹介：</b> 必要な時だけマスターへ依頼</li>
+      </ul>
+    </div>
 
-      <div class="list">
-        <div class="item">
-          <div style="font-weight:800;font-size:18px">紹介 1回：5,000円</div>
-          <div class="small">紹介が成立したタイミングでのお支払い</div>
-        </div>
-
-        <div class="item">
-          <div style="font-weight:700">入会費：0円</div>
-          <div class="small">初期費用なし</div>
-        </div>
-
-        <div class="item">
-          <div style="font-weight:700">月会費：0円</div>
-          <div class="small">使わない月は費用ゼロ</div>
-        </div>
+    <aside class="ctaBox">
+      <div class="ctaTitle">新規申込（無料）</div>
+      <p class="ctaText">
+        まずはフォームからお申し込みください。<br>
+        担当者より面談日程のご連絡を差し上げます。
+      </p>
+      <div class="ctaActions">
+        <a class="btn primary" href="register.html">新規申込はこちら</a>
       </div>
+    </aside>
+  </div>
+</section>
 
-      <div class="hr"></div>
-      <h2>この仕組みが合う方</h2>
-      <div class="list">
-        <div class="item">月額課金は避けたい</div>
-        <div class="item">必要な時だけ、信頼できる紹介が欲しい</div>
-        <div class="item">条件や価値観の相性を重視したい</div>
-      </div>
-    </section>
+<!-- ===== Menu / 料金 ===== -->
+<section class="section card" id="menu">
+  <h2 class="secTitle">Menu（料金）</h2>
+
+  <div class="menuGrid">
+    <div class="menuCard">
+      <div class="menuName">登録費</div>
+      <div class="menuPrice">¥0</div>
+      <p class="menuNote">会員登録・面談・診断まで無料です。</p>
+    </div>
+
+    <div class="menuCard">
+      <div class="menuName">月会費</div>
+      <div class="menuPrice">¥0</div>
+      <p class="menuNote">在籍しているだけでも費用はかかりません。</p>
+    </div>
+
+    <div class="menuCard menuHighlight">
+      <div class="menuName">紹介成立チャージ</div>
+      <div class="menuPrice">¥5,000</div>
+      <p class="menuNote">
+        実際に「お繋ぎ」が成立した場合のみ。<br>
+        無理な紹介・自動マッチングはありません。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Q&A ===== -->
+<section class="section card" id="faq">
+  <h2 class="secTitle">よくある質問（Q&amp;A）</h2>
+
+  <details class="faq">
+    <summary>面談ではどんなことを聞かれますか？</summary>
+    <div class="a">
+      堅苦しい面接ではありません。あなたの雰囲気やお人柄を知るための時間です。<br>
+      カフェでお話しするような感覚で、リラックスしてお話しください。
+    </div>
+  </details>
+
+  <details class="faq">
+    <summary>婚活に疲れているのですが、休憩目的でもいいですか？</summary>
+    <div class="a">
+      もちろんです。「カフェ」で日記を書くだけのご利用も大歓迎です。<br>
+      無理に誰かと会う必要はありません。
+    </div>
+  </details>
+
+  <details class="faq">
+    <summary>紹介を断っても大丈夫ですか？</summary>
+    <div class="a">
+      はい。気が乗らない時は「パス」で構いません。<br>
+      お互いのタイミングが合う時だけ、お繋ぎします。
+    </div>
+  </details>
+</section>
+
+<!-- ===== House Rules / マスターの想い ===== -->
+<section class="section card" id="house-rule">
+  <h2 class="secTitle">ハウスルール &amp; マスターの想い</h2>
+
+  <!-- ハウスルール -->
+  <div style="margin-bottom:16px">
+    <h3 style="font-weight:900;margin:0 0 8px">ハウスルール（安心して過ごすために）</h3>
+    <p class="menuNote" style="margin:0 0 10px">
+      セレネスCafe &amp; Barは、「誰かを口説く場所」ではなく、<br>
+      <b>お互いを尊重しながら、自然に言葉を交わせる場所</b>です。
+    </p>
+
+    <ul class="featureList">
+      <li>
+        <b>配慮のないメッセージは禁止</b><br>
+        ナンパ目的・一方的なアプローチ・不快に感じる言動は禁止しています。
+      </li>
+      <li>
+        <b>ビジネス・勧誘目的は禁止</b><br>
+        投資・副業・宗教などの勧誘行為は、即退店（退会）対象となります。
+      </li>
+      <li>
+        <b>違和感を感じたら、すぐ運営へ</b><br>
+        我慢する必要はありません。運営が必ず対応します。
+      </li>
+    </ul>
+
+    <p class="menuNote">
+      これらのルールに反する行為が確認された場合、<br>
+      <b>予告なくご利用を停止</b>させていただく場合があります。
+    </p>
   </div>
 
-  <div class="grid cols3" style="margin-top:14px">
-    <section class="card">
-      <h2>STEP 1</h2>
-      <p>LINE連携で登録（名前・年齢・電話番号）</p>
-    </section>
-    <section class="card">
-      <h2>STEP 2</h2>
-      <p>希望条件を入力（プロフィール作成）</p>
-    </section>
-    <section class="card">
-      <h2>STEP 3</h2>
-      <p>条件に合う方をご紹介（紹介1回 5,000円）</p>
-    </section>
+  <!-- セレネスの想い -->
+  <div>
+    <h3 style="font-weight:900;margin:0 0 8px">運営からのメッセージ</h3>
+
+    <p class="menuNote">
+      この場所を作った理由は、とてもシンプルです。
+    </p>
+
+    <p class="menuNote">
+      「ちゃんとした出会いがしたい」<br>
+      でも、アプリや、イベントの空気感が合わない。<br>
+      そんな声を、これまでたくさん聞いてきました。
+    </p>
+
+    <p class="menuNote">
+      セレネスCafe &amp; Barは、<br>
+      <b>無理に動かなくても、席に座っていればいい場所</b>です。
+    </p>
+
+    <p class="menuNote">
+      誰かと話したくなったら、話す。<br>
+      今は一人でいたいなら、日記を書く。<br>
+      そして、「そろそろ誰か紹介してほしいな」と思った時だけ、声をかける。
+    </p>
+
+    <p class="menuNote">
+      そんな、<b>人のペースを大切にできる場所</b>を、<br>
+      丁寧に守っていきたいと思っています。
+    </p>
   </div>
+</section>
+
 </main>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  // ログイン済みならLPのCTAを「会員ページへ」に変える
-  const s = (typeof getLineSession === "function") ? getLineSession() : null;
-  if(!s) return;
-
-  const ctaRow = document.getElementById("ctaRow");
-  const ctaNote = document.getElementById("ctaNote");
-  if(ctaRow){
-    ctaRow.innerHTML = `
-      <a class="btn primary" href="member.html">会員ページへ</a>
-      <a class="btn" href="profile.html">プロフィール作成</a>
-    `;
-  }
-  if(ctaNote){
-    ctaNote.textContent = "ログイン中です。会員ページから続けてください。";
-  }
-});
+function applyDayNight(){
+  const h = new Date().getHours();
+  document.body.classList.toggle("night",(h>=18||h<6));
+}
+applyDayNight();
+setInterval(applyDayNight,60000);
 </script>
 
 </body>
