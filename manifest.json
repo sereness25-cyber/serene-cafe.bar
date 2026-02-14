@@ -1,0 +1,20 @@
+{
+  "name": "Sereness Cafe & Bar",
+  "short_name": "Sereness",
+  "start_url": "./member.html",
+  "display": "standalone",
+  "background_color": "#f4ecd8",
+  "theme_color": "#5a3e32",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
