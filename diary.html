@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>手帳｜セレネスCafe&Bar</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+  <style>
+    :root {
+      --ink: #3e2723;       /* 焦げ茶 */
+      --paper: #f9f4ef;     /* 生成り色 */
+      --accent: #a1887f;    /* 褪せた茶色 */
+      --red-stamp: #b71c1c; /* スタンプの赤 */
+      --shadow-light: rgba(255, 255, 255, 0.6);
+      
+      /* 本棚用カラー */
+      --wood-dark: #3e2723;
+      --wood-shelf: #5d4037;
+      --shelf-shadow: rgba(0,0,0,0.3);
+    }
+
+    /* 紙のテクスチャ（背景） */
+    .paper-texture {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-color: var(--paper);
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiM1ZDQwMzciIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==');
+    }
+    body[data-mode="bar"] .paper-texture {
+      background-color: #2b2b2b;
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9zdmc+');
+    }
+
+    html, body {
+      margin: 0; padding: 0; font-family: "Shippori Mincho", serif; 
+      overflow-y: auto !important; height: auto !important; min-height: 100vh;
+      color: var(--ink); transition: color 0.5s;
+    }
+    body[data-mode="bar"] { color: #d7ccc8; }
+
+    /* ヘッダー */
+    header { 
+      position: sticky; top: 0; z-index: 100; height: 70px; display: flex; align-items: center; padding: 0 20px;
+      background: rgba(244, 236, 216, 0.95); backdrop-filter: blur(4px);
+      border-bottom: 1px double rgba(62, 39, 35, 0.2);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    body[data-mode="bar"] header { background: rgba(43, 43, 43, 0.95); border-bottom-color: rgba(255,255,255,0.1); }
+
+    .wrap { width: 100%; max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* ★ おしゃれな店名ロゴ (Sereness Diary) */
+    .brand { 
+      font-family: 'Dancing Script', cursive; font-size: 26px; 
+      color: var(--ink); letter-spacing: 0.1em; font-weight: 700;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    }
+    body[data-mode="bar"] .brand { color: #d7ccc8; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    
+    .navRight { display: flex; gap: 12px; align-items: center; }
+    
+    /* ボタン（チケット風） */
+    .btn.ghost { 
+      border: 1px solid var(--ink); background: transparent; color: var(--ink); 
+      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
+      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); transition: 0.3s; position: relative;
+    }
+    .btn.ghost::before, .btn.ghost::after {
+      content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
+      background: rgba(244, 236, 216, 1); border-radius: 50%; transform: translateY(-50%);
+      border: 1px solid var(--ink);
+    }
+    .btn.ghost::before { left: -4px; border-right-color: transparent; }
+    .btn.ghost::after { right: -4px; border-left-color: transparent; }
+    body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #2b2b2b; border-color: #d7ccc8; }
+
+    main { max-width: 800px; margin: 0 auto; padding: 30px 16px 120px; }
+
+    /* フィルタータブ */
+    .filter-tabs { display: flex; gap: 10px; margin-bottom: 30px; justify-content: center; }
+    .filter-btn { 
+      background: transparent; color: var(--accent); border: 1px dashed var(--accent);
+      padding: 8px 24px; border-radius: 50px; cursor: pointer; font-weight: bold; 
+      font-family: "Shippori Mincho"; font-size: 13px; transition: 0.3s;
+    }
+    .filter-btn.active { 
+      background: var(--ink); color: #fff; border-style: solid; border-color: var(--ink);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    body[data-mode="bar"] .filter-btn.active { background: #d7ccc8; color: #3e2723; border-color: #d7ccc8; }
+
+    /* ★ 本棚デザイン */
+    #diaryList { 
+      padding: 20px 10px; 
+      /* 本棚の外枠 */
+      background-color: #4e342e;
+      border: 8px solid #3e2723;
+      border-radius: 4px;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.2);
+      min-height: 400px;
+    }
+    body[data-mode="bar"] #diaryList { background-color: #261e1b; border-color: #1a1512; }
+
+    /* 棚板の行 */
+    .bookshelf-row {
+      display: flex; align-items: flex-end; justify-content: flex-start; flex-wrap: wrap;
+      padding: 0 16px; margin-bottom: 0;
+      border-bottom: 18px solid #6d4c41; /* 棚板 */
+      box-shadow: 0 8px 15px rgba(0,0,0,0.3); /* 棚の影 */
+      min-height: 150px; position: relative;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent 30%);
+    }
+    /* 棚板の木目 */
+    .bookshelf-row::after {
+      content: ""; position: absolute; bottom: -18px; left: 0; width: 100%; height: 18px;
+      background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 10px);
+      pointer-events: none;
+    }
+
+    /* 本の背表紙 */
+    .book-spine {
+      width: 32px; /* 基本幅 */
+      border-radius: 2px 4px 4px 2px;
+      cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      position: relative; z-index: 1; padding: 10px 2px; margin-right: 2px; margin-left: 2px;
+      box-shadow: inset 2px 0 5px rgba(255,255,255,0.15), inset -2px 0 5px rgba(0,0,0,0.3), 2px 5px 5px rgba(0,0,0,0.3);
+      transition: transform 0.2s; transform-origin: bottom center;
+      color: rgba(255,255,255,0.9);
+      font-family: "Shippori Mincho", serif; font-size: 10px; font-weight: bold;
+      writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 1px;
+      overflow: hidden;
+    }
+    .book-spine:hover { transform: translateY(-5px) scale(1.05); z-index: 10; margin-left: 6px; margin-right: 6px; }
+
+    /* 背表紙の色バリエーション */
+    .spine-0 { background: #5d4037; } 
+    .spine-1 { background: #37474f; } 
+    .spine-2 { background: #1b5e20; } 
+    .spine-3 { background: #bf360c; } 
+    .spine-4 { background: #006064; } 
+    .spine-5 { background: #4a148c; }
+    .spine-6 { background: #880e4f; }
+
+    /* 装飾ライン */
+    .book-spine::before {
+      content: ""; position: absolute; top: 10px; left: 0; width: 100%; height: 2px;
+      background: rgba(255,255,255,0.3);
+    }
+    .book-spine::after {
+      content: ""; position: absolute; bottom: 15px; left: 0; width: 100%; height: 2px;
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .book-lock { position: absolute; bottom: 4px; color: rgba(255,255,255,0.7); font-size: 8px; }
+
+    /* FAB */
+    .fab { 
+      position: fixed; bottom: 30px; right: 24px; width: 60px; height: 60px; 
+      background: #8d6e63; color: #fff; border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; 
+      box-shadow: 0 4px 15px rgba(62, 39, 35, 0.4); cursor: pointer; font-size: 26px; z-index: 80; 
+      border: 2px solid rgba(255,255,255,0.2); transition: 0.2s;
+    }
+    .fab:active { transform: scale(0.95); }
+
+    /* Editor Modal (Book style) */
+    .editor-overlay { 
+      position: fixed; inset: 0; z-index: 2000; display: none; 
+      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); 
+      align-items: center; justify-content: center; padding: 16px; perspective: 1200px; 
+    }
+    
+    .book-container {
+      background: #fff; width: 100%; max-width: 500px; max-height: 85vh; 
+      border-radius: 2px 6px 6px 2px;
+      box-shadow: 10px 10px 30px rgba(0,0,0,0.5);
+      display: flex; flex-direction: column; position: relative; overflow: hidden;
+      transform-origin: center center;
+      border-left: 12px solid #3e2723; /* 背表紙部分 */
+    }
+    body[data-mode="bar"] .book-container { background: #2b2b2b; border-left-color: #1a1512; }
+
+    .book-open { animation: openBook 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    @keyframes openBook { from { transform: rotateY(-90deg); opacity: 0; } to { transform: rotateY(0deg); opacity: 1; } }
+
+    .book-content { padding: 40px 30px; overflow-y: auto; position: relative; z-index: 10; height: 100%; }
+    
+    .ruled-bg {
+      background-image: linear-gradient(transparent 31px, rgba(62, 39, 35, 0.1) 31px, rgba(62, 39, 35, 0.1) 32px, transparent 32px);
+      background-size: 100% 32px; background-attachment: local;
+    }
+    body[data-mode="bar"] .ruled-bg {
+      background-image: linear-gradient(transparent 31px, rgba(255,255,255,0.1) 31px, rgba(255,255,255,0.1) 32px, transparent 32px);
+    }
+
+    .date-stamp { 
+      font-family: 'Courier New', serif; font-size: 14px; color: var(--red-stamp); 
+      border: 1px solid var(--red-stamp); padding: 4px 8px; display: inline-block;
+      transform: rotate(-2deg); letter-spacing: 2px; font-weight: bold; opacity: 0.8;
+      mix-blend-mode: multiply; margin-bottom: 20px;
+    }
+    body[data-mode="bar"] .date-stamp { mix-blend-mode: normal; }
+
+    .title-input { 
+      width: 100%; border: none; background: transparent; font-family: "Shippori Mincho", serif;
+      font-size: 22px; font-weight: bold; color: var(--ink); outline: none; margin-bottom: 20px;
+      text-shadow: 0 1px 1px var(--shadow-light);
+    }
+    body[data-mode="bar"] .title-input { color: #eaddcf; text-shadow: -1px -1px 1px rgba(0,0,0,0.5); }
+
+    .body-input {
+      width: 100%; border: none; background: transparent; font-family: "Shippori Mincho", serif;
+      font-size: 16px; line-height: 32px; color: var(--ink); outline: none; resize: none; min-height: 300px;
+      text-shadow: 0 0 1px rgba(62, 39, 35, 0.1);
+    }
+    body[data-mode="bar"] .body-input { color: #d7ccc8; text-shadow: none; }
+
+    .actions { display: flex; justify-content: flex-end; gap: 16px; margin-top: 30px; border-top: 1px dashed rgba(0,0,0,0.2); padding-top: 20px;}
+    .btn-text { background: none; border: none; color: #888; cursor: pointer; font-size: 13px; font-family: sans-serif; text-decoration: underline; }
+    
+    .btn-seal { 
+      background: var(--red-stamp); color: #fff; border: none; width: 60px; height: 60px;
+      border-radius: 50%; font-family: "Shippori Mincho"; font-size: 12px; font-weight: bold;
+      cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.2;
+    }
+    .btn-seal:active { transform: scale(0.95); box-shadow: 0 2px 3px rgba(0,0,0,0.2); }
+
+    .polaroid {
+      background: #fff; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      width: 120px; transform: rotate(1deg); margin: 0 0 20px 10px; float: right;
+      transition: transform 0.3s; cursor: pointer; position: relative; border: 1px solid #ddd;
+    }
+    .polaroid:hover { transform: rotate(0deg) scale(1.05); z-index: 20; }
+    .polaroid img { width: 100%; height: 90px; object-fit: cover; filter: sepia(0.4) contrast(0.9); }
+    .clip {
+      position: absolute; top: -10px; right: 20px; width: 10px; height: 20px;
+      background: #555; border-radius: 5px; z-index: 10;
+    }
+
+    .loader { text-align: center; color: #aaa; font-size: 12px; margin-top: 60px; font-family: sans-serif; }
+    
+    .sticky-container { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; clear:both; }
+    .sticky {
+      background: rgba(255, 255, 224, 0.9); padding: 6px 10px; font-family: 'Zen Kurenaido'; font-size: 12px;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.1); color: #555; border-left: 2px solid #e6c17a;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="paper-texture"></div>
+
+  <header>
+    <div class="wrap">
+      <div class="brand">Sereness Diary</div>
+      <nav class="navRight">
+        <a class="btn ghost" href="member.html">指定席に戻る</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="filter-tabs">
+      <button class="filter-btn active" id="filterAll">誰かの１ページ</button>
+      <button class="filter-btn" id="filterMy">私のページ</button>
+    </div>
+
+    <div id="diaryList">
+      <div class="loader">
+        ページをめくっています...
+      </div>
+    </div>
+  </main>
+
+  <div class="fab" id="btnNewDiary" title="ページを綴る">
+    <span class="material-icons-outlined">create</span>
+  </div>
+
+  <div id="editor" class="editor-overlay">
+    <div class="book-container book-open">
+      <div class="book-content ruled-bg">
+        
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:10px;">
+          <div id="displayDate" class="date-stamp">2026.02.12</div>
+          <select id="inPrivacy" style="border:1px solid #ccc; background:transparent; font-size:11px; padding:2px 6px; border-radius:2px; color:#666;">
+            <option value="public">公開</option>
+            <option value="private">非公開</option>
+          </select>
+        </div>
+
+        <div id="photoArea"></div>
+
+        <input type="text" id="inTitle" class="title-input" placeholder="見出し">
+        <textarea id="inBody" class="body-input" placeholder="コーヒーの香りと共に、とりとめのない話を。"></textarea>
+        
+        <div id="viewModeContent" style="display:none; font-family:'Shippori Mincho'; font-size:16px; line-height:32px; white-space:pre-wrap; color:var(--ink); text-shadow:0 1px 1px rgba(255,255,255,0.5);"></div>
+        <div id="viewStickies" class="sticky-container"></div>
+        <div id="viewAuthor" style="text-align:right; font-size:12px; color:#a1887f; margin-top:30px; font-family:sans-serif;"></div>
+
+        <div class="actions">
+          <button class="btn-text" id="btnCancel">閉じる</button>
+          <button class="btn-seal" id="btnSave">綴る</button>
+        </div>
+      </div>
+      <input type="hidden" id="inId">
+      <input type="hidden" id="inDate">
+      <input type="file" id="fileIn" accept="image/*" style="display:none">
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+    const CACHE_KEY_ALL = "ma_diary_all";
+    const CACHE_KEY_MY = "ma_diary_my";
+    const CACHE_KEY_PROFILES = "ma_profile_cache";
+    
+    let currentMode = "all";
+    let myId = "";
+    let currentPhotoData = "";
+    let profileCache = {};
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const h = new Date().getHours();
+      if(h >= 18 || h < 6) document.body.setAttribute("data-mode", "bar");
+
+      try {
+        const sess = JSON.parse(localStorage.getItem("ma_member_session"));
+        if(!sess || !sess.memberId) throw new Error();
+        myId = sess.memberId;
+
+        // ★ セッション切れチェック (12時間)
+        const TIMEOUT_MS = 12 * 60 * 60 * 1000;
+        if (sess.loginAt) {
+           const loginTime = new Date(sess.loginAt).getTime();
+           const now = new Date().getTime();
+           if (now - loginTime > TIMEOUT_MS) {
+               alert("長らくご滞在ありがとうございました。\n一旦、お席をリセットさせていただきます。（再ログインが必要です）");
+               localStorage.removeItem("ma_member_session");
+               location.replace("login.html");
+               return;
+           }
+        }
+      } catch(e){ alert("ログインしてください"); location.href="login.html"; return; }
+
+      try { profileCache = JSON.parse(localStorage.getItem(CACHE_KEY_PROFILES) || "{}"); } catch(e){}
+
+      loadDiaries();
+
+      document.getElementById("filterAll").onclick = (e) => switchTab(e, "all");
+      document.getElementById("filterMy").onclick = (e) => switchTab(e, "my");
+      document.getElementById("btnNewDiary").onclick = openNewEditor;
+      document.getElementById("btnCancel").onclick = () => document.getElementById("editor").style.display = "none";
+      document.getElementById("btnSave").onclick = saveDiary;
+      
+      document.getElementById("fileIn").onchange = function(e) {
+        if(!e.target.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+           const img = new Image();
+           img.onload = () => {
+             const cvs = document.createElement("canvas");
+             const max = 600;
+             let w = img.width, h = img.height;
+             if(w > max || h > max) { if(w>h){ h*=max/w; w=max;} else { w*=max/h; h=max;} }
+             cvs.width = w; cvs.height = h;
+             cvs.getContext("2d").drawImage(img, 0,0,w,h);
+             currentPhotoData = cvs.toDataURL("image/jpeg", 0.7);
+             renderPhotoPreview(currentPhotoData, true);
+           };
+           img.src = evt.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      };
+    });
+
+    function switchTab(e, mode) {
+      currentMode = mode;
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      e.target.classList.add("active");
+      loadDiaries();
+    }
+
+    async function resolveName(uid) {
+      if (profileCache[uid]) return profileCache[uid];
+      try {
+        const url = new URL(GAS_URL);
+        url.searchParams.append("action", "get_profile");
+        url.searchParams.append("targetId", uid);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.ok && data.profile) {
+          const name = data.profile.nickname || "匿名";
+          profileCache[uid] = name;
+          localStorage.setItem(CACHE_KEY_PROFILES, JSON.stringify(profileCache));
+          return name;
+        }
+      } catch (e) {}
+      return "匿名";
+    }
+
+    async function loadDiaries() {
+      const listEl = document.getElementById("diaryList");
+      const cacheKey = (currentMode === "my") ? CACHE_KEY_MY : CACHE_KEY_ALL;
+      
+      const cache = localStorage.getItem(cacheKey);
+      if(cache) {
+        renderBookshelf(JSON.parse(cache));
+      } else {
+        listEl.innerHTML = `<div class="loader">ページをめくっています...</div>`;
+      }
+
+      try {
+        const url = new URL(GAS_URL);
+        url.searchParams.append("action", "list_diaries");
+        url.searchParams.append("memberId", myId);
+        if(currentMode === "my") url.searchParams.append("targetMemberId", myId);
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if(data.ok && data.diaries) {
+          localStorage.setItem(cacheKey, JSON.stringify(data.diaries));
+          renderBookshelf(data.diaries);
+        } else {
+          if(!cache) listEl.innerHTML = `<div class="loader">まだ白いページです。</div>`;
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    /* ★ 本棚としてレンダリングする関数 */
+    function renderBookshelf(diaries) {
+      const listEl = document.getElementById("diaryList");
+      if(!diaries || diaries.length === 0) {
+        listEl.innerHTML = `<div class="loader" style="color:#aaa;">まだ本がありません。<br>最初の一冊を書いてみませんか？</div>`;
+        return;
+      }
+
+      listEl.innerHTML = "";
+      const colors = ["spine-0", "spine-1", "spine-2", "spine-3", "spine-4", "spine-5", "spine-6"];
+      
+      const chunkSize = 8; // 1段あたりの本の数
+      for (let i = 0; i < diaries.length; i += chunkSize) {
+        const chunk = diaries.slice(i, i + chunkSize);
+        const row = document.createElement("div");
+        row.className = "bookshelf-row";
+        
+        chunk.forEach((d, idx) => {
+          const date = new Date(d.date);
+          const day = date.getDate();
+          
+          // 本の高さをランダムに (110px ~ 130px)
+          const h = 110 + Math.floor(Math.random() * 20); 
+          const clr = colors[(d.id.charCodeAt(d.id.length-1) + idx) % colors.length];
+          const w = 28 + Math.floor(Math.random() * 8); // 幅も少しランダムに
+
+          const spine = document.createElement("div");
+          spine.className = `book-spine ${clr}`;
+          spine.style.height = `${h}px`;
+          spine.style.width = `${w}px`;
+          spine.onclick = () => openViewer(d);
+          
+          let lock = (d.privacy === "private" && d.memberId === myId) ? `<span class="material-icons-outlined book-lock">lock</span>` : "";
+
+          spine.innerHTML = `
+            ${escapeHtml(d.title)}
+            ${lock}
+          `;
+          row.appendChild(spine);
+        });
+        listEl.appendChild(row);
+      }
+    }
+
+    function openNewEditor() {
+      const now = new Date();
+      document.getElementById("inId").value = "";
+      document.getElementById("inDate").value = now.toISOString().split("T")[0];
+      document.getElementById("displayDate").textContent = now.toLocaleDateString('ja-JP').replace(/\//g, '.');
+      document.getElementById("inTitle").value = "";
+      document.getElementById("inBody").value = "";
+      document.getElementById("inPrivacy").value = "public";
+      
+      currentPhotoData = "";
+      renderPhotoPreview("", true);
+
+      setupMode("edit");
+      document.getElementById("editor").style.display = "flex";
+    }
+
+    async function openViewer(d) {
+      document.getElementById("inId").value = d.id;
+      document.getElementById("displayDate").textContent = new Date(d.date).toLocaleDateString('ja-JP').replace(/\//g, '.');
+      
+      if(d.memberId === myId) {
+        document.getElementById("inTitle").value = d.title;
+        document.getElementById("inBody").value = d.body;
+        document.getElementById("inDate").value = d.date.split("T")[0];
+        document.getElementById("inPrivacy").value = d.privacy;
+        currentPhotoData = d.imageSrc || "";
+        renderPhotoPreview(d.imageSrc, true);
+        
+        document.getElementById("viewAuthor").style.display = "none";
+        setupMode("edit");
+      } else {
+        document.getElementById("viewModeContent").textContent = d.body;
+        document.getElementById("inTitle").value = d.title;
+        currentPhotoData = d.imageSrc || "";
+        renderPhotoPreview(d.imageSrc, false);
+        
+        document.getElementById("viewAuthor").style.display = "block";
+        document.getElementById("viewAuthor").textContent = "Written by ...";
+        const name = await resolveName(d.memberId);
+        document.getElementById("viewAuthor").textContent = "Written by " + name;
+        
+        setupMode("view");
+      }
+      document.getElementById("editor").style.display = "flex";
+    }
+
+    function setupMode(mode) {
+      const isEdit = (mode === "edit");
+      document.getElementById("inTitle").readOnly = !isEdit;
+      document.getElementById("inBody").style.display = isEdit ? "block" : "none";
+      document.getElementById("viewModeContent").style.display = isEdit ? "none" : "block";
+      document.getElementById("inPrivacy").style.display = isEdit ? "block" : "none";
+      document.getElementById("btnSave").style.display = isEdit ? "flex" : "none";
+      document.getElementById("btnCancel").textContent = isEdit ? "破棄" : "閉じる";
+    }
+
+    function renderPhotoPreview(src, editable) {
+      const area = document.getElementById("photoArea");
+      area.innerHTML = "";
+      if(src) {
+        area.innerHTML = `
+          <div class="polaroid">
+            <div class="clip"></div>
+            <img src="${src}">
+            ${editable ? '<div style="color:red; font-size:9px; text-align:center;" onclick="removePhoto()">[剥がす]</div>' : ''}
+          </div>
+        `;
+      } else if(editable) {
+        area.innerHTML = `<div style="text-align:right; margin-bottom:10px;"><span style="font-size:12px; cursor:pointer; color:#a1887f; border-bottom:1px solid #a1887f;" onclick="document.getElementById('fileIn').click()">+ 写真を貼る</span></div>`;
+      }
+    }
+    
+    window.removePhoto = () => { currentPhotoData = ""; renderPhotoPreview("", true); };
+
+    async function saveDiary() {
+      const btn = document.getElementById("btnSave");
+      btn.textContent = "..."; btn.disabled = true;
+
+      const p = {
+        action: "save_diary",
+        id: document.getElementById("inId").value,
+        memberId: myId,
+        title: document.getElementById("inTitle").value,
+        body: document.getElementById("inBody").value,
+        date: document.getElementById("inDate").value,
+        privacy: document.getElementById("inPrivacy").value,
+        imageSrc: currentPhotoData
+      };
+
+      const fd = new FormData();
+      for(let k in p) fd.append(k, p[k]);
+
+      try {
+        await fetch(GAS_URL, { method: "POST", body: fd });
+        localStorage.removeItem(CACHE_KEY_ALL);
+        localStorage.removeItem(CACHE_KEY_MY);
+        document.getElementById("editor").style.display = "none";
+        loadDiaries();
+      } catch(e) { alert("エラーが発生しました"); }
+      
+      btn.textContent = "綴る"; btn.disabled = false;
+    }
+
+    function escapeHtml(s) {
+      if(!s) return "";
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

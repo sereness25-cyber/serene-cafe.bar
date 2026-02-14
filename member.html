@@ -2,174 +2,1045 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>会員ページ</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>指定席｜Sereness Cafe&Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 
-  <!-- LIFFをmemberでも使う（これでuserIdが確実に取れる） -->
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script defer src="liff-config.js"></script>
-  <script defer src="app.js"></script>
+  <style>
+    :root {
+      --pri: #5a3e32;
+      --sec: #c97b63;
+      --paper-light: #fffdf8;
+      --paper-dark: #2a2a2a;
+      --accent: #a1887f;
+    }
+
+    html, body {
+      margin: 0; padding: 0; background: transparent; font-family: "Shippori Mincho", serif;
+      overflow-y: auto !important; height: auto !important; min-height: 100vh;
+      color: #333; transition: color 0.3s, background 0.3s;
+    }
+
+    /* ★ リアルなカフェテーブルの木目背景 */
+    .day-bg, .night-bg { position: fixed; inset: 0; z-index: -3; pointer-events: none; background-size: cover; background-position: center; }
+    .day-bg { 
+      background-color: #9c6f44; 
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 50px),
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 15px),
+        linear-gradient(0deg, rgba(0,0,0,0.15) 0%, transparent 20%);
+    }
+    .night-bg { 
+      display: none; background-color: #2b1d16; 
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 50px),
+        radial-gradient(circle at 50% 100%, rgba(200,150,100,0.15), transparent 70%); 
+    }
+    body[data-mode="bar"] .day-bg { display: none; }
+    body[data-mode="bar"] .night-bg { display: block; }
+
+    /* ★ テーブルの手前のフチ（立体感） */
+    .table-edge {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 12px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6));
+      z-index: 99; pointer-events: none;
+    }
+
+    /* レコードプレーヤー */
+    .record-player { position: fixed; bottom: 30px; left: 30px; width: 70px; height: 70px; background: #5a3e32; border-radius: 8px; box-shadow: 2px 5px 15px rgba(0,0,0,0.4); z-index: -1; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid #3a2a1c; transition: 0.3s; transform: rotate(-2deg); }
+    .record-player:active { transform: scale(0.95) rotate(-2deg); }
+    .record-disc { width: 54px; height: 54px; background: #111; border-radius: 50%; border: 1px solid #333; position: relative; display: flex; align-items: center; justify-content: center; }
+    .record-disc::before { content: ''; position: absolute; width: 18px; height: 18px; background: #a63737; border-radius: 50%; }
+    .record-disc::after { content: ''; position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; }
+    .record-player.playing .record-disc { animation: spin 2s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .record-tonearm { position: absolute; top: 10px; right: 5px; width: 4px; height: 35px; background: silver; transform-origin: top center; transform: rotate(-20deg); transition: transform 0.5s; border-radius: 2px; box-shadow: 1px 2px 3px rgba(0,0,0,0.5); }
+    .record-player.playing .record-tonearm { transform: rotate(15deg); }
+
+    /* ドリンクとコースター */
+    .table-item { position: fixed; bottom: 30px; right: 30px; z-index: -1; transition: transform 0.3s; }
+    .coaster-wrapper { position: absolute; bottom: -10px; right: -10px; width: 140px; height: 140px; perspective: 1000px; z-index: -2; cursor: pointer; }
+    .coaster { width: 100%; height: 100%; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d; }
+    .coaster.flipped { transform: rotateY(180deg); }
+    .coaster-face { position: absolute; width: 100%; height: 100%; border-radius: 50%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 2px 5px 15px rgba(0,0,0,0.2); }
+    .coaster-front { background: #e8dcc7; border: 2px dashed #c0a080; }
+    .coaster-back { background: #fdf6e3; transform: rotateY(180deg); padding: 15px; text-align: center; font-family: 'Zen Kurenaido', sans-serif; font-size: 15px; color: #5a3e32; box-sizing: border-box; line-height: 1.4; font-weight: bold; border: 1px solid #e0d0c0;}
+    body[data-mode="bar"] .coaster-front { background: #4a3b32; border-color: #2b1d16; }
+    body[data-mode="bar"] .coaster-back { background: #3a2b22; color: #eaddcf; border-color: #555; }
+    
+    .drink-emoji { font-size: 120px; filter: drop-shadow(5px 15px 15px rgba(0,0,0,0.5)); position: relative; z-index: 1; pointer-events: none; }
+    .drink-emoji::before { content: '☕️'; }
+    body[data-mode="bar"] .table-item { opacity: 0.9; }
+    body[data-mode="bar"] .drink-emoji { filter: drop-shadow(5px 15px 15px rgba(0,0,0,0.9)); }
+    body[data-mode="bar"] .drink-emoji::before { content: '🍸'; }
+
+    .steam-svg { position: absolute; top: -10px; left: 35px; width: 60px; height: 60px; fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 2; stroke-linecap: round; filter: blur(2px); transition: opacity 10s ease; z-index: 2; pointer-events: none; }
+    body[data-mode="bar"] .steam-svg { display: none; } 
+    .table-item.cooled .steam-svg { opacity: 0; } 
+    .steam-svg path { animation: steamAnim 3s infinite alternate ease-in-out; }
+    .steam-svg path:nth-child(2) { animation-delay: -1s; }
+    .steam-svg path:nth-child(3) { animation-delay: -2s; }
+    @keyframes steamAnim { 0% { transform: translateY(0) translateX(0); opacity: 0.2; } 100% { transform: translateY(-15px) translateX(8px); opacity: 0.8; } }
+    .jiggle { animation: jiggleAnim 0.4s ease-in-out; }
+    @keyframes jiggleAnim { 0% { transform: rotate(0deg); } 25% { transform: rotate(4deg); } 50% { transform: rotate(-2deg); } 75% { transform: rotate(1deg); } 100% { transform: rotate(0deg); } }
+
+    /* キャンドル */
+    .candle-container { position: fixed; top: 120px; left: 50%; transform: translateX(-50%); z-index: -1; text-align: center; cursor: pointer; transition: 0.3s; display: none; }
+    body[data-mode="bar"] .candle-container { display: block; opacity: 0.8; }
+    .candle-emoji { font-size: 50px; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5)); transition: 0.3s; }
+    .candle-glow { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 150px, rgba(255, 150, 50, 0.15), transparent 60%); z-index: -2; opacity: 0; transition: opacity 2s ease; }
+    body[data-mode="bar"] .candle-container.lit .candle-emoji { filter: drop-shadow(0 0 30px rgba(255, 150, 50, 0.9)); }
+    body[data-mode="bar"] .candle-container.lit .candle-emoji::before { content: ''; position: absolute; top: -10px; left: 20px; width: 10px; height: 20px; background: rgba(255,150,50,0.8); border-radius: 50%; filter: blur(3px); animation: flicker 0.5s infinite alternate; }
+    body[data-mode="bar"] .candle-container.lit ~ .candle-glow { opacity: 1; }
+    @keyframes flicker { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 1; transform: scale(1.1); } }
+
+    /* 夜モード基本設定 */
+    body[data-mode="bar"] { color: #fff; }
+    body[data-mode="bar"] .cardTitle, body[data-mode="bar"] .pickupTitle, body[data-mode="bar"] .pickupName, body[data-mode="bar"] .infoValue { color: #eaddcf !important; }
+    body[data-mode="bar"] .pickupBody, body[data-mode="bar"] .infoLabel, body[data-mode="bar"] .news-date, body[data-mode="bar"] .step-content h4 { color: #eaddcf !important; }
+    body[data-mode="bar"] a { color: #eaddcf; }
+
+    /* ヘッダー (固定表示 & おしゃれロゴ) */
+    header { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 250, 246, 0.95); backdrop-filter: blur(10px); 
+      border-bottom: 1px solid rgba(0,0,0,0.1); 
+      z-index: 1000; padding: 0 16px; box-sizing: border-box;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    }
+    body[data-mode="bar"] header { 
+      background: rgba(20, 20, 20, 0.9) !important; 
+      border-bottom-color: rgba(255,255,255,0.1); 
+    }
+    
+    .wrap { width: 100%; max-width: 960px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* おしゃれな店名ロゴ */
+    .brand { 
+      font-family: 'Dancing Script', cursive; font-size: 26px; 
+      color: var(--pri) !important; letter-spacing: 0.15em; font-weight: 600;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+      transition: 0.3s;
+    }
+    body[data-mode="bar"] .brand { 
+      color: #eaddcf !important; 
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .navRight { display: flex; gap: 10px; align-items: center; }
+
+    /* レイアウト */
+    .layout { 
+      max-width: 960px; margin: 0 auto; 
+      padding: 100px 16px 120px; /* ヘッダー固定分(70px) + 余白 */
+      display: grid; grid-template-columns: 1fr; gap: 35px; 
+    }
+    @media (min-width: 768px) { .layout { grid-template-columns: 1.2fr 1fr; align-items: start; } }
+    .left-col, .right-col { display: flex; flex-direction: column; gap: 35px; }
+
+    /* バインダー風カード（左側） */
+    .card { background: var(--paper-light); padding: 30px 24px 24px; border-radius: 4px; box-shadow: 3px 6px 18px rgba(0,0,0,0.2); position: relative; margin-top: 15px; }
+    body[data-mode="bar"] .card { background: rgba(30, 30, 30, 0.85) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: #fff !important; box-shadow: 3px 6px 20px rgba(0,0,0,0.7); }
+    
+    .card::before { 
+      content: ""; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); 
+      width: 70px; height: 26px; background: linear-gradient(to bottom, #f0f0f0, #aaa); 
+      border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.8); 
+      border: 1px solid #777; z-index: 10; 
+    }
+    .card::after { 
+      content: ""; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); 
+      width: 8px; height: 8px; background: #222; border-radius: 50%; z-index: 11; 
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); 
+    }
+    body[data-mode="bar"] .card::before { background: linear-gradient(to bottom, #666, #333); border-color: #222; }
+
+    .cardTitle { font-weight: 900; margin: 0 0 8px; font-size: 16px; color: var(--pri); font-family: 'Zen Kurenaido', sans-serif; }
+    .hr { border-top: 1px dotted #ccc; margin: 8px 0; }
+    body[data-mode="bar"] .hr { border-top-color: #555; }
+    .infoGrid{ display:grid; gap:8px; grid-template-columns:1fr; font-size: 14px; }
+    .infoItem{ display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.05); padding:8px 0; }
+    body[data-mode="bar"] .infoItem { border-bottom-color: rgba(255,255,255,0.05); }
+    .infoLabel{ color:#888; font-family: 'Zen Kurenaido', sans-serif;}
+    .infoValue{ font-weight:bold; }
+    .avatarLg{ width:60px;height:60px;border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+    .chart-box { display: flex; justify-content: center; align-items: center; padding: 10px 0; min-height: 150px; }
+
+    /* 流れ（ステップ） */
+    .step-item { display: flex; gap: 12px; margin-bottom: 20px; position: relative; align-items: flex-start;}
+    .step-item:last-child { margin-bottom: 0; }
+    .step-item:not(:last-child)::after {
+      content: ""; position: absolute; left: 14px; top: 30px; bottom: -15px;
+      border-left: 1px dashed var(--accent); opacity: 0.5;
+    }
+    .step-num {
+      width: 30px; height: 30px; border: 1px solid var(--accent); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-family: 'Dancing Script';
+      flex-shrink: 0; background: var(--paper-light); font-size: 14px; z-index:1;
+    }
+    body[data-mode="bar"] .step-num { background: #2b2b2b; color: #d7ccc8; border-color: #d7ccc8; }
+    .step-content h4 { margin: 0 0 2px 0; font-size: 14px; font-weight: bold; color: var(--pri); font-family: 'Shippori Mincho'; }
+    .step-content p { margin: 0; font-size: 12px; opacity: 0.8; line-height: 1.5; color: #555;}
+    body[data-mode="bar"] .step-content p { color: #ccc; }
+
+    /* ミニチケット（料金表示用） */
+    .ticket-mini {
+      border: 2px dashed var(--accent); background: rgba(161, 136, 127, 0.05);
+      padding: 15px; border-radius: 8px; text-align: center; position: relative; margin-top: 16px;
+    }
+    .ticket-mini::before, .ticket-mini::after {
+      content: ""; position: absolute; top: 50%; transform: translateY(-50%);
+      width: 12px; height: 12px; background: var(--paper-light); border-radius: 50%;
+    }
+    body[data-mode="bar"] .ticket-mini { background: rgba(255,255,255,0.05); }
+    body[data-mode="bar"] .ticket-mini::before, body[data-mode="bar"] .ticket-mini::after { background: #222; }
+    .ticket-mini::before { left: -7px; border-right: 2px dashed var(--accent); }
+    .ticket-mini::after { right: -7px; border-left: 2px dashed var(--accent); }
+    
+    .tm-title { font-family: 'Dancing Script', cursive; color: var(--accent); font-size: 18px; margin-bottom: 4px; }
+    .tm-price { font-family: 'Dancing Script', cursive; font-size: 24px; color: var(--pri); font-weight: bold; }
+    body[data-mode="bar"] .tm-price { color: #eaddcf; }
+    .tm-note { font-size: 10px; color: #888; margin-top: 8px; line-height: 1.4; opacity: 0.8; }
+
+    /* メニューブック */
+    .menu-book { background: #4a3324; padding: 10px; border-radius: 4px 12px 12px 4px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3), inset -5px 0 10px rgba(0,0,0,0.2); position: relative; transform: rotate(1deg); transition: 0.3s; }
+    .menu-book:hover { transform: rotate(0deg); }
+    body[data-mode="bar"] .menu-book { background: #1a1a1a; box-shadow: -2px 5px 20px rgba(0,0,0,0.8), inset -5px 0 10px rgba(0,0,0,0.5); border: 1px solid #333; }
+    .menu-book-inner { background: #fdf6e3; border: 1px dashed #c0a080; padding: 20px; border-radius: 2px 8px 8px 2px; min-height: 200px; }
+    body[data-mode="bar"] .menu-book-inner { background: #dcd1c4; border-color: #b5a695; }
+    
+    .menu-title { text-align: center; font-family: 'Dancing Script', cursive; font-size: 28px; color: #5a3e32 !important; border-bottom: 2px double #a08060; padding-bottom: 10px; margin-bottom: 20px; }
+    body[data-mode="bar"] .menu-title { color: #333 !important; border-bottom-color: #888; }
+    
+    .menu-book-inner a.menu-row { display: flex; align-items: flex-end; justify-content: space-between; text-decoration: none; color: #4a3324 !important; font-family: 'Zen Kurenaido', sans-serif; font-size: 16px; font-weight: bold; margin-bottom: 16px; transition: 0.2s; }
+    body[data-mode="bar"] .menu-book-inner a.menu-row { color: #333 !important; }
+    .menu-book-inner a.menu-row:hover { opacity: 0.6; }
+    
+    .menu-name { display: flex; align-items: center; gap: 8px; color: inherit !important; }
+    .menu-dots { flex-grow: 1; border-bottom: 1px dotted #a08060; margin: 0 10px; position: relative; top: -5px; }
+    body[data-mode="bar"] .menu-dots { border-bottom-color: #888; }
+    
+    .menu-price { font-size: 14px; color: #888 !important; }
+    body[data-mode="bar"] .menu-price { color: #555 !important; }
+
+    .menu-book-inner a.logout-row { margin-top: 30px; color: #a63737 !important; }
+    .menu-book-inner a.logout-row .menu-dots { border-bottom-color: #e0b0b0; }
+    body[data-mode="bar"] .menu-book-inner a.logout-row { color: #8b0000 !important; }
+
+    /* ポラロイド写真風ピックアップ */
+    .pickupBox{ 
+      background: #fff !important; color: #333 !important; 
+      padding: 12px 12px 35px 12px; border-radius: 2px; 
+      box-shadow: 2px 6px 15px rgba(0,0,0,0.25); position: relative; min-height: 120px; 
+      transform: rotate(-3deg); transition: 0.3s;
+    }
+    .pickupBox:hover { transform: rotate(-1deg) scale(1.02); }
+    body[data-mode="bar"] .pickupBox { background: #dcd1c4 !important; box-shadow: 2px 6px 20px rgba(0,0,0,0.6); } 
+    
+    /* マスキングテープ */
+    .pickupBox::before { 
+      content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-2deg); 
+      width: 70px; height: 22px; background: rgba(255,255,255,0.4); 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); border-radius: 2px; z-index: 10;
+      backdrop-filter: blur(1px);
+    }
+    body[data-mode="bar"] .pickupTitle { color: #8b3a3a !important; }
+    body[data-mode="bar"] .pickupName { color: #222 !important; }
+    body[data-mode="bar"] .pickupMsg { color: #444 !important; }
+
+    .pickupTitle { font-weight: bold; color: var(--pri); font-family: 'Zen Kurenaido', sans-serif; text-align: center; margin-bottom:10px; margin-top: 8px;}
+    .pickupRow{display:flex; gap:12px; align-items:center}
+    .pickupAvatar{ width:65px;height:65px;border-radius:2px; object-fit:cover; border:1px solid #ddd; box-shadow: inset 0 0 3px rgba(0,0,0,0.2); }
+    body[data-mode="bar"] .pickupAvatar { border-color: #999; }
+    .pickupName{font-weight:900;font-size:16px;}
+    .pickupMsg{ margin-top:12px; font-family: 'Zen Kurenaido', sans-serif; font-size:14px; color:#555; line-height:1.6; border-top: 1px solid #eee; padding-top: 10px;}
+    body[data-mode="bar"] .pickupMsg { border-top-color: #b5a695; }
+    
+    .btnMini{ display:inline-block; padding:8px 16px; border-radius:50px; border:1px solid #ccc; background:#fff; color:#333; text-decoration:none; font-size:12px; cursor:pointer; text-align:center; transition:0.2s; }
+    .btnMini.primary{ background:var(--sec); border-color:var(--sec); color:#fff; }
+    .btnMini:active { transform: scale(0.95); }
+    body[data-mode="bar"] .btnMini { background: rgba(0,0,0,0.1); color: #333; border-color: rgba(0,0,0,0.3); }
+    body[data-mode="bar"] .btnMini.primary { background: #8b3a3a; border-color: #8b3a3a; color: #fff; }
+
+    /* 封筒 */
+    .envelope-wrapper { cursor: pointer; text-align: center; transition: 0.3s; margin-top: 10px; transform: rotate(2deg); }
+    .envelope-wrapper:active { transform: scale(0.95) rotate(2deg); }
+    .envelope-wrapper:hover { transform: rotate(0deg); }
+    .envelope { width: 100%; max-width: 280px; height: 140px; margin: 0 auto 12px; position: relative; background: #fdf6e3; border: 1px solid #e0d0c0; border-radius: 4px; box-shadow: 2px 6px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+    body[data-mode="bar"] .envelope { background: #dcd1c4; border-color: #b5a695; box-shadow: 2px 6px 20px rgba(0,0,0,0.6); }
+    .envelope::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 50%; border-bottom: 1px solid rgba(0,0,0,0.1); border-radius: 4px; }
+    .wax-seal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 32px; height: 32px; background: #a63737; border-radius: 50%; box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 1px 3px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+    .wax-seal::after { content: "S"; color: rgba(255,255,255,0.6); font-family: 'Dancing Script', cursive; font-size: 18px; }
+    
+    /* ★ 郵便受けのラベル (おしゃれ化) */
+    .env-label { 
+      font-family: 'Dancing Script', cursive; font-size: 20px; 
+      color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); 
+      letter-spacing: 1px; background: rgba(0,0,0,0.2); 
+      display: inline-block; padding: 4px 16px; border-radius: 20px; 
+      margin-top: 8px; 
+    }
+
+    /* 通知バッジ */
+    .notification-badge {
+      position: absolute; top: -5px; right: -5px;
+      width: 24px; height: 24px; background: #d32f2f; color: #fff;
+      border-radius: 50%; border: 2px solid #fff;
+      font-size: 12px; font-weight: bold;
+      display: none; 
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+    /* 退会セクションのデザイン (エモいカード風) */
+    .exit-section {
+      margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.05);
+      display: flex; justify-content: center;
+    }
+    body[data-mode="bar"] .exit-section { border-top-color: rgba(255,255,255,0.05); }
+
+    .exit-card {
+      background: #fff; padding: 25px 40px; border-radius: 2px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center; cursor: pointer; transition: 0.4s;
+      position: relative; overflow: hidden; border: 1px solid #eee;
+      max-width: 280px; width: 100%;
+    }
+    body[data-mode="bar"] .exit-card {
+      background: #2b2b2b; border-color: #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    .exit-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+    .exit-card:active { transform: translateY(0); }
+
+    .exit-icon { font-size: 24px; color: var(--accent); margin-bottom: 10px; opacity: 0.7; }
+    
+    .exit-en { font-family: 'Dancing Script', cursive; font-size: 20px; color: var(--pri); margin-bottom: 6px; }
+    body[data-mode="bar"] .exit-en { color: #eaddcf; }
+
+    .exit-jp { font-size: 12px; color: #888; letter-spacing: 0.1em; transition: 0.3s; font-weight: bold; }
+    .exit-card:hover .exit-jp { color: #a63737; }
+
+    /* オーバーレイ */
+    .fade-out-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 2s ease; }
+    .fade-out-overlay.active { opacity: 1; pointer-events: auto; }
+
+    /* モーダル */
+    .modalOverlay{ position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter: blur(4px); display:none; align-items:center; justify-content:center; z-index:2000; }
+    .modalPanel{ width:90%; max-width:400px; background: var(--paper-light); color: #333; padding:30px 24px; border-radius:4px; max-height:85vh; overflow-y:auto; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position:relative;}
+    body[data-mode="bar"] .modalPanel { background: #dcd1c4; }
+
+    .prof-header { display:flex; gap:16px; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:16px; }
+    .prof-avatar-lg { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); background:#f3f4f6; }
+    .prof-name { font-weight:900; font-size:24px; color:var(--pri); margin:0; line-height:1.2; }
+    body[data-mode="bar"] .prof-name { color: #333; }
+    .prof-section { margin-bottom:16px; text-align: left; }
+    .prof-label { font-weight:bold; font-size:13px; color:#9ca3af; border-left:4px solid var(--pri); padding-left:8px; margin-bottom:6px; }
+    .prof-text { font-size:15px; line-height:1.6; white-space:pre-wrap; color:#374151; }
+    .prof-value-type { font-weight: 900; font-size: 18px; color: #4b5563; margin-bottom: 12px; padding: 4px 0; }
+    .chart-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top:10px; }
+    .chart-legend { display:flex; gap:16px; font-size:12px; margin-top:12px; color:#666; justify-content: center; }
+    .legend-item { display:flex; align-items:center; gap:6px; }
+    .legend-dot { width:10px; height:10px; border-radius:50%; }
+
+  </style>
 </head>
+
 <body>
-<header>
-  <div class="wrap">
-    <div class="brand">紹介サービス｜セレネス</div>
-    <nav>
-      <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="board.html">掲示板</a>
-      <span data-auth class="row"></span>
-    </nav>
-  </div>
-</header>
-
-<main>
-  <h1>会員ページ</h1>
-
-  <!-- 管理者用：LINE userId 表示（管理者だけ表示） -->
-  <div id="adminUidBox" class="item" style="display:none">
-    <strong>管理者用 LINE userId：</strong>
-    <span id="adminUid" class="mono"></span>
-    <button class="btn" id="copyUid">コピー</button>
+  <div class="day-bg"></div>
+  <div class="night-bg"></div>
+  
+  <div class="record-player" id="recordPlayer" onclick="toggleRecord()">
+     <div class="record-disc"></div>
+     <div class="record-tonearm"></div>
   </div>
 
-  <div class="grid cols2">
-    <section class="card">
-      <h2>登録情報</h2>
-      <div id="info" class="item">読み込み中…</div>
-      <div class="hr"></div>
-      <div class="row">
-        <a class="btn primary" href="profile.html">プロフィール詳細</a>
-        <a class="btn" href="board.html">掲示板</a>
+  <div class="candle-container" id="candleContainer" onclick="toggleCandle()">
+    <div class="candle-emoji">🕯️</div>
+  </div>
+  <div class="candle-glow"></div>
+  
+  <div class="table-item" id="tableDrink">
+     <div class="coaster-wrapper" onclick="flipCoaster()">
+        <div class="coaster" id="coasterInner">
+           <div class="coaster-face coaster-front"></div>
+           <div class="coaster-face coaster-back"><span id="coasterBackText"></span></div>
+        </div>
+     </div>
+     <div class="drink-emoji"></div>
+     <svg class="steam-svg" viewBox="0 0 24 24">
+       <path d="M6 24 C 6 15, 10 12, 8 4" />
+       <path d="M12 24 C 12 15, 16 12, 14 4" />
+       <path d="M18 24 C 18 15, 22 12, 20 4" />
+     </svg>
+  </div>
+  
+  <div id="fadeOverlay" class="fade-out-overlay"></div>
+
+  <div class="table-edge"></div>
+
+  <header>
+    <div class="wrap">
+      <div class="brand">Sereness Cafe & Bar</div>
+      <nav class="navRight">
+      </nav>
+    </div>
+  </header>
+
+  <main class="layout">
+    
+    <div class="left-col">
+      <section class="card">
+        <div class="cardTitle">お客様情報 <span id="headerMemberId" style="font-weight:normal; font-size:12px; margin-left:8px; color:#888;"></span></div>
+        <div class="hr"></div>
+        <div id="info">
+          <div style="text-align:center; padding: 20px 0; color:#888;">読み込み中...</div>
+        </div>
+
+        <div class="cardTitle" style="margin-top:24px;">価値観の形</div>
+        <div class="hr"></div>
+        <div id="myValuesReport" class="chart-box">
+          <span style="color:#888; font-size:12px;">読み込み中...</span>
+        </div>
+
+        <div class="cardTitle" style="margin-top:24px;">料金（お繋ぎ料）</div>
+        <div class="hr"></div>
+        <div id="feeInfo"></div>
+
+        <div class="cardTitle" style="margin-top:24px;">出会いまでの物語</div>
+        <div class="hr"></div>
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>手紙を託す</h4>
+            <p>気になる方にメッセージを綴ります。<br>マスターがお相手の席までお届けします。</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>相席の同意とお支払い</h4>
+            <p>お相手が手紙を受け取り、相席を希望された時だけ、コネクトチャージが発生します。</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>オンラインカフェ</h4>
+            <p>お支払いが済むと、二人だけの会話ルームが開きます。<br>声を聞きながら、ゆっくりお話しください。</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>店外へ</h4>
+            <p>気が合えば連絡先を交換して、実際のデートへ。<br>いってらっしゃいませ。</p>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <div class="right-col">
+      
+      <div class="menu-book">
+        <div class="menu-book-inner">
+          <div class="menu-title">Menu</div>
+          
+          <a href="profile.html?via=member" class="menu-row">
+            <span class="menu-name">✒️ ゲストブック編集</span><span class="menu-dots"></span><span class="menu-price">0円</span>
+          </a>
+          <a href="board.html" class="menu-row">
+            <span class="menu-name">📌 掲示板見る</span><span class="menu-dots"></span><span class="menu-price">0円</span>
+          </a>
+          <a href="diary.html" class="menu-row">
+            <span class="menu-name">📖 日記を開く</span><span class="menu-dots"></span><span class="menu-price">0円</span>
+          </a>
+          
+          <div style="margin-bottom:16px;">
+            <a href="value.html" class="menu-row" id="btnValueTest" style="margin-bottom:4px;">
+              <span class="menu-name">☕️ 価値観診断を受ける</span><span class="menu-dots"></span><span class="menu-price">Free</span>
+            </a>
+            <div style="font-size:11px; color:#888; padding-left:34px; margin-top:-4px;">※1ヶ月に1回のみ</div>
+          </div>
+
+          <a href="https://sereness25-cyber.github.io/serene-event/" target="_blank" rel="noopener noreferrer" class="menu-row">
+            <span class="menu-name">🎫 イベントスケジュール確認</span><span class="menu-dots"></span><span class="menu-price">Free</span>
+          </a>
+          <a href="rule.html" class="menu-row">
+            <span class="menu-name">🔰 お店のルールとマナー</span><span class="menu-dots"></span><span class="menu-price">必読</span>
+          </a>
+          <a href="legal.html" class="menu-row">
+            <span class="menu-name">📜 規約・ポリシー</span><span class="menu-dots"></span><span class="menu-price">Terms</span>
+          </a>
+          <a href="#" class="menu-row logout-row" id="btnLogout">
+            <span class="menu-name">🚪 席を立つ（Exit）</span><span class="menu-dots"></span><span class="menu-price">Good bye</span>
+          </a>
+        </div>
       </div>
-      <p class="small" id="hint" style="margin-top:10px"></p>
-    </section>
 
-    <section class="card">
-      <h2>料金</h2>
-      <div class="item">
-        <div style="font-weight:800;font-size:18px">紹介 1回：5,000円</div>
-        <div class="small">入会費・月会費：無料</div>
+      <div class="pickupBox" id="pickupBox">
+        <div class="pickupTitle">Master's Recommend</div>
+        <div id="pickupBody">
+          <div style="text-align:center; padding: 20px 0; color:#888;">お相手を探しています...</div>
+        </div>
       </div>
-      <p class="small">この欄は後で「紹介履歴」「支払い状況」などを足せます。</p>
-    </section>
+
+      <div class="envelope-wrapper" onclick="openInbox()">
+        <div class="envelope">
+          <div class="wax-seal"></div>
+          <div id="inboxBadge" class="notification-badge"></div>
+        </div>
+        <div class="env-label">Open Mailbox</div>
+      </div>
+
+      <div class="exit-section">
+        <div class="exit-card" onclick="handleWithdraw()">
+          <div class="exit-icon"><span class="material-icons-outlined">vpn_key</span></div>
+          <div class="exit-en">Return the Key</div>
+          <div class="exit-jp">鍵を返して退店する</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="profileModal" class="modalOverlay">
+    <div class="modalPanel">
+      <button class="btn ghost" onclick="document.getElementById('profileModal').style.display='none'" style="position:absolute; top:10px; right:10px; border:none; background:transparent; font-size:20px; z-index:10; color:#999;">×</button>
+      <div id="profileBody"></div>
+    </div>
   </div>
 
-  <script.>
-const ms = getMemberSession();
-if(!ms || !ms.memberId){
-  alert("ログインが必要です");
-  location.replace("login.html");
-}
-  document.addEventListener("DOMContentLoaded", async () => {
-/* ===== 管理者用：LINE userId 表示 ===== */
-const adminBox = document.createElement("div");
-adminBox.style.margin = "12px 0";
-adminBox.style.padding = "10px";
-adminBox.style.border = "1px dashed #e2b8a2";
-adminBox.style.background = "#fff7f2";
-adminBox.style.borderRadius = "12px";
-adminBox.innerHTML = `
-  <b>管理者用 LINE userId</b><br>
-  <span id="myLineUid" style="font-family:monospace"></span>
-  <button id="copyUid" style="margin-left:8px">コピー</button>
-`;
-document.querySelector("main").prepend(adminBox);
+  <script>
+  (function() {
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+    const PKEY = "ma_profile_by_memberId";
+    const PU_KEY = "ma_pickup_cache";
+    const profileCache = {};
 
-// LINEログイン必須（すでにある前提）
-const s = requireLineLogin();
-if(!s) return;
+    function isNightNow() { return (new Date().getHours() >= 18 || new Date().getHours() < 6); }
+    function applyDayNight() { 
+      if(isNightNow()) document.body.setAttribute("data-mode", "bar");
+      else document.body.removeAttribute("data-mode");
+    }
+    applyDayNight(); setInterval(applyDayNight, 60000);
 
-// 表示
-document.getElementById("myLineUid").textContent = s.lineUserId;
-
-// コピー
-document.getElementById("copyUid").addEventListener("click", async ()=>{
-  await navigator.clipboard.writeText(s.lineUserId);
-  alert("LINE userId をコピーしました");
-});
-
-// ===== 必須チェック：LINE + IDログイン済みでないと入れない =====
-const s = requireLineLogin();
-if(!s) return;
-
-const ms = getMemberSession();
-if(!ms || ms.lineUserId !== s.lineUserId){
-  // IDログインしていない、または別LINE
-  location.replace("login.html");
-  return;
-}
-    const hint = document.getElementById("hint");
-
-    // 1) まずLIFFで userId を取って session を補完する
-    const r = await initLIFF();
-    if(!r.ok){
-      hint.textContent = r.msg;
-      // LIFFが使えない環境でも、sessionがあれば続行
-    }else{
-      if(!liff.isLoggedIn()){
-        hint.textContent = "LINEでログインしてください（必要に応じてログイン画面へ移動します）";
-        // 必要ならログインへ
-        liff.login();
-        return;
-      }
-      const profile = await getLineProfileSafe();
-      // sessionが無いなら補完
-      if(!getLineSession()){
-        setLineSession(profile.userId);
-      }
+    function getSessionLocal() { 
+        try { const raw = localStorage.getItem("ma_member_session"); return raw ? JSON.parse(raw) : null; } 
+        catch(e){ return null; } 
+    }
+    
+    function escapeHtml(s) {
+        if (s == null) return "";
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    
+    async function api(action, params = {}) {
+      const url = new URL(GAS_URL);
+      url.searchParams.append("action", action);
+      for (const k in params) url.searchParams.append(k, params[k]);
+      try { const res = await fetch(url.toString(), { redirect: "follow" }); return await res.json(); } 
+      catch (e) { return { ok: false, error: e.message }; }
     }
 
-    // 2) ここからは “session前提” の既存ロジック
-    const s = getLineSession();
-    if(!s){
-      alert("ログイン状態を確認できませんでした。login.html からログインしてください。");
-      location.href = "login.html";
-      return;
+    const ms = getSessionLocal();
+    if(!ms || !ms.memberId) { alert("ログインが必要です"); location.replace("login.html"); return; }
+    const memberId = ms.memberId;
+    document.getElementById("headerMemberId").textContent = "ID: " + memberId;
+
+    // ★ セッション切れチェック (12時間)
+    const TIMEOUT_MS = 12 * 60 * 60 * 1000;
+    if (ms.loginAt) {
+       const loginTime = new Date(ms.loginAt).getTime();
+       const now = new Date().getTime();
+       if (now - loginTime > TIMEOUT_MS) {
+           alert("長らくご滞在ありがとうございました。\n一旦、お席をリセットさせていただきます。（再ログインが必要です）");
+           localStorage.removeItem("ma_member_session");
+           location.replace("login.html");
+           return;
+       }
     }
 
-    const m = getMember(s.lineUserId);
-    if(!m){
-      document.getElementById("info").innerHTML = `
-        <div>登録情報が見つかりません。</div>
-        <div class="small">先に「新規登録」してください。</div>
-      `;
-      hint.textContent = "register.html から登録してください。";
-      return;
+    function playRipSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const bufferSize = ctx.sampleRate * 0.3; const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = ctx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 800;
+            const gain = ctx.createGain(); gain.gain.setValueAtTime(2.0, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination); noise.start();
+        } catch(e){}
     }
 
-    document.getElementById("info").innerHTML = `
-      <div><strong>${escapeHtml(m.displayName || "")}</strong>（LINE表示名）</div>
-      <div class="hr"></div>
-      <div>名前：${escapeHtml(m.name || "")}</div>
-      <div>年齢：${escapeHtml(m.age || "")}</div>
-      <div>電話：${escapeHtml(m.phone || "")}</div>
-      <div class="small" style="margin-top:8px">登録日：${escapeHtml(m.createdAt || "")}</div>
-    `;
+    function playBellSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc1 = ctx.createOscillator(); const gain1 = ctx.createGain();
+            const osc2 = ctx.createOscillator(); const gain2 = ctx.createGain();
+            osc1.type = 'sine'; osc1.frequency.setValueAtTime(1200, ctx.currentTime);
+            gain1.gain.setValueAtTime(0.5, ctx.currentTime); gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+            osc1.connect(gain1); gain1.connect(ctx.destination); osc1.start(); osc1.stop(ctx.currentTime + 1.5);
+            setTimeout(()=>{
+                osc2.type = 'sine'; osc2.frequency.setValueAtTime(1600, ctx.currentTime);
+                gain2.gain.setValueAtTime(0.3, ctx.currentTime); gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+                osc2.connect(gain2); gain2.connect(ctx.destination); osc2.start(); osc2.stop(ctx.currentTime + 1.5);
+            }, 150);
+        } catch(e){}
+    }
 
-    // 3) 管理者だけ userId 表示（初回は空配列＝自分を管理者扱い）
-    const ADMIN_LINE_USER_IDS = [
-      // "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    window.openInbox = function() {
+        playRipSound(); setTimeout(() => { location.href = "inbox.html"; }, 400);
+    };
+
+    /* ★ レコードプレーヤー */
+    let audioCtx = null; let noiseNode = null; let gainNode = null;
+    window.toggleRecord = function() {
+        const player = document.getElementById("recordPlayer");
+        const isPlaying = player.classList.contains("playing");
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (isPlaying) {
+            player.classList.remove("playing");
+            if(gainNode) {
+                gainNode.gain.setTargetAtTime(0.01, audioCtx.currentTime, 0.5);
+                setTimeout(() => { if(noiseNode) { noiseNode.stop(); noiseNode.disconnect(); noiseNode=null; } }, 600);
+            }
+        } else {
+            player.classList.add("playing");
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const bufferSize = audioCtx.sampleRate * 2; 
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * 0.04; 
+                if (Math.random() < 0.002) data[i] += (Math.random() * 2 - 1) * 0.4; 
+            }
+            noiseNode = audioCtx.createBufferSource();
+            noiseNode.buffer = buffer; noiseNode.loop = true;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1800;
+            gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.setTargetAtTime(0.4, audioCtx.currentTime, 1);
+            noiseNode.connect(filter); filter.connect(gainNode); gainNode.connect(audioCtx.destination);
+            noiseNode.start();
+        }
+    };
+
+    /* ★ キャンドル */
+    window.toggleCandle = function() {
+        const candle = document.getElementById("candleContainer");
+        if(candle.classList.contains("lit")) {
+            candle.classList.remove("lit");
+        } else {
+            try {
+                const cCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = cCtx.createOscillator(); const gain = cCtx.createGain();
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, cCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, cCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, cCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, cCtx.currentTime + 0.15);
+                osc.connect(gain); gain.connect(cCtx.destination);
+                osc.start(); osc.stop(cCtx.currentTime + 0.15);
+            } catch(e){}
+            candle.classList.add("lit");
+        }
+    };
+
+    /* ★ コースター */
+    const coasterMsgs = [
+        "今日は月が綺麗ですね", "仕事つかれた…", "素敵な出会いがありますように",
+        "コーヒーが美味しい季節", "少しだけ休んでいきませんか？", "雨の音って落ち着くよね",
+        "明日はきっといい日になる", "マスターの珈琲、最高", "自分にご褒美の日", "焦らず、ゆっくりね"
     ];
+    window.flipCoaster = function() {
+        const coaster = document.getElementById("coasterInner");
+        const backText = document.getElementById("coasterBackText");
+        if(!coaster.classList.contains("flipped")) backText.innerText = coasterMsgs[Math.floor(Math.random() * coasterMsgs.length)];
+        coaster.classList.toggle("flipped");
+    };
 
-    const isAdmin = ADMIN_LINE_USER_IDS.length === 0
-      ? true
-      : ADMIN_LINE_USER_IDS.includes(s.lineUserId);
+    /* 時間経過エフェクト */
+    document.addEventListener("DOMContentLoaded", function() {
+        const tableDrink = document.getElementById("tableDrink");
+        setTimeout(() => { if(tableDrink) tableDrink.classList.add("cooled"); }, 5 * 60 * 1000);
+        function scheduleIceClink() {
+            const nextTime = Math.random() * 120000 + 60000;
+            setTimeout(() => {
+                if(document.body.hasAttribute("data-mode") && tableDrink) {
+                    tableDrink.classList.add("jiggle");
+                    setTimeout(() => tableDrink.classList.remove("jiggle"), 400);
+                }
+                scheduleIceClink(); 
+            }, nextTime);
+        }
+        setTimeout(scheduleIceClink, Math.random() * 50000 + 10000);
+    });
 
-    if(isAdmin){
-      const box = document.getElementById("adminUidBox");
-      const span = document.getElementById("adminUid");
-      box.style.display = "block";
-      span.textContent = s.lineUserId;
+    // ★ 手紙の着信チェック
+    async function checkInboxBadge() {
+        try {
+            const res = await api("get_my_inbox", { memberId: memberId });
+            if(res.ok && res.letters && res.letters.length > 0) {
+                const unreadCount = res.letters.filter(l => !l.isRead).length;
+                if(unreadCount > 0) {
+                    const badge = document.getElementById("inboxBadge");
+                    badge.style.display = "flex";
+                    badge.textContent = unreadCount;
+                }
+            }
+        } catch(e) {}
+    }
 
-      document.getElementById("copyUid").addEventListener("click", async ()=>{
-        await navigator.clipboard.writeText(s.lineUserId);
-        alert("LINE userId をコピーしました");
+    async function fetchLatest() {
+        try {
+            const res = await api("get_profile", { targetId: memberId, _nocache: Date.now() });
+            if(res.ok && res.profile) {
+                const serverProf = res.profile;
+                const localProf = profileCache[memberId];
+                let shouldUpdate = true;
+                if (localProf && localProf.updatedAt && serverProf.updatedAt) {
+                    if (new Date(localProf.updatedAt).getTime() > new Date(serverProf.updatedAt).getTime()) shouldUpdate = false;
+                }
+                if (shouldUpdate) {
+                    renderMyProfile(serverProf);
+                    profileCache[memberId] = serverProf;
+                    try {
+                        const all = JSON.parse(localStorage.getItem(PKEY)||"{}");
+                        all[memberId] = serverProf;
+                        localStorage.setItem(PKEY, JSON.stringify(all));
+                    } catch(e){}
+                }
+            }
+        } catch(e){}
+
+        try {
+            const res = await api("get_pickup", { memberId: memberId });
+            if(res.ok && res.pickup) {
+                const p = res.pickup; 
+                p.profilePublic = true; 
+                profileCache[p.memberId] = p;
+                localStorage.setItem(PU_KEY + "_" + memberId, JSON.stringify(p));
+                renderPickupData(p);
+            } else if (!localStorage.getItem(PU_KEY + "_" + memberId)) {
+                document.getElementById("pickupBody").innerHTML = '<div style="text-align:center; padding: 20px 0; color:#888;">現在、ご紹介できるお相手がいません。<br>（公開ONの方が増えるのをお待ちください）</div>'; 
+            }
+        } catch(e){}
+    }
+
+    function renderCacheSync() {
+        try {
+            const all = JSON.parse(localStorage.getItem(PKEY)||"{}");
+            if(all[memberId]) {
+                renderMyProfile(all[memberId]);
+                profileCache[memberId] = all[memberId];
+            }
+        } catch(e) {}
+        try {
+            const cachedPickup = localStorage.getItem(PU_KEY + "_" + memberId);
+            if(cachedPickup) {
+                const p = JSON.parse(cachedPickup);
+                p.profilePublic = true; 
+                renderPickupData(p);
+                profileCache[p.memberId] = p;
+            }
+        } catch(e) {}
+    }
+    
+    renderCacheSync();
+    fetchLatest(); 
+    checkInboxBadge(); 
+
+    const btnValueTest = document.getElementById("btnValueTest");
+    if(btnValueTest){
+      btnValueTest.addEventListener("click", function(e){
+        let hasResult = false;
+        if(profileCache[memberId] && profileCache[memberId].valuesResult) {
+            const parsed = parseValues(profileCache[memberId].valuesResult);
+            if(parsed.type !== "未診断" && parsed.type.indexOf("エラー") === -1) hasResult = true;
+        }
+        const lastTestStr = localStorage.getItem("srn_val_test_" + memberId);
+        if(hasResult && lastTestStr) {
+            const lastDate = new Date(parseInt(lastTestStr));
+            const now = new Date();
+            const diffTime = now.getTime() - lastDate.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+            if(diffDays < 30) {
+                e.preventDefault();
+                const nextDate = new Date(lastDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+                alert("次回の診断は " + (nextDate.getMonth()+1) + "月" + nextDate.getDate() + "日 以降に受けられます。");
+                return;
+            }
+        }
+        if(hasResult) {
+            if(!confirm("前回の診断から時間が経過しました。\n今のあなたの価値観で、診断を受け直しますか？")) e.preventDefault();
+        } else {
+            if(!confirm("価値観診断へ進みますか？\n（一度診断すると、1ヶ月間は再診断できません）")) e.preventDefault();
+        }
       });
     }
-  });
-  </script>
 
-</main>
+    function parseValues(val) {
+        let parsed = null; let type = "未診断";
+        try {
+           if (typeof val === 'string' && val.trim().startsWith('{')) parsed = JSON.parse(val);
+           else if (typeof val === 'object' && val !== null) parsed = val; 
+           else type = val || "未診断";
+        } catch(e){}
+        let scores = null;
+        if(parsed) {
+           if(parsed.typeName) type = parsed.typeName; else if(parsed.type) type = parsed.type;
+           if(parsed.talk!==undefined) scores = [parsed.talk, parsed.passion, parsed.logic, parsed.empathy, parsed.stability];
+           else if(parsed.rawScores) scores = parsed.rawScores;
+           else if(parsed.scores && Array.isArray(parsed.scores)) scores = parsed.scores;
+           else if(parsed.scores && typeof parsed.scores === 'object') scores = Object.values(parsed.scores);
+        }
+        if(!scores && type!=="未診断" && type.indexOf("エラー")===-1) scores = getScoresFromType(type);
+        if(!scores) scores = [3,3,3,3,3];
+        return { type: type, scores: scores.map(function(v){ return Number(v)||3; }) };
+    }
+
+    function getScoresFromType(typeStr) {
+       if(!typeStr) return [3,3,3,3,3];
+       let hash = 0; for(let i=0; i<typeStr.length; i++) hash = typeStr.charCodeAt(i) + ((hash << 5) - hash);
+       const sc = []; for(let j=0; j<5; j++) sc.push(Math.abs((hash >> j) % 5) + 1);
+       return sc;
+    }
+
+    function createRadarChartSvg(targetScores, myScores) {
+      const s = targetScores || [3,3,3,3,3]; const max = 5; const size=220; const c=size/2; const r=70;
+      const getP = function(arr) { return arr.map(function(v,i){ const a=(Math.PI*2*i)/5-Math.PI/2; const d=(v/max)*r; return (c+d*Math.cos(a))+","+(c+d*Math.sin(a)); }).join(" "); };
+      let bg = "";
+      for(let i=1; i<=5; i++){
+         const pts = [0,1,2,3,4].map(function(idx){ const a=(Math.PI*2*idx)/5-Math.PI/2; const d=(i/max)*r; return (c+d*Math.cos(a))+","+(c+d*Math.sin(a)); }).join(" ");
+         bg += '<polygon points="'+pts+'" fill="none" stroke="#eee" stroke-width="1"/>';
+      }
+      const polyT = getP(s); let svgMy = "";
+      if(myScores) {
+          const polyM = getP(myScores);
+          svgMy = '<polygon points="'+polyM+'" fill="rgba(79,124,255,0.2)" stroke="rgba(79,124,255,0.8)" stroke-width="2" stroke-dasharray="4 2"/>';
+      }
+      let txts = "";
+      ["会話","行動","論理","共感","規律"].forEach(function(l,i){
+          const a=(Math.PI*2*i)/5-Math.PI/2; const tx=c+(r+20)*Math.cos(a); const ty=c+(r+20)*Math.sin(a);
+          txts += '<text x="'+tx+'" y="'+(ty+4)+'" text-anchor="middle" font-size="11" fill="#666">'+l+'</text>';
+      });
+      return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+bg+svgMy+'<polygon points="'+polyT+'" fill="rgba(201,123,99,0.4)" stroke="rgba(201,123,99,1)" stroke-width="2"/>'+txts+'</svg>';
+    }
+
+    function renderMyProfile(prof) {
+      if(!prof || Object.keys(prof).length === 0) return;
+      const parsed = parseValues(prof.valuesResult);
+      const showName = (prof.nickname||"").trim() || memberId;
+      const avatar = (prof.avatarDataUrl||"").trim() ? String(prof.avatarDataUrl) : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+      const area = ((prof.pref||"") + " " + (prof.city||"")).trim();
+
+      document.getElementById("info").innerHTML = 
+        '<div style="display:flex; justify-content:center; margin-bottom:16px;">' +
+          '<img class="avatarLg" src="'+avatar+'" alt="">' +
+        '</div>' +
+        '<div class="infoGrid">' +
+          '<div class="infoItem"><div class="infoLabel">お名前</div><div class="infoValue">'+escapeHtml(showName)+'</div></div>' +
+          '<div class="infoItem"><div class="infoLabel">性別</div><div class="infoValue">'+escapeHtml(prof.gender||"—")+'</div></div>' +
+          '<div class="infoItem"><div class="infoLabel">エリア</div><div class="infoValue">'+escapeHtml(area||"—")+'</div></div>' +
+          '<div class="infoItem"><div class="infoLabel">タイプ</div><div class="infoValue">'+escapeHtml(parsed.type)+'</div></div>' +
+        '</div>';
+
+      document.getElementById("myValuesReport").innerHTML = (parsed.type==="未診断"||parsed.type.indexOf("エラー")!==-1) 
+        ? '<span style="color:#999; font-size:12px;">まだ診断を行っていません。</span>' 
+        : createRadarChartSvg(parsed.scores, null);
+
+      const feeInfoEl = document.getElementById("feeInfo");
+      if(feeInfoEl){
+        let price = "—";
+        if(prof.gender === "男性") price = "5,000円";
+        else if(prof.gender === "女性") price = "2,000円";
+        
+        feeInfoEl.innerHTML = 
+          '<div class="ticket-mini">' +
+            '<div class="tm-title">Connect Charge</div>' +
+            '<div class="tm-price">'+price+'</div>' +
+            '<div class="tm-note">※手紙を送り、成立した場合のみ発生します</div>' +
+          '</div>';
+      }
+    }
+
+    function renderPickupData(p) {
+        if(!p) return;
+        const bodyEl = document.getElementById("pickupBody"); 
+        const msg = p.reason === "values_match" ? "価値観が同じみたいですよ。お話ししてみませんか？" : (p.reason === "random" ? "たまには違うタイプの方とも相席いかがですか？" : "あなたにおすすめのお相手です。");
+        const ava = (p.avatarDataUrl && p.avatarDataUrl.length > 50) ? p.avatarDataUrl : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+        bodyEl.innerHTML = 
+          '<div class="pickupRow">' +
+            '<img class="pickupAvatar" src="'+ava+'" alt="">' +
+            '<div style="text-align:left;">' +
+              '<div class="pickupName">'+escapeHtml(p.nickname)+'</div>' +
+              '<div style="font-size:12px; color:#888;">'+(p.typeName ? '☕️ '+escapeHtml(p.typeName) : "未診断")+'</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="pickupMsg">マスターより：<br>「'+escapeHtml(msg)+'」</div>' +
+          '<div style="margin-top:16px; display:flex; gap:10px; justify-content:center;">' +
+            '<button class="btnMini" onclick="window.openProfile(\''+p.memberId+'\')">プロフィールを見る</button>' +
+            '<a class="btnMini primary" href="letter.html?to='+encodeURIComponent(p.memberId)+'&name='+encodeURIComponent(p.nickname)+'">手紙を綴る</a>' +
+          '</div>';
+    }
+
+    window.openProfile = async function(uid) {
+      if(uid === "SRN_OFFICIAL") return;
+      const modal = document.getElementById("profileModal");
+      const body = document.getElementById("profileBody");
+      modal.style.display = "flex";
+      
+      let allProfs = {};
+      try { allProfs = JSON.parse(localStorage.getItem(PKEY)||"{}"); } catch(e){}
+      
+      let cachedTarget = allProfs[uid];
+      if (!cachedTarget || !cachedTarget.valuesResult) {
+          cachedTarget = profileCache[uid] || allProfs[uid];
+      }
+
+      let myProf = profileCache[memberId] || allProfs[memberId];
+      
+      if(cachedTarget) {
+          if(profileCache[uid] && profileCache[uid].profilePublic) cachedTarget.profilePublic = true;
+          renderProfileFull(cachedTarget, myProf, body);
+      } else {
+          body.innerHTML = "<div style='text-align:center; padding:40px; color:#999;'>情報を取得しています...</div>";
+      }
+      
+      try {
+          const res = await api("get_profile", { targetId: uid, _nocache: Date.now() });
+          if(res.ok && res.profile) {
+            const prof = res.profile;
+            if(cachedTarget && cachedTarget.profilePublic) prof.profilePublic = true; 
+    
+            profileCache[uid] = prof;
+            allProfs[uid] = prof;
+            localStorage.setItem(PKEY, JSON.stringify(allProfs));
+            
+            if(!myProf) {
+                const resMy = await api("get_profile", { targetId: memberId });
+                if(resMy.ok) { myProf = resMy.profile; profileCache[memberId] = myProf; }
+            }
+            renderProfileFull(prof, myProf, body);
+          } else if(!cachedTarget) {
+            body.innerHTML = "<div style='text-align:center; padding:40px; color:#999;'>取得できませんでした</div>";
+          }
+      } catch(e){}
+    };
+
+    function renderProfileFull(prof, myProf, container) {
+      const isMine = (prof.memberId === memberId);
+      let isPublic = (String(prof.profilePublic).toLowerCase() === "true" || prof.profilePublic === true);
+
+      if(!isPublic && !isMine) {
+        container.innerHTML = '<div style="text-align:center;padding:40px 20px; color:#999;"><div style="font-size:48px; margin-bottom:16px;">🔒</div><div style="font-weight:bold; color:#666;">非公開のプロフィール</div></div>';
+        return;
+      }
+      
+      let targetScores = [3,3,3,3,3]; 
+      let typeName = prof.typeName || "未診断"; 
+      let isChartReady = false; 
+      
+      if(prof.valuesResult) {
+          const parsed = parseValues(prof.valuesResult);
+          if(parsed.scores) { targetScores = parsed.scores; isChartReady = true; }
+          if(parsed.type) typeName = parsed.type;
+      }
+
+      let myScores = null;
+      if(myProf && myProf.valuesResult) {
+          const parsed = parseValues(myProf.valuesResult);
+          if(parsed.scores) myScores = parsed.scores;
+      }
+
+      let chartAreaHtml = "";
+      if (isChartReady) {
+          const chartSvg = createRadarChartSvg(targetScores, myScores);
+          chartAreaHtml = chartSvg + 
+             '<div class="chart-legend">' +
+               '<div class="legend-item"><div class="legend-dot" style="background:#c97b63"></div>相手</div>' +
+               (myScores ? '<div class="legend-item"><div class="legend-dot" style="background:rgba(79,124,255,0.8)"></div>自分</div>' : '') +
+             '</div>';
+      } else {
+          chartAreaHtml = '<div style="color:#999; padding: 40px 0; font-size:12px;">チャートを準備しています...</div>';
+      }
+
+      const ava = (prof.avatarDataUrl && prof.avatarDataUrl.length > 50) ? prof.avatarDataUrl : "";
+      const avatarHtml = ava ? '<img class="prof-avatar-lg" src="'+ava+'">' : '<div class="prof-avatar-lg" style="background:#eee; display:flex; align-items:center; justify-content:center;">User</div>';
+
+      let letterBtnHtml = "";
+      if(!isMine) {
+          letterBtnHtml = '<div style="margin-top:20px; text-align:center;"><button class="btnMini primary" style="width:100%; font-size:14px; padding:12px;" onclick="location.href=\'letter.html?to='+encodeURIComponent(prof.memberId)+'&name='+encodeURIComponent(prof.nickname || "匿名")+'\'">この人に手紙を綴る</button></div>';
+      }
+
+      container.innerHTML = 
+        '<div class="prof-header">' +
+          avatarHtml +
+          '<div>' +
+            '<div class="prof-name">'+escapeHtml(prof.nickname || "匿名")+'</div>' +
+            '<div style="font-size:13px; color:#666; margin-top:4px;">'+escapeHtml(prof.gender||"未設定")+'</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="prof-section"><div class="prof-label">自己紹介</div><div class="prof-text">'+escapeHtml(prof.bio||"（未入力）")+'</div></div>' +
+        '<div class="prof-section"><div class="prof-label">趣味・好きなこと</div><div class="prof-text">'+escapeHtml(prof.hobbies||"（未入力）")+'</div></div>' +
+        '<div class="prof-section"><div class="prof-label">相手への希望</div><div class="prof-text">'+escapeHtml(prof.wants||"（未入力）")+'</div></div>' +
+        '<div class="prof-section">' +
+          '<div class="prof-label">価値観タイプ</div><div class="prof-value-type">'+escapeHtml(typeName)+'</div>' +
+          '<div class="chart-wrapper">' +
+             chartAreaHtml +
+          '</div>' +
+        '</div>' +
+        letterBtnHtml;
+    }
+
+    const btnLogout = document.getElementById("btnLogout");
+    if(btnLogout){
+      btnLogout.addEventListener("click", function(e){
+        e.preventDefault(); 
+        if(!confirm("カフェから退店しますか？")) return;
+        
+        playBellSound(); 
+        document.getElementById("fadeOverlay").classList.add("active"); 
+        
+        localStorage.removeItem("ma_member_session");
+        localStorage.removeItem(PKEY);
+        localStorage.removeItem(PU_KEY + "_" + memberId);
+        
+        setTimeout(function(){ location.replace("login.html"); }, 2000); 
+      });
+    }
+
+    /* ★ 退会処理 (withdraw) */
+    window.handleWithdraw = async function() {
+      if(!confirm("本当に退店（退会）しますか？\n退店するとログインできなくなり、プロフィールは削除されます。")) {
+        return;
+      }
+      try {
+        const res = await api("withdraw", { memberId: memberId });
+        if (res.ok) {
+          alert("長い間、ご来店ありがとうございました。またいつか、静かな夜にお待ちしております。");
+          localStorage.removeItem("ma_member_session");
+          localStorage.removeItem(PKEY);
+          localStorage.removeItem(PU_KEY + "_" + memberId);
+          window.location.href = "index.html";
+        } else {
+          if(res.error === "unpaid") {
+            alert("【エラー】まだお会計が済んでいないコネクトチャージがございます。お支払いが完了するまで退店はできません。");
+          } else {
+            alert("エラーが発生しました。時間を置いて再度お試しください。");
+          }
+        }
+      } catch(e) {
+        alert("通信エラーが発生しました。");
+      }
+    };
+
+  })();
+  </script>
 </body>
 </html>

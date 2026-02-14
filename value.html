@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>価値観のメニュー｜セレネスCafe&Bar</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #3e2723;       /* 焦げ茶 */
+  --paper: #f9f4ef;     /* 生成り色 */
+  --accent: #a1887f;    /* 褪せた茶色 */
+  --gold: #d4af37;      /* アクセントゴールド */
+  --shadow-light: rgba(255, 255, 255, 0.6);
+  
+  --menu-bg: #fffdf8;
+  --menu-border: #d7ccc8;
+}
+
+/* 紙のテクスチャ */
+.paper-texture {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background-color: var(--paper);
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ0cmFuc3BhcmVudCIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjEiIGZpbGw9IiM1ZDQwMzciIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==');
+}
+.vignette {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(circle, transparent 50%, rgba(62, 39, 35, 0.1) 150%);
+}
+
+/* 夜モード */
+body[data-mode="bar"] { 
+  color: #d7ccc8; 
+  --ink: #d7ccc8;
+  --menu-bg: #2b2623;
+  --menu-border: #4e3b31;
+}
+body[data-mode="bar"] .paper-texture {
+  background-color: #1a1512;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9zdmc+');
+}
+
+html, body {
+  margin: 0; padding: 0; background: transparent; 
+  font-family: "Shippori Mincho", serif;
+  color: var(--ink); transition: color 0.5s;
+  min-height: 100vh;
+}
+
+/* テーブルの小物（コーヒー） */
+.table-item { position: fixed; bottom: -10px; right: -10px; z-index: -1; pointer-events: none; opacity: 0.9; transition: transform 0.3s; }
+.drink-emoji { font-size: 120px; filter: drop-shadow(5px 15px 15px rgba(0,0,0,0.3)); }
+.drink-emoji::before { content: '☕️'; }
+body[data-mode="bar"] .table-item { opacity: 0.7; }
+body[data-mode="bar"] .drink-emoji { filter: drop-shadow(5px 15px 15px rgba(0,0,0,0.8)); }
+body[data-mode="bar"] .drink-emoji::before { content: '🍸'; }
+
+/* 湯気 */
+.steam-svg { position: absolute; top: -10px; left: 35px; width: 60px; height: 60px; fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 2; stroke-linecap: round; filter: blur(2px); transition: opacity 10s ease; }
+body[data-mode="bar"] .steam-svg { display: none; }
+.steam-svg path { animation: steamAnim 3s infinite alternate ease-in-out; }
+.steam-svg path:nth-child(2) { animation-delay: -1s; }
+.steam-svg path:nth-child(3) { animation-delay: -2s; }
+@keyframes steamAnim { 0% { transform: translateY(0) translateX(0); opacity: 0.2; } 100% { transform: translateY(-15px) translateX(8px); opacity: 0.8; } }
+
+/* ★ ヘッダー (固定 & デザイン統一) */
+header { 
+  position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 250, 246, 0.95); backdrop-filter: blur(4px);
+  border-bottom: 1px double rgba(62, 39, 35, 0.2);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;
+  padding: 0 16px; box-sizing: border-box;
+}
+body[data-mode="bar"] header { background: rgba(43, 43, 43, 0.95); border-bottom-color: rgba(255,255,255,0.1); }
+
+.wrap { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; }
+
+/* おしゃれな店名ロゴ */
+.brand { 
+  font-family: 'Dancing Script', cursive; font-size: 26px; 
+  color: var(--ink); letter-spacing: 0.1em; font-weight: 700;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+}
+body[data-mode="bar"] .brand { color: #eaddcf; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+.navRight { display: flex; gap: 12px; align-items: center; }
+
+/* ボタン（チケット風） */
+.btn.ghost { 
+  border: 1px solid var(--ink); background: transparent; color: var(--ink); 
+  padding: 6px 14px; border-radius: 4px; text-decoration: none; 
+  font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); transition: 0.3s; position: relative;
+}
+.btn.ghost::before, .btn.ghost::after {
+  content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
+  background: rgba(255, 250, 246, 1); border-radius: 50%; transform: translateY(-50%);
+  border: 1px solid var(--ink);
+}
+.btn.ghost::before { left: -4px; border-right-color: transparent; }
+.btn.ghost::after { right: -4px; border-left-color: transparent; }
+body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
+body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #2b2b2b; border-color: #d7ccc8; }
+
+/* メインコンテンツ */
+main { max-width: 680px; margin: 0 auto; padding: 100px 16px 120px; }
+
+/* プログレスバー（インク風） */
+.progress-container { 
+  display: flex; align-items: center; gap: 16px; margin-bottom: 30px; 
+  font-family: 'Dancing Script', cursive; font-size: 18px; color: var(--ink); 
+}
+.progress-bar-bg { 
+  flex: 1; height: 2px; background: rgba(62, 39, 35, 0.2); 
+  position: relative;
+}
+body[data-mode="bar"] .progress-bar-bg { background: rgba(255,255,255,0.2); }
+
+.progress-bar-fill { 
+  height: 100%; background: var(--ink); width: 0%; 
+  transition: width 0.5s ease; position: relative;
+}
+.progress-bar-fill::after {
+  content: "✒️"; position: absolute; right: -10px; top: -14px; font-size: 16px;
+  transform: rotate(45deg); filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));
+}
+
+/* メニューブック風カード */
+.card {
+  background: var(--menu-bg); 
+  border: 1px solid var(--menu-border); 
+  border-radius: 2px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08), inset 0 0 30px rgba(62, 39, 35, 0.02);
+  padding: 40px 30px; margin-bottom: 24px; position: relative; 
+  transition: opacity 0.4s, transform 0.4s;
+  min-height: 400px; display: flex; flex-direction: column; justify-content: center;
+}
+/* メニューの装飾枠 */
+.card::before {
+  content: ""; position: absolute; inset: 6px;
+  border: 1px double var(--menu-border); pointer-events: none;
+}
+
+/* アニメーション */
+.fade-out-left { opacity: 0; transform: translateX(-20px) rotate(-1deg); pointer-events: none; }
+.fade-in-right { animation: pageIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes pageIn { 0% { opacity: 0; transform: translateX(20px) rotate(1deg); } 100% { opacity: 1; transform: translateX(0) rotate(0); } }
+
+/* 質問テキスト */
+.qTitle { 
+  font-family: 'Dancing Script', cursive; font-size: 20px; color: var(--accent);
+  margin-bottom: 8px; text-align: center;
+}
+.qSubTitle {
+  font-weight: bold; font-size: 15px; color: var(--ink); font-family: 'Zen Kurenaido', sans-serif;
+  margin-bottom: 20px; text-align: center; border-bottom: 1px solid var(--menu-border); 
+  padding-bottom: 10px; display: inline-block; width: 100%;
+}
+.qText { 
+  font-size: 16px; margin-bottom: 32px; line-height: 2; text-align: center; 
+  font-feature-settings: "palt";
+}
+
+/* 選択肢ボタン（メニュー項目風） */
+.optBtn { 
+  display: block; width: 100%; text-align: left; 
+  background: transparent; border: none; border-bottom: 1px dotted var(--menu-border);
+  padding: 16px 10px; margin-top: 8px; 
+  cursor: pointer; transition: all 0.3s; 
+  font-family: "Shippori Mincho", serif; font-size: 14px; color: var(--ink);
+  position: relative;
+}
+.optBtn:hover { 
+  background: rgba(161, 136, 127, 0.05); padding-left: 20px; color: #8d6e63;
+}
+.optBtn::before { 
+  content: "♦"; position: absolute; left: 0; top: 50%; transform: translateY(-50%) scale(0.8); 
+  color: var(--accent); opacity: 0; transition: 0.3s; 
+}
+.optBtn:hover::before { opacity: 1; left: 5px; }
+
+/* 診断結果 */
+.result-header { text-align: center; padding: 20px; margin-bottom: 20px; position: relative; }
+.result-header::after { 
+  content: ""; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); 
+  width: 60px; height: 3px; background: double var(--accent); 
+}
+.result-desc { font-size: 14px; line-height: 2.2; text-align: justify; margin: 0 auto; max-width: 500px; }
+.chart-container { display: flex; justify-content: center; margin: 30px 0; }
+
+.btn-save {
+  display: block; width: 100%; max-width: 300px; margin: 0 auto;
+  background: var(--ink); color: #fff; border: 1px solid var(--ink);
+  padding: 16px; text-align: center; font-family: 'Zen Kurenaido'; font-weight: bold;
+  letter-spacing: 0.1em; cursor: pointer; transition: 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.btn-save:hover { background: #fff; color: var(--ink); transform: translateY(-2px); }
+
+</style>
+</head>
+
+<body>
+
+<div class="paper-texture"></div>
+<div class="vignette"></div>
+
+<div class="table-item">
+   <div class="drink-emoji"></div>
+   <svg class="steam-svg" viewBox="0 0 24 24">
+     <path d="M6 24 C 6 15, 10 12, 8 4" />
+     <path d="M12 24 C 12 15, 16 12, 14 4" />
+     <path d="M18 24 C 18 15, 22 12, 20 4" />
+   </svg>
+</div>
+
+<header>
+  <div class="wrap">
+   <div class="brand">Values Menu</div>
+   <nav class="navRight">
+     <a href="member.html" class="btn ghost">指定席に戻る</a>
+   </nav>
+  </div>
+</header>
+
+<main>
+  <div class="progress-container">
+    <div id="cupText">1 / 12</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar"></div></div>
+  </div>
+
+  <section class="card" id="cardContainer">
+    <div id="questionBox"></div>
+  </section>
+
+  <section id="resultBox" class="card" style="display:none"></section>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+
+// ★GASのURL定義
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+
+/* 昼夜判定 */
+function isNightNow(){ return (new Date().getHours() >= 18 || new Date().getHours() < 6); }
+function applyDayNight(){ 
+  if(isNightNow()) document.body.setAttribute("data-mode", "bar");
+  else document.body.removeAttribute("data-mode");
+}
+applyDayNight(); setInterval(applyDayNight, 60000);
+
+/* 安全対策：HTMLエスケープ */
+function escapeHtml(s){
+  return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+
+/* セッション取得 */
+function getSessionSafe(){
+  if(typeof window.getMemberSession === "function"){ try{ const ms=window.getMemberSession(); if(ms&&ms.memberId) return ms; }catch(e){} }
+  const candidates = ["ma_member_session", "member_session", "serenes_session"];
+  for(const k of candidates){ try{ const raw=localStorage.getItem(k)||sessionStorage.getItem(k); if(raw){ const obj=JSON.parse(raw); if(obj&&obj.memberId) return obj; } }catch(e){} }
+  return null;
+}
+
+// ★ セッション切れチェック (12時間)
+const session = getSessionSafe();
+if(!session || !session.memberId){
+  alert("ログインが必要です");
+  location.replace("login.html");
+  return;
+}
+
+const TIMEOUT_MS = 12 * 60 * 60 * 1000;
+if (session.loginAt) {
+   const loginTime = new Date(session.loginAt).getTime();
+   const now = new Date().getTime();
+   if (now - loginTime > TIMEOUT_MS) {
+       alert("長らくご滞在ありがとうございました。\n一旦、お席をリセットさせていただきます。（再ログインが必要です）");
+       localStorage.removeItem("ma_member_session");
+       location.replace("login.html");
+       return;
+   }
+}
+
+/* 質問データ */
+const QUESTIONS = [
+  { key:"q1", t:"Question 01", sub:"お財布と家計", q:"結婚生活のお金、どう管理するのが一番ストレスがないですか？", opts:[{c:"A",text:"二人の収入を合わせて、お財布は完全に一つにしたい。"},{c:"B",text:"生活費など必要な分だけ出し合って、残りは各自で管理したい。"},{c:"C",text:"基本は別々。お互いの収入には干渉せず、自立していたい。"}] },
+  { key:"q2", t:"Question 02", sub:"お金の使い道", q:"臨時収入が入りました。あなたならどう使いたい気分ですか？", opts:[{c:"A",text:"将来の安心が一番。まずは貯金や投資に回したい。"},{c:"B",text:"バランスよく。少し貯金して、残りで美味しいものでも食べたい。"},{c:"C",text:"今の楽しみが大事。旅行や趣味、経験することに使いたい。"}] },
+  { key:"q3", t:"Question 03", sub:"住む場所", q:"良いご縁があった場合、今の住まいから動くことはできますか？", opts:[{c:"A",text:"仕事や家族の事情で、今の場所からは動けません。"},{c:"B",text:"通える範囲（車で1時間圏内など）なら、柔軟に検討できます。"},{c:"C",text:"相手次第で、県内・県外問わずどこへでも引っ越せます。"}] },
+  { key:"q4", t:"Question 04", sub:"悩みや過去の話", q:"悩み事や、少し言いにくい過去の話。親しくなる過程でどう伝えたいですか？", opts:[{c:"A",text:"隠し事は苦手。最初からオープンに話して知ってもらいたい。"},{c:"B",text:"仲良くなって信頼関係ができてから、少しずつ話したい。"},{c:"C",text:"過去は過去。聞かれない限り、自分からはあまり話さないと思う。"}] },
+  { key:"q5", t:"Question 05", sub:"ひとりの時間", q:"休日の過ごし方、どちらが理想に近いですか？", opts:[{c:"A",text:"基本はずっと一緒にいたい。買い物もテレビを見るのも一緒がいい。"},{c:"B",text:"同じ部屋にいて、別々のこと（読書やスマホ）をしていても気にならない。"},{c:"C",text:"一人で趣味に没頭したり、外に出かける「自分だけの時間」が絶対欲しい。"}] },
+  { key:"q6", t:"Question 06", sub:"人付き合い", q:"パートナー以外の「周りの人」とは、どう付き合っていきたいですか？", opts:[{c:"A",text:"家族ぐるみでワイワイと、密に付き合っていきたい。"},{c:"B",text:"お盆やお正月など、節目ごとの挨拶は大切にしたい。"},{c:"C",text:"あまり干渉せず・されず、夫婦二人の世界を最優先にしたい。"}] },
+  { key:"q7", t:"Question 07", sub:"喧嘩の解決", q:"もしパートナーと喧嘩をしてしまったら、どう解決したいですか？", opts:[{c:"A",text:"モヤモヤするのは嫌。その場ですぐに話し合って解決したい。"},{c:"B",text:"一度ヒートアップしたら、時間を置いて頭を冷やしてから話したい。"},{c:"C",text:"争うくらいなら自分が折れるか、時間が解決するのを待ちたい。"}] },
+  { key:"q8", t:"Question 08", sub:"愛情表現", q:"相手からの愛情、どう示してもらうのが一番嬉しいですか？", opts:[{c:"A",text:"「好き」「愛してる」と言葉でちゃんと伝えてほしい。"},{c:"B",text:"記念日のプレゼントやスキンシップなど、態度で示してほしい。"},{c:"C",text:"言わなくても分かる信頼感。日々のさりげない気遣いで十分。"}] },
+  { key:"q9", t:"Question 09", sub:"物事の決め方", q:"大きな決断（家の購入や旅行先など）をする時、何を信じますか？", opts:[{c:"A",text:"「なんとなく良さそう！」という自分の直感やフィーリング。"},{c:"B",text:"二人で相談しつつ、周りの評判や口コミも参考にしたい。"},{c:"C",text:"メリット・デメリットを比較して、論理的に納得してから決めたい。"}] },
+  { key:"q10",t:"Question 10", sub:"生活のルール", q:"洗濯のたたみ方や物の置き場所など、家事のルールはありますか？", opts:[{c:"A",text:"自分のやり方やルールがある。できれば合わせてほしい。"},{c:"B",text:"最低限の清潔感があればOK。やり方はその時々で合わせられる。"},{c:"C",text:"全く気にしない。散らかっていても死なないし、楽なのが一番。"}] },
+  { key:"q11",t:"Question 11", sub:"変化と安定", q:"これからの人生、どんなペースで歩んでいきたいですか？", opts:[{c:"A",text:"新しい趣味や場所へどんどん出かけて、変化を楽しみたい。"},{c:"B",text:"たまに旅行に行くくらいで、基本は穏やかな日常を繰り返したい。"},{c:"C",text:"変化は疲れる。いつもの家で、いつものように過ごすのが一番の幸せ。"}] },
+  { key:"q12",t:"Question 12", sub:"家族の優先順位", q:"パートナーとの関係はどうありたいですか？", opts:[{c:"A",text:"子供や親のことが最優先。それを一緒に支え合う同志でありたい。"},{c:"B",text:"バランス重視。家族も大事だが、パートナーとのデートも大切にしたい。"},{c:"C",text:"子供がいようとも、夫婦（パートナー）の関係が全ての土台。二人の絆が一番。"}] },
+];
+
+const TYPE_INFO = {
+  1:{name:"静かなる守り人", desc:"多くを語らずとも、背中で家族を守り抜く。岩のような信頼感を持つ存在です。"},
+  2:{name:"安らぎの帰港地", desc:"どんなに疲れていても、あなたの元へ帰れば心が凪いでいく。包容力の塊のような人です。"},
+  3:{name:"愛を注ぐ詩人", desc:"日常の些細な瞬間を、愛という言葉ですくい上げる。情緒豊かな感性の持ち主です。"},
+  4:{name:"献身の伴走者", desc:"前に出るのではなく、半歩後ろでペースを合わせ、共に人生を走り続けるパートナーです。"},
+  5:{name:"言葉なき理解者", desc:"沈黙すら心地よい。視線だけで心を通わせる、精神的成熟度の高い関係を築けます。"},
+  6:{name:"笑顔の共犯者", desc:"楽しい悪巧みも困難も、二人で笑い飛ばして乗り越える。最高の「人生の相棒」です。"},
+  7:{name:"未来への水先人", desc:"迷った時、「こっちだ」と力強く舵を切る。その決断力が家族の希望になります。"},
+  8:{name:"食卓の指揮者", desc:"人生の何気ない食卓を、笑顔と会話で豊かに演出する。日常を楽しむ天才です。"},
+  9:{name:"喜怒哀楽の共鳴者", desc:"涙も笑顔も隠さない。感情のひだを共有し、鮮やかな毎日を創り出す人です。"},
+  10:{name:"好奇心の旅人", desc:"安定した場所に留まらず、常に新しい景色を求めて家族を連れ出す冒険家です。"},
+  11:{name:"理知的な参謀", desc:"感情に溺れず、冷静に解決策を示す。人生の荒波を乗り切るための最高の頭脳です。"},
+  12:{name:"自律する脚本家", desc:"自分の人生という物語の主導権を握っている。互いの物語を尊重し合える大人です。"},
+  13:{name:"堅牢な礎", desc:"派手さはなくとも、生活の土台を盤石に築く。最もリスクに強く、堅実な人です。"},
+  14:{name:"静寂の愛好家", desc:"孤独を知的生産の時間に変える。適度な距離感を美徳とする、成熟した個人です。"},
+  15:{name:"品格ある調停者", desc:"社会的な調和やマナーを重んじる。どこに出しても恥ずかしくない、凛とした佇まいです。"},
+  16:{name:"風を愛する自由人", desc:"縛られることを嫌い、軽やかに生きる。その生き方そのものが、周囲に新しい風を吹かせます。"},
+  17:{name:"美学を持つ目利き", desc:"自分のスタイルに妥協しない。本質的な価値を見抜く目を持ち、生活を芸術にする人です。"},
+  18:{name:"理想を追う開拓者", desc:"現状に満足せず、より高みを目指す。その眼差しは常に遠くの水平線を見ています。"},
+  19:{name:"感性の翻訳者", desc:"言葉にできない空気や美しさを感じ取る。世界を独自のフィルターで捉えるユニークな人です。"},
+  20:{name:"しなやかな適応者", desc:"水のように形を変え、どんな環境でも自分らしく咲く。最強の柔軟性と強さを持つ人です。"},
+};
+
+function calcType20(ans){
+  const val = (key) => ans[key] === "A" ? 0 : ans[key] === "B" ? 50 : 100;
+  const X = Math.round((val("q1")+val("q4")+val("q5")+val("q6")+val("q8")+val("q12"))/6);
+  const Y = Math.round((val("q2")+val("q3")+(100-val("q7"))+(100-val("q9"))+(100-val("q11")))/5);
+  let group;
+  if(X < 50 && Y < 50) group = "A"; else if(X < 50 && Y >= 50) group = "B"; else if(X >= 50 && Y < 50) group = "C"; else group = "D";
+  const Q = ans; let typeId;
+  if (group === "A") { if (Q.q12==="A" && Q.q1==="A") typeId=1; else if (Q.q5==="A" && Q.q11==="C") typeId=2; else if (Q.q8==="A") typeId=3; else if (Q.q7==="C" || Q.q10==="A") typeId=4; else typeId=5; } 
+  else if (group === "B") { if (Q.q9==="A" && Q.q7==="A") typeId=7; else if (Q.q6==="A" || Q.q2==="C") typeId=8; else if (Q.q4==="A") typeId=9; else if (Q.q3==="C" || Q.q11==="A") typeId=10; else typeId=6; } 
+  else if (group === "C") { if (Q.q9==="C" && Q.q7==="B") typeId=11; else if (Q.q2==="A" && Q.q1==="C") typeId=13; else if (Q.q5==="C") typeId=14; else if (Q.q6==="B" || Q.q12==="B") typeId=15; else typeId=12; } 
+  else { if (Q.q3==="C" && Q.q11==="A") typeId=16; else if (Q.q2==="C" && Q.q10==="A") typeId=17; else if (Q.q11==="A" && Q.q9==="A") typeId=18; else if (Q.q10==="C") typeId=20; else typeId=19; }
+  return { X, Y, group, typeId, ...TYPE_INFO[typeId] };
+}
+
+function calcRadarScores(ans) {
+  const pts = (k, rev=false) => { const v = ans[k]; let s = 3; if(v==="A") s=5; else if(v==="C") s=1; if(rev) s = 6 - s; return s; };
+  const s_conv = Math.round((pts("q4") + pts("q7") + pts("q8")) / 3);
+  const s_act = Math.round((pts("q3", true) + pts("q11") + pts("q5", true)) / 3);
+  const s_log = Math.round((pts("q9", true) + pts("q1", true)) / 2);
+  const s_emp = Math.round((pts("q12") + pts("q6")) / 2);
+  const s_disc = Math.round((pts("q10") + pts("q2") + pts("q1")) / 3);
+  return [s_conv, s_act, s_log, s_emp, s_disc];
+}
+
+function createRadarChartSvg(scores) {
+  const labels = ["会話", "行動", "論理", "共感", "規律"];
+  const maxScore = 5; const size = 220; const center = size / 2; const radius = 80;
+  const getPoints = (sc) => sc.map((val, i) => { const a = (Math.PI * 2 * i) / 5 - Math.PI / 2; const r = (val / maxScore) * radius; return `${center + r * Math.cos(a)},${center + r * Math.sin(a)}`; }).join(" ");
+  let bgPolys = ""; for(let i=1; i<=5; i++){ const pts = labels.map((_, idx) => { const a = (Math.PI * 2 * idx) / 5 - Math.PI / 2; const r = (i / maxScore) * radius; return `${center + r*Math.cos(a)},${center + r*Math.sin(a)}`; }).join(" "); bgPolys += `<polygon points="${pts}" fill="none" stroke="#eee" stroke-width="1" />`; }
+  let axes = ""; let txt = ""; labels.forEach((lbl, i) => { const a = (Math.PI * 2 * i) / 5 - Math.PI / 2; const x = center + radius * Math.cos(a); const y = center + radius * Math.sin(a); axes += `<line x1="${center}" y1="${center}" x2="${x}" y2="${y}" stroke="#eee" stroke-width="1" />`; const tx = center + (radius+20) * Math.cos(a); const ty = center + (radius+20) * Math.sin(a); txt += `<text x="${tx}" y="${ty+5}" text-anchor="middle" font-size="12" fill="#666">${lbl}</text>`; });
+  const poly = getPoints(scores);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${bgPolys}${axes}<polygon points="${poly}" fill="rgba(201, 123, 99, 0.4)" stroke="rgba(201, 123, 99, 1)" stroke-width="2" /><circle cx="${center}" cy="${center}" r="3" fill="#c97b63" />${txt}</svg>`;
+}
+
+/* アプリ進行 */
+let idx = 0; const ans = {}; let locked = false;
+const qBox = document.getElementById("questionBox");
+const cup = document.getElementById("cupText");
+const bar = document.getElementById("bar");
+const resultBox = document.getElementById("resultBox");
+const cardContainer = document.getElementById("cardContainer");
+
+function render(){
+  locked = false;
+  const q = QUESTIONS[idx];
+  
+  // プログレスバーアニメーション
+  cup.textContent = `${idx+1} / ${QUESTIONS.length}`;
+  bar.style.width = `${((idx+1)/QUESTIONS.length)*100}%`;
+
+  // 1. ページめくりアニメーション
+  cardContainer.classList.remove("fade-in-right");
+  void cardContainer.offsetWidth; // リフロー
+  cardContainer.classList.add("fade-in-right");
+
+  qBox.innerHTML = `
+    <div class="qTitle">${escapeHtml(q.t)}</div>
+    <div class="qSubTitle">${escapeHtml(q.sub)}</div>
+    <div class="qText">${escapeHtml(q.q)}</div>
+    ${q.opts.map(o => `<button class="optBtn" type="button" data-c="${o.c}"><span>${escapeHtml(o.text)}</span></button>`).join("")}
+  `;
+
+  qBox.querySelectorAll(".optBtn").forEach(btn => {
+    btn.onclick = () => {
+      if(locked) return; locked = true;
+      btn.style.color = "#c97b63";
+      btn.style.fontWeight = "bold";
+      
+      ans[q.key] = btn.dataset.c;
+      
+      setTimeout(() => { 
+        cardContainer.classList.add("fade-out-left"); // めくるアニメーション
+        setTimeout(() => {
+            cardContainer.classList.remove("fade-out-left");
+            idx++; idx < QUESTIONS.length ? render() : finish();
+        }, 300);
+      }, 200);
+    };
+  });
+}
+
+function finish(){
+  try {
+    const r = calcType20(ans);
+    const radarScores = calcRadarScores(ans); 
+    const chartSvg = createRadarChartSvg(radarScores);
+
+    // 画面切り替え
+    document.getElementById("cardContainer").style.display = "none";
+    document.querySelector(".progress-container").style.display = "none";
+    
+    resultBox.innerHTML = `
+      <div class="result-header">
+        <div style="font-size:14px; margin-bottom:8px; color:#888;">あなたの価値観タイプ</div>
+        <h2 style="margin:0; font-size:24px; color:var(--ink); font-family:'Shippori Mincho';">『${escapeHtml(r.name)}』</h2>
+      </div>
+      
+      <div style="text-align:center; margin-bottom:20px;">
+        <div class="result-desc">${escapeHtml(r.desc)}</div>
+      </div>
+      
+      <div class="chart-container">${chartSvg}</div>
+      
+      <button class="btn-save" id="btnSave" type="button">
+        この結果を保存して戻る
+      </button>
+    `;
+
+    resultBox.style.display = "block";
+    resultBox.classList.add("fade-in-right");
+
+    document.getElementById("btnSave").onclick = () => saveToProfile(r, radarScores);
+    window.scrollTo({top: 0, behavior: "smooth"});
+
+  } catch(e) {
+    console.error(e);
+    alert("エラーが発生しました。トップに戻ります。");
+    location.href = "member.html";
+  }
+}
+
+async function saveToProfile(r, radarScores){
+  const ms = getSessionSafe();
+  if(!ms || !ms.memberId){
+    alert("エラー：ログインセッションが見つかりません。\n(LINEログインからやり直してください)");
+    location.href = "login.html"; return;
+  }
+  
+  const btn = document.getElementById("btnSave");
+  if(btn) { btn.disabled = true; btn.textContent = "保存中..."; btn.style.opacity = "0.7"; }
+
+  const memberId = String(ms.memberId);
+  const valuesResultObj = {
+      version: "serenes_adult_v1",
+      typeName: r.name,
+      typeDesc: r.desc,
+      group: r.group,
+      rawScores: radarScores,
+      updatedAt: new Date().toISOString()
+  };
+
+  // GAS送信
+  try {
+      const url = new URL(GAS_URL);
+      url.searchParams.append("action", "update_profile");
+      url.searchParams.append("memberId", memberId);
+      url.searchParams.append("valuesResult", JSON.stringify(valuesResultObj));
+      fetch(url, { method: "POST" }); // 待たずに進む
+  } catch(e) {}
+
+  // ローカル保存
+  const key = "ma_profile_by_memberId";
+  const all = JSON.parse(localStorage.getItem(key) || "{}");
+  all[memberId] = { ...(all[memberId] || {}), valuesResult: valuesResultObj };
+  localStorage.setItem(key, JSON.stringify(all));
+
+  // ★ 1ヶ月ロック記録
+  localStorage.setItem("srn_val_test_" + memberId, Date.now().toString());
+
+  setTimeout(() => location.href = "member.html", 500);
+}
+
+render();
+});
+</script>
+</body>
+</html>

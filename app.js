@@ -5,10 +5,9 @@
 /* =============================================
    ⚙️ 重要設定
    ============================================= */
-// ✅ 設定済み：いただいたLIFF ID
 const MY_LIFF_ID = "2006846780-ojjmzQx9"; 
 
-// ↓ GASのウェブアプリURL（login.htmlと同じもの）
+// ↓ GASのウェブアプリURL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
 /* ============================================= */
 
@@ -93,7 +92,7 @@ window.getLineProfileSafe = async function(){
   }
 };
 
-/* ===== GAS API (申請送信) ===== */
+/* ===== GAS API (申請送信のみ) ===== */
 window.gasApply = async function(data){
   if(!GAS_API_URL){
     console.warn("GAS_API_URL is missing");

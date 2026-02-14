@@ -1,5 +1,5 @@
 :root{
-  /* ===== 温かみベースカラー ===== */
+  /* ========= Base（Cafe / Day）========= */
   --bg:#fbf7f3;          /* 全体背景：やさしい生成り */
   --card:#ffffff;        /* カード背景 */
   --line:#eadfd6;        /* 罫線：薄いベージュ */
@@ -12,8 +12,17 @@
 
   --radius:14px;
   --shadow:0 8px 24px rgba(90,60,40,.12);
+
+  /* 夜（バー）で使う背景画像パス */
+  --bar-bg-image: url("./images/serenes_bar_counter.png");
+
+  /* ヘッダー背景 */
+  --header-bg:#fffaf6;
 }
 
+/* =========================
+   Reset / Base
+   ========================= */
 *{box-sizing:border-box}
 
 body{
@@ -34,7 +43,7 @@ header{
   position:sticky;
   top:0;
   z-index:10;
-  background:#fffaf6;
+  background:var(--header-bg);
   border-bottom:1px solid var(--line);
 }
 
@@ -51,7 +60,7 @@ header{
 .brand{
   font-weight:800;
   letter-spacing:.02em;
-  color:#5a3e32;
+  color:#5a3e32; /* 昼のブランド色 */
 }
 
 nav{
@@ -111,10 +120,7 @@ main{
   padding:20px 16px 48px;
 }
 
-.grid{
-  display:grid;
-  gap:16px;
-}
+.grid{ display:grid; gap:16px; }
 
 @media(min-width:900px){
   .grid.cols2{grid-template-columns:1fr 1fr}
@@ -178,6 +184,12 @@ p{
   margin:14px 0;
 }
 
+.spacer{
+  height:1px;
+  background:var(--line);
+  margin:12px 0;
+}
+
 /* ===== Forms ===== */
 label{
   display:block;
@@ -206,16 +218,20 @@ select:focus{
   box-shadow:0 0 0 3px rgba(217,119,87,.15);
 }
 
-textarea{
-  min-height:120px;
-  resize:vertical;
+textarea{ min-height:120px; resize:vertical; }
+
+input[type="radio"],
+input[type="checkbox"]{
+  width:auto;
+  padding:0;
+  border:none;
+  background:transparent;
+  box-shadow:none;
+  accent-color: var(--pri);
 }
 
 /* ===== Lists ===== */
-.list{
-  display:grid;
-  gap:10px;
-}
+.list{ display:grid; gap:10px; }
 
 .item{
   padding:12px;
@@ -233,28 +249,275 @@ textarea{
   color:#7a3f2b;
 }
 
-/* ===== 掲示板：返信を少し濃くして会話感を出す ===== */
-
-/* 返信全体の背景を一段濃く */
+/* ===== 掲示板：返信 ===== */
 .reply{
-  background:#fff1e8;              /* カードより一段濃い温色 */
+  background:#fff1e8;
   border:1px solid #efc2ae;
 }
-
-/* 自分の返信はさらに少しだけ強調（ほんのり） */
 .reply.mine{
   background:#fde6da;
   border-color:#e6a88f;
 }
-
-/* 返信内の @宛先バッジ */
 .reply .toBadge{
   background:#fff;
   border:1px solid #e3b29c;
   color:#8a3f28;
 }
-
-/* 返信メタ情報（名前・日時・ボタン） */
 .reply .meta{
   color:#7a5a4d;
+}
+
+/* ===== Popup (modal) ===== */
+.popup{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center;
+  padding:16px;
+  z-index:9999;
+}
+.popup__panel{
+  width:min(520px, 100%);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:0 18px 40px rgba(0,0,0,.18);
+  padding:16px;
+}
+.popup__title{font-weight:900; margin-bottom:8px}
+.popup__body{line-height:1.6; color:var(--text)}
+.popup__actions{display:flex; justify-content:flex-end; margin-top:12px}
+
+/* =========================================
+   Serenes Cafe / Bar Theme
+   ========================================= */
+
+/* 変数適用（共通） */
+body{ background:var(--bg); color:var(--text); }
+.card,.item,.box,.post{
+  background:var(--card);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+.muted{ color:var(--muted); }
+.hr,.spacer{ background:var(--line); }
+.btn.primary{ background:var(--pri); border-color:var(--pri); }
+
+/* =========================
+   🌙 Bar（夜）
+   条件は body[data-mode="bar"] に統一
+   ========================= */
+body[data-mode="bar"]{
+  /* 背景を黒すぎない明るめチャコールへ（重要） */
+  --bg:#2a2f38;                 /* ← 黒から明るいチャコール */
+  --card:rgba(45,50,60,.86);    /* ← カードはしっかり見える */
+  --line:rgba(255,255,255,.14);
+  --text:rgba(245,247,250,.92);
+  --muted:rgba(245,247,250,.78);
+
+  --header-bg:rgba(32,36,44,.82);
+
+  /* ボタンの差し色は“バーの金” */
+  --pri:#c9a86a;
+  --shadow:0 10px 26px rgba(0,0,0,.28);
+}
+
+/* 夜のヘッダー */
+body[data-mode="bar"] header{
+  background:var(--header-bg);
+  backdrop-filter: blur(8px);
+}
+
+/* 夜のブランド色（固定ブラウンを上書き） */
+body[data-mode="bar"] .brand{
+  color: rgba(245,247,250,.92);
+}
+
+/* 夜の見出し（固定色を上書き） */
+body[data-mode="bar"] h1,
+body[data-mode="bar"] h2{
+  color: rgba(245,247,250,.92);
+}
+
+/* 夜のラベル（固定色を上書き） */
+body[data-mode="bar"] label{
+  color: rgba(245,247,250,.80);
+}
+
+/* 夜の入力欄：背景を少し明るくして中の文字が見えるように */
+body[data-mode="bar"] input,
+body[data-mode="bar"] textarea,
+body[data-mode="bar"] select{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.18);
+  color: rgba(245,247,250,.92);
+}
+
+body[data-mode="bar"] input::placeholder,
+body[data-mode="bar"] textarea::placeholder{
+  color: rgba(245,247,250,.60);
+}
+
+/* 夜のボタン：枠ボタンも文字が消えないように */
+body[data-mode="bar"] a.btn,
+body[data-mode="bar"] button.btn{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.18);
+  color: rgba(245,247,250,.92);
+}
+body[data-mode="bar"] a.btn:hover,
+body[data-mode="bar"] button.btn:hover{
+  background: rgba(255,255,255,.12);
+}
+
+/* 夜の primary：金 → 文字は黒寄りでコントラスト */
+body[data-mode="bar"] a.btn.primary,
+body[data-mode="bar"] button.btn.primary{
+  background: linear-gradient(135deg,#d7be86,#b08a46);
+  border-color: transparent;
+  color:#1a1206;
+}
+
+/* danger/ok/warn の文字が消える対策 */
+body[data-mode="bar"] .btn.danger,
+body[data-mode="bar"] .btn.ok,
+body[data-mode="bar"] .btn.warn{
+  color:#0b0f14 !important;
+}
+
+/* タブ：文字が薄いのを確実に救う */
+body[data-mode="bar"] .tabBtn{
+  background: rgba(255,255,255,.08) !important;
+  color: rgba(245,247,250,.92) !important;
+  border-color: rgba(255,255,255,.18) !important;
+}
+body[data-mode="bar"] .tabBtn.active{
+  background: rgba(201,168,106,.22) !important;
+  border-color: rgba(201,168,106,.58) !important;
+  box-shadow: 0 0 0 2px rgba(201,168,106,.16) inset;
+}
+
+/* バッジ：夜は反転でくっきり */
+body[data-mode="bar"] .badge{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.18) !important;
+  color: rgba(245,247,250,.92) !important;
+}
+
+/* 「※保存場所」「表示：◯件」みたいな muted が薄い問題の決定打 */
+body[data-mode="bar"] .muted,
+body[data-mode="bar"] .small,
+body[data-mode="bar"] p{
+  color: rgba(245,247,250,.78) !important;
+}
+
+/* 区切り線 */
+body[data-mode="bar"] .hr,
+body[data-mode="bar"] .spacer{
+  background: rgba(255,255,255,.14);
+}
+
+/* ★カード/リスト/投稿の背景を夜は“透けすぎない”ように固定（重要） */
+body[data-mode="bar"] .card,
+body[data-mode="bar"] .item,
+body[data-mode="bar"] .box,
+body[data-mode="bar"] .post{
+  background: var(--card);
+}
+
+/* 🍸 夜だけ背景画像（暗幕を弱めて“画像が見える”ように） */
+body[data-mode="bar"]::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    linear-gradient(rgba(42,47,56,.22), rgba(42,47,56,.46)),
+    var(--bar-bg-image);
+  background-size:cover;
+  background-position:center bottom;
+  background-repeat:no-repeat;
+  filter: saturate(1.08) contrast(1.06) brightness(1.02);
+  z-index:-1;
+}
+
+/* =========================
+   🔘 操作系ボタンの文字を白に固定
+   （検索クリア / 保存 / 削除）
+   ========================= */
+
+/* 保存（ok） */
+.btn.ok{
+  color:#ffffff !important;
+}
+
+/* 削除・検索クリア（danger） */
+.btn.danger{
+  color:#ffffff !important;
+}
+
+/* 念のため hover 時も白を維持 */
+.btn.ok:hover,
+.btn.danger:hover{
+  color:#ffffff !important;
+}
+body.night .btn.ok,
+body.night .btn.danger{
+  color:#ffffff !important;
+}
+
+/* =========================
+   🔥 最終上書き：保存・削除・検索クリア
+   ========================= */
+
+/* actions 内のボタンを強制的に白字 */
+.actions .btn,
+.actions button{
+  color:#ffffff !important;
+}
+
+/* ok / danger は念のため個別指定 */
+button.ok,
+button.danger,
+.btn.ok,
+.btn.danger{
+  color:#ffffff !important;
+}
+
+/* hover / active / focus でも黒に戻らせない */
+button.ok:hover,
+button.danger:hover,
+.btn.ok:hover,
+.btn.danger:hover,
+button.ok:active,
+button.danger:active{
+  color:#ffffff !important;
+}
+
+/* 🌙 夜モードでも完全固定 */
+body.night .actions .btn,
+body.night button.ok,
+body.night button.danger{
+  color:#ffffff !important;
+}
+
+/* 夜（バー） */
+body[data-mode="bar"]{
+  --bg:#111318;
+  --card:rgba(18,20,24,.86);
+  --text:#f3f4f6;
+  --muted:#cbd5e1;
+  --line:rgba(255,255,255,.14);
+  --pri:#c9a86a;
+}
+
+/* 背景画像 */
+body[data-mode="bar"]::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:
+    linear-gradient(rgba(8,10,14,.4), rgba(8,10,14,.6)),
+    url("images/serenes_bar_counter.png");
+  background-size:cover;
+  background-position:center bottom;
 }

@@ -3,664 +3,737 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>管理者｜申請・承認・ID発行</title>
-  <link rel="stylesheet" href="styles.css" />
-
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script defer src="liff-config.js"></script>
-  <script defer src="app.js"></script>
-
+  <title>Master's Desk｜Sereness</title>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <style>
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
-    .tab{padding:10px 12px;border:1px solid var(--line);background:#fff;border-radius:12px;cursor:pointer}
-    .tab.active{background:var(--pri-soft);border-color:#f2c7b6}
-    .table{width:100%;border-collapse:collapse;background:#fffdfb;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-    .table th,.table td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}
-    .table th{background:#fff3ec;color:#5a3e32;font-weight:900}
-    .table tr:last-child td{border-bottom:none}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;font-size:12px}
-    .pill{display:inline-flex;gap:6px;align-items:center;padding:3px 8px;border-radius:999px;border:1px solid var(--line);background:#fff}
-    .muted{color:var(--muted)}
-    .dangerBox{background:#fff1f1;border:1px solid #fecaca;border-radius:12px;padding:12px}
-    .okBox{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px}
-    .rowEnd{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-    textarea{width:100%;min-height:180px;border:1px solid var(--line);border-radius:12px;padding:12px}
-    input[type="text"], input[type="number"]{width:100%}
-    .mini{font-size:12px}
-    .grid2{display:grid;gap:12px}
-    @media(min-width:900px){ .grid2{grid-template-columns:1fr 1fr;} }
+    :root { 
+      --ink:#3e2723; --paper:#fdfbf7; --wood:#5d4037; --accent:#a1887f; --gold:#d4af37; 
+      --stamp-red: #d32f2f; --line-color: #aec2d1; 
+    }
+    body { margin:0; font-family:"Shippori Mincho",serif; color:var(--ink); background-color:#2b1d16; background-image:url('https://www.transparenttextures.com/patterns/wood-pattern.png'); min-height:100vh; }
+    .desk-light { position:fixed; top:0; left:50%; transform:translateX(-50%); width:100%; height:600px; background:radial-gradient(circle at 50% 0%,rgba(255,230,200,0.15),transparent 70%); pointer-events:none; z-index:0; }
+    
+    header { position:sticky; top:0; z-index:100; background:rgba(43,29,22,0.95); border-bottom:1px solid rgba(255,255,255,0.1); padding:15px 20px; display:flex; justify-content:space-between; align-items:center; color:#eaddcf; box-shadow:0 4px 10px rgba(0,0,0,0.3); }
+    .brand { font-family:'Dancing Script'; font-size:24px; color:var(--gold); }
+    .nav-links a { color:#ccc; text-decoration:none; font-size:13px; margin-left:15px; }
+    
+    main { position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:30px 20px 100px; }
+    
+    .desk-tabs { display:flex; gap:4px; padding-left:10px; margin-bottom:-1px; position:relative; z-index:5; overflow-x:auto; white-space:nowrap; scrollbar-width:none; }
+    .desk-tabs::-webkit-scrollbar { display:none; }
+    .d-tab { padding:10px 20px; background:#3e2e26; color:#998; border-radius:8px 8px 0 0; cursor:pointer; font-size:13px; font-weight:bold; border:1px solid rgba(255,255,255,0.05); border-bottom:none; }
+    .d-tab.active { background:var(--paper); color:var(--ink); height:42px; transform:translateY(-4px); box-shadow:0 -2px 5px rgba(0,0,0,0.1); }
+    
+    .desk-paper { background:var(--paper); padding:40px; border-radius:4px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-height:600px; position:relative; background-image:url('https://www.transparenttextures.com/patterns/cream-paper.png'); }
+    .section { display:none; } .section.active { display:block; }
+    h2 { font-size:20px; border-bottom:2px double var(--accent); padding-bottom:10px; margin-top:0; font-family:'Zen Kurenaido'; display:flex; align-items:center; gap:8px; }
+
+    .ledger-book { border: 1px solid #ccc; background: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); position: relative; min-height: 500px; background-image: linear-gradient(var(--line-color) 1px, transparent 1px); background-size: 100% 40px; background-position: 0 40px; }
+    .ledger-header-area { background: #fff; border-bottom: 2px double var(--ink); padding: 20px 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .ledger-title { font-size: 24px; font-weight: bold; font-family: "Shippori Mincho"; border: 1px solid var(--ink); padding: 5px 15px; display: inline-block; }
+    .ledger-month-nav { display: flex; align-items: center; gap: 15px; font-size: 18px; margin-bottom: 10px; }
+    .nav-btn { cursor: pointer; user-select: none; font-weight: bold; padding: 0 10px; }
+    .nav-btn:hover { color: var(--accent); }
+    .ledger-summary { text-align: right; font-size: 13px; color: #666; }
+    .sum-val { font-size: 18px; font-weight: bold; color: var(--ink); margin-left: 10px; border-bottom: 1px solid #999; }
+    
+    .ledger-table-wrap { padding: 0 30px 40px; }
+    .ledger-row { display: grid; grid-template-columns: 80px 1fr 90px 80px 100px; height: 40px; align-items: center; font-size: 14px; }
+    .l-head { font-weight: bold; font-size: 12px; color: #888; border-bottom: 1px solid var(--line-color); margin-bottom: 0; }
+    .l-col { padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .l-amt { text-align: right; font-family: 'Courier New', monospace; font-weight: bold; color: var(--wood); }
+    .l-stamp-area { display: flex; justify-content: center; align-items: center; position: relative; }
+
+    .stamp-mark { width: 32px; height: 32px; border: 2px solid var(--stamp-red); border-radius: 50%; color: var(--stamp-red); font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; transform: rotate(-15deg); border: 3px double var(--stamp-red); opacity: 0.8; user-select: none; }
+    .stamp-anim { animation: stampIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    @keyframes stampIn { 0% { transform: scale(2) rotate(10deg); opacity: 0; } 100% { transform: scale(1) rotate(-15deg); opacity: 0.9; } }
+    .btn-pay { font-size: 10px; padding: 2px 8px; border: 1px solid #888; background: #fff; color: #333; border-radius: 2px; cursor: pointer; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+    .btn-pay:hover { background: #eee; }
+    .action-icon { cursor: pointer; color: #888; font-size: 16px; margin-left: 6px; transition: 0.2s; }
+    .action-icon:hover { color: var(--pri); transform: scale(1.1); }
+    .action-icon.del:hover { color: #d32f2f; }
+
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: #fff; padding: 15px; border: 1px solid #eee; text-align: center; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .stat-val { font-size: 24px; font-weight: bold; color: var(--wood); font-family: 'Dancing Script'; margin: 5px 0; }
+    .stat-label { font-size: 11px; color: #888; }
+
+    .data-list { display:grid; gap:10px; }
+    .letter-card { padding:12px; border:1px solid #d4c5b5; background:#fffcf5; display:flex; justify-content:space-between; align-items:center; border-radius:2px; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+    .badge { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; margin-right:4px; }
+    .status-pending { background:#fff3e0; color:#e65100; border:1px solid #ffb74d; }
+    .status-approved { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+    .status-paid { background:#e3f2fd; color:#1565c0; border:1px solid #90caf9; }
+    .ng-alert { color: #d32f2f; font-weight: bold; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; }
+    
+    .l-meta { font-size:12px; color:#888; margin-bottom:8px; display:grid; grid-template-columns:100px 1fr; gap:4px; }
+    .bg-green { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+    .bg-red { background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
+    .bg-gray { background:#f0f0f0; color:#666; border:1px solid #ccc; }
+
+    .btn { cursor:pointer; border:none; padding:8px 16px; border-radius:4px; font-size:13px; transition:0.2s; background:var(--wood); color:#fff; }
+    .btn-danger { background:#fff; border:1px solid #d32f2f; color:#d32f2f; }
+    .btn-success { background:#2e7d32; }
+    
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; display:none; justify-content:center; align-items:center; }
+    .modal-box { background:#fdfbf7; width:500px; max-width:90%; max-height:90vh; overflow-y:auto; padding:30px; border-radius:2px; }
+    .form-control { width:100%; padding:8px; border:1px solid #ccc; box-sizing:border-box; margin-bottom:10px; }
   </style>
 </head>
-
 <body>
-<header>
-  <div class="wrap">
-    <div class="brand">管理者｜申請・承認・ID発行</div>
-    <nav>
-      <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="waiting.html">審査中ページ</a>
-      <a class="btn ghost" href="login.html">ログイン</a>
-      <span data-auth class="row"></span>
-    </nav>
+  <div class="desk-light"></div>
+  <header>
+    <div class="brand">Master's Desk</div>
+    <div class="nav-links"><a href="index.html">Top</a></div>
+  </header>
+  <main id="mainContent" style="display:none;">
+    <div class="desk-tabs">
+      <div class="d-tab active" onclick="switchTab('dashboard')">📊 分析</div>
+      <div class="d-tab" onclick="switchTab('members')">👤 会員</div>
+      <div class="d-tab" onclick="switchTab('letters')">📮 手紙</div>
+      <div class="d-tab" onclick="switchTab('communities')">🪑 テーブル</div>
+      <div class="d-tab" onclick="switchTab('diaries')">📖 手帳</div>
+      <div class="d-tab" onclick="switchTab('ledger')">💰 帳簿</div>
+      <div class="d-tab" onclick="switchTab('system')">⚙️ システム</div>
+    </div>
+    <div class="desk-paper">
+      
+      <div id="secDashboard" class="section active">
+        <h2>店舗状況 (Dashboard)</h2>
+        <div class="dashboard-grid">
+          <div class="stat-card"><div class="stat-label">総会員数</div><div class="stat-val" id="stMembers">-</div></div>
+          <div class="stat-card"><div class="stat-label">男性 / 女性</div><div class="stat-val" id="stGender">-</div></div>
+          <div class="stat-card"><div class="stat-label">手紙流通数</div><div class="stat-val" id="stLetters">-</div></div>
+          <div class="stat-card"><div class="stat-label">売上目安</div><div class="stat-val" id="stSales">-</div></div>
+          <div class="stat-card"><div class="stat-label">凍結中</div><div class="stat-val" id="stBanned">-</div></div>
+        </div>
+      </div>
+
+      <div id="secMembers" class="section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h2 style="margin:0; border:none; padding:0;">会員台帳</h2>
+          <button class="btn" style="background:#5a3e32; font-size:12px;" onclick="document.getElementById('bcBody').focus(); switchTab('system');">📢 全員に通知する</button>
+        </div>
+        <input type="text" id="searchMember" class="form-control" placeholder="検索..." onkeyup="renderMembers()">
+        <div class="data-list" id="memberList">Loading...</div>
+      </div>
+
+      <div id="secLetters" class="section">
+        <h2>手紙の検閲・配達</h2>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+          <input type="text" id="searchLetter" class="form-control" placeholder="名前で検索..." onkeyup="renderLetters()" style="margin-bottom:0; flex:1;">
+          <button class="btn btn-sm" style="background:#ccc;color:#333;width:auto;" onclick="filterLetters('all')">全件</button>
+          <button class="btn btn-sm status-pending" style="width:auto;" onclick="filterLetters('pending')">未承認</button>
+          <button class="btn btn-sm status-approved" style="width:auto;" onclick="filterLetters('approved')">承認済み</button>
+        </div>
+        <div id="letterList">Loading...</div>
+      </div>
+
+      <div id="secCommunities" class="section">
+        <h2>テーブル（コミュニティ）管理</h2>
+        <div id="adminCommList" class="data-list">Loading...</div>
+      </div>
+
+      <div id="secBoard" class="section">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px double var(--accent); padding-bottom:10px; margin-bottom: 15px;">
+           <h2 style="border:none; padding:0; margin:0;">テーブル内 監視</h2>
+           <button class="btn" style="background:#ccc; color:#333; padding:4px 10px;" onclick="switchTab('communities')">◀ テーブル一覧に戻る</button>
+        </div>
+        <div id="boardFilterArea" style="margin-bottom: 15px; background: #fff3e0; padding: 10px; border-left: 4px solid #e65100; border-radius: 2px;">
+           <span style="font-size: 12px; color: #888;">表示中のテーブル: </span>
+           <span id="boardFilterName" style="font-weight:bold; color:var(--ink); font-size: 14px;"></span>
+        </div>
+        <div id="adminBoardList" class="data-list">Loading...</div>
+      </div>
+
+      <div id="secDiaries" class="section">
+        <h2>手帳（日記）管理</h2>
+        <div id="adminDiaryList" class="data-list">Loading...</div>
+      </div>
+
+      <div id="secLedger" class="section">
+        <div class="ledger-book">
+          <div class="ledger-header-area">
+            <div>
+              <div class="ledger-month-nav">
+                <span class="nav-btn" onclick="changeMonth(-1)">＜</span>
+                <span id="ledgerTitleYearMonth">2023年 10月</span>
+                <span class="nav-btn" onclick="changeMonth(1)">＞</span>
+              </div>
+              <div class="ledger-title">売上出納帳</div>
+            </div>
+            <div class="ledger-summary">
+              <div>未収額: <span id="sumUnpaid" style="color:#d32f2f;">¥0</span></div>
+              <div>回収済: <span id="sumPaid" class="sum-val">¥0</span></div>
+            </div>
+          </div>
+          <div class="ledger-table-wrap">
+            <div class="ledger-row l-head">
+              <div class="l-col">日付</div>
+              <div class="l-col">摘要 (From → To)</div>
+              <div class="l-col l-amt">金額</div>
+              <div class="l-col" style="text-align:center;">受領印</div>
+              <div class="l-col" style="text-align:right;">操作</div>
+            </div>
+            <div id="ledgerRows"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="secSystem" class="section">
+        <h2>システム設定</h2>
+        <div class="data-item" style="display:block;">
+          <label style="font-weight:bold;display:block;margin-bottom:8px;">📢 全員に通知 (Broadcast)</label>
+          <textarea id="bcBody" class="form-control" placeholder="全員の郵便受けに届くお知らせを入力..." style="height:120px;"></textarea>
+          <button class="btn btn-success" onclick="broadcastLetter()">全会員に送信</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="loginModal" class="modal-overlay" style="display:flex;">
+    <div class="modal-box" style="width:300px; text-align:center;">
+      <h3>Master Login</h3>
+      <input type="password" id="adminPass" class="form-control" placeholder="Password" style="margin-bottom:20px;" onkeydown="if(event.key==='Enter') adminLogin()">
+      <button class="btn btn-success" onclick="adminLogin()">Enter</button>
+    </div>
   </div>
-</header>
 
-<main>
-  <h1>管理者ページ</h1>
-
-  <section class="card">
-    <h2>管理者チェック</h2>
-    <div id="guardMsg" class="item">チェック中…</div>
-
-    <div class="grid cols2" style="margin-top:10px">
-      <div class="item">
-        <div style="font-weight:900">方法A：LINE userId の許可リスト（おすすめ）</div>
-        <div class="small">あなたの userId を ADMIN_LINE_USER_IDS に入れてください。</div>
-        <div class="mono">ADMIN_LINE_USER_IDS = ["Uxxxxxxxx..."]</div>
+  <div id="letterModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>手紙の確認</h3>
+      <div class="l-meta">
+        <div>From:</div><div id="mFrom"></div>
+        <div>To:</div><div id="mTo"></div>
       </div>
-      <div class="item">
-        <div style="font-weight:900">方法B：管理PIN（予備）</div>
-        <div class="row">
-          <input id="pinInput" placeholder="管理PIN" />
-          <button class="btn primary" id="btnPin">PINで入る</button>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" id="btnSetPin">PINを設定/変更</button>
-          <button class="btn" id="btnClearPin">PINを削除</button>
-        </div>
-        <p class="small">※PINはこの端末のlocalStorageに保存されます（簡易版）。</p>
+      <div style="background:#fff; padding:10px; border:1px dashed #ccc; margin:10px 0; max-height:200px; overflow-y:auto; white-space:pre-wrap;" id="mBody"></div>
+      <label style="font-size:12px;">推薦コメント</label>
+      <textarea id="mComment" class="form-control" style="height:60px;"></textarea>
+      <div style="margin-top:20px; display:flex; justify-content:space-between;">
+        <button class="btn btn-danger" onclick="rejectLetter()">却下</button>
+        <button class="btn btn-success" onclick="approveLetter()">承認</button>
+      </div>
+      <input type="hidden" id="mLetterId">
+    </div>
+  </div>
+
+  <div id="notifyModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>個別通知を送る</h3>
+      <div style="margin-bottom:15px; font-size:14px;">
+        To: <b id="notifyTargetName"></b> <span style="font-size:12px; color:#888;" id="notifyTargetId"></span>
+      </div>
+      <label style="font-size:12px;color:#888;">メッセージ内容</label>
+      <textarea id="notifyBody" class="form-control" style="height:150px;" placeholder="ここにメッセージを入力..."></textarea>
+      
+      <div style="display:flex; justify-content:space-between; margin-top:20px;">
+        <button class="btn" onclick="document.getElementById('notifyModal').style.display='none'" style="background:#ccc; color:#333;">キャンセル</button>
+        <button class="btn btn-success" onclick="execNotify()">送信する</button>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section class="card" id="adminArea" style="display:none">
-    <div class="row" style="justify-content:space-between">
-      <h2 style="margin:0">申請・承認</h2>
-      <div class="row">
-        <button class="btn" id="btnRefresh">更新</button>
-        <button class="btn" id="btnExport">JSONエクスポート</button>
+  <div id="memberEditModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>会員編集</h3>
+      <div style="text-align:center; margin-bottom:15px;">
+        <img id="edAvatar" src="" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ccc; background:#eee;">
+      </div>
+      <label style="font-size:12px;color:#888;">ID</label>
+      <input id="edId" class="form-control" readonly style="background:#eee;">
+      <label style="font-size:12px;color:#888;">ニックネーム</label>
+      <input id="edName" class="form-control">
+      <label style="font-size:12px;color:#888;">年齢（自動計算）</label>
+      <input id="edAge" class="form-control" readonly style="background:#eee;">
+      <label style="font-size:12px;color:#888;">アカウント状態 (applications & profiles連携)</label>
+      <select id="edStatus" class="form-control">
+        <option value="approved">approved (承認済・通常)</option>
+        <option value="pending">pending (未承認・審査中)</option>
+        <option value="left">left (退店・退会済)</option>
+      </select>
+      <label style="font-size:12px;color:#888; color:#d32f2f; font-weight:bold; margin-top:10px;">年齢確認 (記録)</label>
+      <select id="edAgeVerified" class="form-control" style="border:1px solid #d32f2f; background:#fffcfc;">
+        <option value="false">未確認</option>
+        <option value="true">確認済み (Verified)</option>
+      </select>
+      <div style="display:flex; justify-content:space-between; margin-top:20px;">
+        <button class="btn btn-danger" onclick="deleteMem()">完全削除</button>
+        <button class="btn btn-success" onclick="saveMem()">保存</button>
+      </div>
+      <button class="btn" onclick="document.getElementById('memberEditModal').style.display='none'" style="margin-top:10px; background:#ccc; width:100%;">閉じる</button>
+    </div>
+  </div>
+
+  <div id="communityEditModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>テーブル編集</h3>
+      <label style="font-size:12px;color:#888;">テーブル名</label>
+      <input id="edCommTitle" class="form-control">
+      <label style="font-size:12px;color:#888;">説明</label>
+      <textarea id="edCommDesc" class="form-control" style="height:80px;"></textarea>
+      <input type="hidden" id="edCommId">
+      <div style="display:flex; justify-content:space-between; margin-top:20px;">
+        <button class="btn" onclick="closeModal('communityEditModal')" style="background:#ccc;">キャンセル</button>
+        <button class="btn btn-success" onclick="saveCommunity()">保存</button>
       </div>
     </div>
-
-    <div class="tabs" id="tabs">
-      <button class="tab active" data-tab="pending">申請中</button>
-      <button class="tab" data-tab="approved">承認済み</button>
-      <button class="tab" data-tab="tools">ツール</button>
-    </div>
-
-    <!-- 申請中 -->
-    <div id="panel-pending">
-      <div class="row" style="margin-bottom:10px">
-        <input id="qPending" style="flex:1" placeholder="検索：名前 / LINE表示名 / 電話 / userId" />
-      </div>
-      <div class="item" style="overflow:auto">
-        <table class="table" id="tblPending"></table>
-      </div>
-      <p class="small" style="margin-top:10px">
-        ※承認すると <span class="pill">SRN-1234</span> と PIN を発行し、送信用メッセージが生成されます（コピーしてLINEで送ってください）。
-      </p>
-    </div>
-
-    <!-- 承認済み -->
-    <div id="panel-approved" style="display:none">
-      <div class="row" style="margin-bottom:10px">
-        <input id="qApproved" style="flex:1" placeholder="検索：会員ID / 名前 / LINE表示名 / userId" />
-      </div>
-      <div class="item" style="overflow:auto">
-        <table class="table" id="tblApproved"></table>
-      </div>
-    </div>
-
-    <!-- ツール -->
-    <div id="panel-tools" style="display:none">
-      <div class="grid2">
-        <div class="item">
-          <div style="font-weight:900">ID採番の設定</div>
-          <div class="small">次の会員IDの番号（4桁）を変更できます。</div>
-          <div class="row" style="margin-top:10px">
-            <input id="nextNo" type="number" min="1" placeholder="例：1" style="flex:1" />
-            <button class="btn" id="btnSaveNo">保存</button>
-          </div>
-          <div class="small" id="noHint" style="margin-top:8px"></div>
-
-          <div class="hr"></div>
-          <div style="font-weight:900">エクスポート（バックアップ）</div>
-          <textarea id="exportBox" readonly placeholder="ここにJSONが出ます"></textarea>
-          <div class="row" style="margin-top:10px">
-            <button class="btn" id="btnCopy">コピー</button>
-            <button class="btn" id="btnDownload">download.json</button>
-          </div>
-        </div>
-
-        <div class="dangerBox">
-          <div style="font-weight:900">危険操作</div>
-          <p class="small">削除は取り消せません（localStorageから消えます）。</p>
-          <div class="row">
-            <button class="btn" id="btnClearPending">申請中を全削除</button>
-            <button class="btn" id="btnClearApproved">承認済みを全削除</button>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <button class="btn" id="btnClearAll">全部初期化</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 承認モーダル -->
-    <dialog id="dlgApprove" style="border:none;border-radius:16px;max-width:760px;width:96%;">
-      <form method="dialog">
-        <h3 style="margin:0 0 10px">面談完了 → 承認してID発行</h3>
-        <div class="okBox">
-          <div class="small">
-            ここで <b>会員ID（SRN-1234）</b> と <b>PIN</b> を発行します。<br>
-            生成された「送信用メッセージ」をコピーして、担当者がLINEで送ってください。
-          </div>
-        </div>
-
-        <div class="grid2" style="margin-top:12px">
-          <div class="item">
-            <div style="font-weight:900">申請者情報</div>
-            <div id="apInfo" class="small"></div>
-            <div class="hr"></div>
-
-            <label>会員ID（自動）</label>
-            <input id="apMemberId" />
-
-            <label style="margin-top:10px">PIN（4桁）</label>
-            <input id="apPin" inputmode="numeric" />
-
-            <div class="rowEnd" style="margin-top:12px">
-              <button class="btn" id="btnGenPin" type="button">PIN再生成</button>
-              <button class="btn" id="btnGenId" type="button">ID再生成</button>
-            </div>
-          </div>
-
-          <div class="item">
-            <div style="font-weight:900">送信用メッセージ（コピーして送る）</div>
-            <textarea id="apMsg" readonly></textarea>
-            <div class="rowEnd" style="margin-top:10px">
-              <button class="btn" id="btnCopyMsg" type="button">メッセージコピー</button>
-            </div>
-
-            <div class="hr"></div>
-            <div class="rowEnd">
-              <button class="btn" value="cancel" type="submit">キャンセル</button>
-              <button class="btn primary" id="btnApproveDo" value="ok" type="submit">承認して保存</button>
-            </div>
-            <p class="small" style="margin-top:8px">
-              ※「承認して保存」後、申請は承認済みに移動します。
-            </p>
-          </div>
-        </div>
-      </form>
-    </dialog>
-
-  </section>
+  </div>
 
 <script>
-/* =====================
-   管理者ガード
-===================== */
-const ADMIN_LINE_USER_IDS = [
-  // "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-];
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+  let allLetters = [], allMembers = [], allCommunities = [];
+  let filterStat = 'all';
+  let ledgerYear = new Date().getFullYear();
+  let ledgerMonth = new Date().getMonth();
 
-const K_ADMIN_PIN = "ma_admin_pin";
-const K_ADMIN_OK  = "ma_admin_ok";
-
-function isAdminByLine(){
-  const s = getLineSession();
-  if(!s) return false;
-  return ADMIN_LINE_USER_IDS.includes(s.lineUserId);
-}
-function isAdminByPin(){ return localStorage.getItem(K_ADMIN_OK) === "1"; }
-function setAdminOk(){ localStorage.setItem(K_ADMIN_OK, "1"); }
-function clearAdminOk(){ localStorage.removeItem(K_ADMIN_OK); }
-
-function setGuard(ok, text){
-  document.getElementById("guardMsg").textContent = text;
-  document.getElementById("adminArea").style.display = ok ? "block" : "none";
-}
-
-function getPin(){ return localStorage.getItem(K_ADMIN_PIN) || ""; }
-function setPin(pin){ localStorage.setItem(K_ADMIN_PIN, pin); }
-function clearPin(){ localStorage.removeItem(K_ADMIN_PIN); clearAdminOk(); }
-
-function checkGuard(){
-  const s = getLineSession();
-  if(!s){
-    setGuard(false, "ログインが必要です。先に login.html でLINEログインしてください。");
-    return;
+  function adminLogin() {
+    const p = document.getElementById("adminPass").value;
+    if(p === "admin") { 
+      document.getElementById("loginModal").style.display = "none";
+      document.getElementById("mainContent").style.display = "block";
+      init();
+    } else { alert("パスワードが違います"); }
   }
-  if(isAdminByLine() || isAdminByPin()){
-    setGuard(true, "管理者としてログイン済みです。");
-    renderAll();
-    return;
+
+  async function api(act, p={}) {
+    const u = new URL(GAS_URL);
+    u.searchParams.append("action", act);
+    u.searchParams.append("_nc", Date.now()); 
+    for(let k in p) u.searchParams.append(k, p[k]);
+    try { const res = await fetch(u); return await res.json(); } catch(e){ return {ok:false}; }
   }
-  setGuard(false, "管理者権限がありません。ADMIN_LINE_USER_IDS に追加するか、管理PINで入ってください。");
-}
 
-/* =====================
-   データ
-===================== */
-const K_APPLY = "ma_applications";   // { [lineUserId]: {..., status:"pending"} }
-const K_APPROVED = "ma_approved";    // { [lineUserId]: {status:"approved", memberId, pin, ...} }
-const K_NEXT_NO = "ma_next_member_no"; // number
+  function init(){
+    loadDashboard();
+    loadMembers();
+    loadLetters();
+    loadCommunities(); 
+  }
 
-function loadObj(key, def){ return load(key, def); }
-function saveObj(key, val){ save(key, val); }
+  function switchTab(t) {
+    document.querySelectorAll('.d-tab').forEach(e=>e.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+    
+    const tabMap = {dashboard:0, members:1, letters:2, communities:3, diaries:4, ledger:5, system:6};
+    
+    if (t === 'board') {
+        document.querySelectorAll('.d-tab')[tabMap['communities']].classList.add('active');
+        document.getElementById('secBoard').classList.add('active');
+    } else {
+        if (tabMap[t] !== undefined) {
+            document.querySelectorAll('.d-tab')[tabMap[t]].classList.add('active');
+        }
+        document.getElementById('sec'+t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
+    }
+    
+    if(t==='ledger') renderLedgerBook(); 
+    if(t==='communities') loadCommunities();
+    if(t==='diaries') loadDiaries();
+  }
 
-function listPending(){
-  const all = loadObj(K_APPLY, {});
-  return Object.values(all).filter(x=>x && x.status==="pending");
-}
-function listApproved(){
-  const all = loadObj(K_APPROVED, {});
-  return Object.values(all).filter(x=>x && x.status==="approved");
-}
+  async function loadDashboard() {
+    const res = await api("get_dashboard_data");
+    if(res.ok) {
+        let s = res.stats || {};
+        let membersObj = s.members || {};
+        let lettersObj = s.letters || {};
+        let salesObj = s.sales || {};
 
-function removePending(lineUserId){
-  const all = loadObj(K_APPLY, {});
-  delete all[lineUserId];
-  saveObj(K_APPLY, all);
-}
-function addApproved(rec){
-  const all = loadObj(K_APPROVED, {});
-  all[rec.lineUserId] = rec;
-  saveObj(K_APPROVED, all);
-}
+        let mem = typeof membersObj === 'object' ? (membersObj.total || 0) : (s.members || 0);
+        let male = typeof membersObj === 'object' ? (membersObj.male || 0) : (s.male || 0);
+        let female = typeof membersObj === 'object' ? (membersObj.female || 0) : (s.female || 0);
+        let banned = typeof membersObj === 'object' ? (membersObj.banned || 0) : (s.banned || 0);
+        
+        let letNum = typeof lettersObj === 'object' ? (lettersObj.total || 0) : (s.letters || 0);
+        let salNum = typeof salesObj === 'object' ? (salesObj.total || 0) : (s.sales || 0);
 
-function getNextNo(){
-  const n = parseInt(localStorage.getItem(K_NEXT_NO) || "1", 10);
-  return Number.isFinite(n) && n>0 ? n : 1;
-}
-function setNextNo(n){ localStorage.setItem(K_NEXT_NO, String(n)); }
+        document.getElementById("stMembers").textContent = mem + "名";
+        document.getElementById("stGender").textContent = male + " / " + female;
+        document.getElementById("stLetters").textContent = letNum + "通";
+        document.getElementById("stSales").textContent = "¥" + salNum.toLocaleString();
+        document.getElementById("stBanned").textContent = banned + "名";
+    }
+  }
 
-function pad4(n){ return String(n).padStart(4,"0"); }
-function genMemberId(){
-  const n = getNextNo();
-  return `SRN-${pad4(n)}`;
-}
-function bumpNo(){
-  const n = getNextNo();
-  setNextNo(n+1);
-}
-function genPin(){
-  const n = Math.floor(1000 + Math.random()*9000);
-  return String(n);
-}
+  /* --- Members --- */
+  async function loadMembers() {
+    const res = await api("list_members_all");
+    if(res.ok) { allMembers = res.members; renderMembers(); }
+  }
+  
+  function calcAge(bstr) {
+      if(!bstr) return "未登録";
+      const b = new Date(bstr);
+      const today = new Date();
+      let age = today.getFullYear() - b.getFullYear();
+      const mDiff = today.getMonth() - b.getMonth();
+      if (mDiff < 0 || (mDiff === 0 && today.getDate() < b.getDate())) { age--; }
+      return isNaN(age) ? "未登録" : age + "歳";
+  }
 
-function escape(s){
-  return (s??"").toString()
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
+  function renderMembers() {
+    const term = document.getElementById("searchMember").value.toLowerCase();
+    const el = document.getElementById("memberList"); el.innerHTML="";
+    allMembers.forEach(m=>{
+      if(term && !m.nickname.toLowerCase().includes(term) && !m.memberId.toLowerCase().includes(term)) return;
+      let stBadge = `<span class="badge bg-gray">${escapeHtml(m.status)}</span>`;
+      if(m.status === 'left') stBadge = '<span class="badge bg-gray">退店済</span>';
+      else if(m.status === 'approved' || m.status === 'active') stBadge = '<span class="badge bg-green">承認済</span>';
+      else if(m.status === 'pending') stBadge = '<span class="badge status-pending">未承認</span>';
+      
+      const ver = (m.ageVerified === "true" || m.ageVerified === true) ? '<span class="badge bg-green">年齢済</span>' : '<span class="badge bg-gray">年齢未</span>';
+      const ageText = calcAge(m.birthdate);
 
-function makeSendMessage(app, memberId, pin){
-  return `【セレネス｜面談完了のお知らせ】
-${app.displayName ? `LINE表示名：${app.displayName}\n` : ""}${app.name ? `お名前：${app.name}\n` : ""}
-
-本人確認が完了しましたので、会員IDを発行しました。
-下記でログインしてご利用を開始できます。
-
-会員ID：${memberId}
-PIN：${pin}
-
-ログイン：${location.origin}${location.pathname.replace(/\/[^\/]+$/, "/")}login.html
-
-【ご利用開始までの流れ】
-1) LINEでログイン
-2) 会員IDとPINを入力
-3) 会員ページ・掲示板が利用可能になります
-
-安心してご利用いただくために、面談で本人確認後にID発行としております。
-ご不明点があればこのLINEでお気軽にどうぞ。`;
-}
-
-/* =====================
-   レンダリング
-===================== */
-let currentApproveApp = null;
-
-function renderPending(){
-  const q = (document.getElementById("qPending").value || "").trim().toLowerCase();
-  const rows = listPending().sort((a,b)=> (b.appliedAt||"").localeCompare(a.appliedAt||""))
-    .filter(a=>{
-      if(!q) return true;
-      const blob = `${a.displayName||""} ${a.name||""} ${a.phone||""} ${a.lineUserId||""}`.toLowerCase();
-      return blob.includes(q);
-    });
-
-  const t = document.getElementById("tblPending");
-  t.innerHTML = `
-    <tr>
-      <th>申請者</th>
-      <th>連絡先</th>
-      <th class="mono">lineUserId</th>
-      <th>申請日時</th>
-      <th>操作</th>
-    </tr>
-    ${rows.map(a=>`
-      <tr>
-        <td>
-          <div><span class="pill">${escape(a.displayName || "LINE")}</span></div>
-          <div class="mini">名前：${escape(a.name||"")}</div>
-          <div class="mini">年齢：${escape(a.age||"")}</div>
-        </td>
-        <td>
-          <div>電話：${escape(a.phone||"")}</div>
-        </td>
-        <td class="mono">${escape(a.lineUserId||"")}</td>
-        <td class="mono">${escape(a.appliedAt||"")}</td>
-        <td>
-          <div class="row" style="gap:8px">
-            <button class="btn primary" data-approve="${escape(a.lineUserId)}">面談完了→承認</button>
-            <button class="btn" data-reject="${escape(a.lineUserId)}">却下/取り下げ</button>
+      el.innerHTML += `
+        <div class="letter-card">
+          <div>
+            ${stBadge} ${ver} <b>${escapeHtml(m.nickname)}</b> <span style="font-size:11px;color:#888;">(${ageText} / ID: ${m.memberId})</span>
           </div>
-        </td>
-      </tr>
-    `).join("")}
-  `;
-
-  t.querySelectorAll("[data-approve]").forEach(b=>{
-    b.addEventListener("click", ()=>{
-      const id = b.getAttribute("data-approve");
-      openApprove(id);
+          <div style="display:flex; gap:6px;">
+            <button class="btn" style="padding:4px 10px; font-size:11px; background:#5a3e32;" onclick="openNotify('${m.memberId}', '${escapeHtml(m.nickname)}')">✉️ 通知</button>
+            <button class="btn btn-danger" style="padding:4px 10px; font-size:11px;" onclick="editMem('${m.memberId}')">編集</button>
+          </div>
+        </div>`;
     });
-  });
-  t.querySelectorAll("[data-reject]").forEach(b=>{
-    b.addEventListener("click", ()=>{
-      const id = b.getAttribute("data-reject");
-      if(!confirm("この申請を取り下げ/却下として削除しますか？")) return;
-      removePending(id);
-      renderPending();
+  }
+
+  function openNotify(id, name) {
+    document.getElementById("notifyTargetId").textContent = id;
+    document.getElementById("notifyTargetName").textContent = name;
+    document.getElementById("notifyBody").value = "";
+    document.getElementById("notifyModal").style.display = "flex";
+  }
+
+  async function execNotify() {
+    const id = document.getElementById("notifyTargetId").textContent;
+    const name = document.getElementById("notifyTargetName").textContent;
+    const body = document.getElementById("notifyBody").value;
+    
+    if(!body) return alert("メッセージを入力してください");
+    if(!confirm(`${name} さんに通知を送りますか？`)) return;
+
+    // ★ 修正: 送信者名を「マスター」に変更
+    const res = await api("send_letter", {
+      fromMemberId: "MASTER",
+      fromName: "マスター", // ここを修正
+      toMemberId: id,
+      toName: name,
+      body: body,
+      status: "approved", 
+      giftFlower: "Message", 
+      paperType: "classic",
+      waxColor: "wax-gold",
+      sealMark: "star"
     });
-  });
-}
 
-function renderApproved(){
-  const q = (document.getElementById("qApproved").value || "").trim().toLowerCase();
-  const rows = listApproved().sort((a,b)=> (b.issuedAt||"").localeCompare(a.issuedAt||""))
-    .filter(a=>{
-      if(!q) return true;
-      const blob = `${a.memberId||""} ${a.displayName||""} ${a.name||""} ${a.lineUserId||""}`.toLowerCase();
-      return blob.includes(q);
-    });
-
-  const t = document.getElementById("tblApproved");
-  t.innerHTML = `
-    <tr>
-      <th>会員ID</th>
-      <th>会員</th>
-      <th class="mono">lineUserId</th>
-      <th>発行日時</th>
-      <th>操作</th>
-    </tr>
-    ${rows.map(a=>`
-      <tr>
-        <td><span class="pill"><b>${escape(a.memberId||"")}</b></span></td>
-        <td>
-          <div><span class="pill">${escape(a.displayName||"LINE")}</span></div>
-          <div class="mini">名前：${escape(a.name||"")}</div>
-        </td>
-        <td class="mono">${escape(a.lineUserId||"")}</td>
-        <td class="mono">${escape(a.issuedAt||"")}</td>
-        <td>
-          <button class="btn" data-copy="${escape(a.lineUserId)}">送信用メッセージ生成</button>
-        </td>
-      </tr>
-    `).join("")}
-  `;
-
-  t.querySelectorAll("[data-copy]").forEach(b=>{
-    b.addEventListener("click", async ()=>{
-      const lineUserId = b.getAttribute("data-copy");
-      const all = loadObj(K_APPROVED, {});
-      const rec = all[lineUserId];
-      if(!rec) return;
-      const text = makeSendMessage(rec, rec.memberId, rec.pin);
-      await navigator.clipboard.writeText(text);
-      alert("送信用メッセージをコピーしました（LINEで貼り付けて送ってください）");
-    });
-  });
-}
-
-function renderAll(){
-  renderPending();
-  renderApproved();
-  document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
-}
-
-/* =====================
-   承認モーダル
-===================== */
-function openApprove(lineUserId){
-  const all = loadObj(K_APPLY, {});
-  const app = all[lineUserId];
-  if(!app) return;
-
-  currentApproveApp = app;
-
-  const memberId = genMemberId();
-  const pin = genPin();
-
-  document.getElementById("apInfo").innerHTML = `
-    <div>LINE表示名：<b>${escape(app.displayName||"")}</b></div>
-    <div>名前：<b>${escape(app.name||"")}</b>　年齢：<b>${escape(app.age||"")}</b></div>
-    <div>電話：<b>${escape(app.phone||"")}</b></div>
-    <div class="mono" style="margin-top:6px">lineUserId：${escape(app.lineUserId||"")}</div>
-    <div class="mono">申請日時：${escape(app.appliedAt||"")}</div>
-  `;
-
-  document.getElementById("apMemberId").value = memberId;
-  document.getElementById("apPin").value = pin;
-  document.getElementById("apMsg").value = makeSendMessage(app, memberId, pin);
-
-  document.getElementById("dlgApprove").showModal();
-}
-
-function refreshApproveMsg(){
-  const memberId = document.getElementById("apMemberId").value.trim();
-  const pin = document.getElementById("apPin").value.trim();
-  document.getElementById("apMsg").value = makeSendMessage(currentApproveApp, memberId, pin);
-}
-
-/* =====================
-   タブ・ツール
-===================== */
-function setTab(name){
-  document.querySelectorAll(".tab").forEach(t=>{
-    t.classList.toggle("active", t.dataset.tab === name);
-  });
-  ["pending","approved","tools"].forEach(k=>{
-    document.getElementById("panel-"+k).style.display = (k===name) ? "block" : "none";
-  });
-}
-
-function makeExport(){
-  const data = {
-    exportedAt: nowISO(),
-    applications: loadObj(K_APPLY, {}),
-    approved: loadObj(K_APPROVED, {}),
-    nextMemberNo: getNextNo()
-  };
-  return JSON.stringify(data, null, 2);
-}
-
-function downloadText(filename, text){
-  const blob = new Blob([text], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  document.body.appendChild(a);
-  a.click(); a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/* =====================
-   init
-===================== */
-document.addEventListener("DOMContentLoaded", async ()=>{
-  // 検索
-  document.getElementById("qPending").addEventListener("input", renderPending);
-  document.getElementById("qApproved").addEventListener("input", renderApproved);
-
-  // tabs
-  document.getElementById("tabs").addEventListener("click", (e)=>{
-    const b = e.target.closest(".tab");
-    if(!b) return;
-    setTab(b.dataset.tab);
-  });
-
-  // 更新・エクスポ
-  document.getElementById("btnRefresh").addEventListener("click", renderAll);
-  document.getElementById("btnExport").addEventListener("click", ()=>{
-    setTab("tools");
-    document.getElementById("exportBox").value = makeExport();
-  });
-
-  document.getElementById("btnCopy").addEventListener("click", async ()=>{
-    const text = document.getElementById("exportBox").value;
-    if(!text) return alert("先にエクスポートしてください");
-    await navigator.clipboard.writeText(text);
-    alert("コピーしました");
-  });
-  document.getElementById("btnDownload").addEventListener("click", ()=>{
-    const text = document.getElementById("exportBox").value;
-    if(!text) return alert("先にエクスポートしてください");
-    downloadText("sereness-admin-backup.json", text);
-  });
-
-  // 次番号
-  document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
-  document.getElementById("nextNo").value = getNextNo();
-  document.getElementById("btnSaveNo").addEventListener("click", ()=>{
-    const n = parseInt(document.getElementById("nextNo").value, 10);
-    if(!Number.isFinite(n) || n<1) return alert("1以上の数値を入れてください");
-    setNextNo(n);
-    alert("保存しました");
-    document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
-  });
-
-  // 危険操作
-  document.getElementById("btnClearPending").addEventListener("click", ()=>{
-    if(!confirm("申請中を全削除しますか？")) return;
-    saveObj(K_APPLY, {});
-    renderPending();
-  });
-  document.getElementById("btnClearApproved").addEventListener("click", ()=>{
-    if(!confirm("承認済みを全削除しますか？")) return;
-    saveObj(K_APPROVED, {});
-    renderApproved();
-  });
-  document.getElementById("btnClearAll").addEventListener("click", ()=>{
-    if(!confirm("全部初期化しますか？（申請/承認/次番号/セッション等）")) return;
-    saveObj(K_APPLY, {});
-    saveObj(K_APPROVED, {});
-    localStorage.removeItem(K_NEXT_NO);
-    localStorage.removeItem("ma_session");
-    localStorage.removeItem("ma_member_session");
-    alert("初期化しました");
-    location.replace("index.html");
-  });
-
-  // 承認モーダル操作
-  document.getElementById("btnGenPin").addEventListener("click", ()=>{
-    document.getElementById("apPin").value = genPin();
-    refreshApproveMsg();
-  });
-  document.getElementById("btnGenId").addEventListener("click", ()=>{
-    document.getElementById("apMemberId").value = genMemberId();
-    refreshApproveMsg();
-  });
-  document.getElementById("apMemberId").addEventListener("input", refreshApproveMsg);
-  document.getElementById("apPin").addEventListener("input", refreshApproveMsg);
-
-  document.getElementById("btnCopyMsg").addEventListener("click", async ()=>{
-    const text = document.getElementById("apMsg").value;
-    await navigator.clipboard.writeText(text);
-    alert("コピーしました（LINEで貼り付けて送ってください）");
-  });
-
-  // 「承認して保存」＝dialog submit(ok)
-  document.getElementById("dlgApprove").addEventListener("close", ()=>{
-    // closeのみ（submit結果はフォーム側で処理したいがdialog標準が薄いのでここは使わない）
-  });
-
-  // 実際の承認保存（dialogの「承認して保存」ボタンが押された時）
-  document.getElementById("btnApproveDo").addEventListener("click", ()=>{
-    if(!currentApproveApp) return;
-
-    const memberId = document.getElementById("apMemberId").value.trim();
-    const pin = document.getElementById("apPin").value.trim();
-
-    if(!/^SRN-\d{4}$/.test(memberId)){
-      alert("会員IDは SRN-1234 の形式にしてください");
-      return;
+    if(res.ok) {
+      alert("送信しました");
+      closeModal("notifyModal");
+    } else {
+      alert("送信エラーが発生しました");
     }
-    if(!/^\d{4}$/.test(pin)){
-      alert("PINは4桁で入力してください");
-      return;
+  }
+
+  function editMem(id) {
+    const m = allMembers.find(x=>x.memberId===id);
+    document.getElementById("edId").value = m.memberId;
+    document.getElementById("edName").value = m.nickname;
+    document.getElementById("edAvatar").src = m.avatarDataUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+    document.getElementById("edAge").value = calcAge(m.birthdate);
+    let st = m.status || "approved";
+    if (st === "active") st = "approved";
+    document.getElementById("edStatus").value = st;
+    document.getElementById("edAgeVerified").value = (m.ageVerified === "true" || m.ageVerified === true) ? "true" : "false";
+    document.getElementById("memberEditModal").style.display="flex";
+  }
+  async function saveMem() {
+    await api("update_profile", { 
+        memberId: document.getElementById("edId").value, 
+        nickname: document.getElementById("edName").value,
+        status: document.getElementById("edStatus").value,
+        ageVerified: document.getElementById("edAgeVerified").value
+    });
+    closeModal("memberEditModal"); loadMembers();
+  }
+  async function deleteMem() {
+    if(!confirm("削除しますか？")) return;
+    await api("delete_member", { memberId: document.getElementById("edId").value });
+    closeModal("memberEditModal"); loadMembers();
+  }
+
+  /* --- Letters --- */
+  async function loadLetters() {
+    const res = await api("list_letters_all");
+    if(res.ok) { allLetters = res.letters; renderLetters(); renderLedgerBook(); loadDashboard(); }
+  }
+  function renderLetters() {
+    const term = document.getElementById("searchLetter").value.toLowerCase();
+    const el = document.getElementById("letterList"); el.innerHTML = "";
+    const sorted = allLetters.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    sorted.forEach(l=>{
+      if((filterStat !== 'all' && l.status !== filterStat) && !(filterStat==='matched' && l.status.includes('matched'))) return;
+      if(term && !l.fromName.toLowerCase().includes(term) && !l.toName.toLowerCase().includes(term)) return;
+      let st = `<span class="badge status-pending">承認待ち</span>`;
+      if(l.status==='approved') st = `<span class="badge status-approved">承認済み</span>`;
+      if(l.status.includes('matched')) st = `<span class="badge status-paid">マッチ</span>`;
+      let alertMsg = l.hasNg ? `<span class="ng-alert"><span class="material-icons-outlined" style="font-size:14px;">warning</span> NG検知</span>` : "";
+      el.innerHTML += `
+        <div class="letter-card">
+          <div style="flex:1">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <div>${st} ${alertMsg}</div><span style="font-size:10px; color:#888;">${new Date(l.createdAt).toLocaleString()}</span>
+            </div>
+            <div class="l-meta"><span>From:</span><b>${escapeHtml(l.fromName)}</b> <span>To:</span><b>${escapeHtml(l.toName)}</b></div>
+            <div style="font-size:12px; color:#666;">${escapeHtml(l.body||"").substring(0,40)}...</div>
+          </div>
+          <div style="margin-left:10px;">
+            <button class="btn btn-success" style="padding:4px 8px;margin-bottom:4px;" onclick="openLetter('${l.id}')">確認</button>
+            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteLet('${l.id}')">削除</button>
+          </div>
+        </div>`;
+    });
+  }
+  function filterLetters(s) { filterStat=s; renderLetters(); }
+  function openLetter(id) {
+    const l = allLetters.find(x=>x.id===id);
+    document.getElementById("mLetterId").value = l.id;
+    document.getElementById("mFrom").textContent = l.fromName;
+    document.getElementById("mTo").textContent = l.toName;
+    document.getElementById("mBody").textContent = l.body;
+    document.getElementById("letterModal").style.display="flex";
+  }
+  async function approveLetter() {
+    if(!confirm("承認しますか？")) return;
+    await api("update_letter_status", { id:document.getElementById("mLetterId").value, status:"approved", adminComment:document.getElementById("mComment").value });
+    closeModal('letterModal'); loadLetters(); 
+  }
+  async function rejectLetter() { deleteLet(document.getElementById("mLetterId").value); closeModal('letterModal'); }
+  
+  async function deleteLet(id) {
+    if(!confirm("削除しますか？")) return;
+    await api("delete_letter", { id: id }); 
+    loadLetters();
+  }
+
+  /* --- Communities (テーブル) --- */
+  async function loadCommunities() {
+    const res = await api("list_communities");
+    if(res.ok) {
+        allCommunities = res.communities;
+        const el = document.getElementById("adminCommList"); el.innerHTML = "";
+        res.communities.forEach(c => {
+            el.innerHTML += `
+            <div class="letter-card" style="display:block; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <b style="color:var(--pri);">${escapeHtml(c.title)}</b> 
+                <span style="font-size:10px; color:#888;">${new Date(c.createdAt).toLocaleString()}</span>
+              </div>
+              <div style="font-size:13px; margin-bottom:5px; white-space:pre-wrap;">${escapeHtml(c.description)}</div>
+              <div style="font-size:11px; color:#888; margin-bottom:5px;">作成者ID: ${escapeHtml(c.createdBy)} / 参加人数: ${c.memberCount}名</div>
+              
+              <div style="text-align:right; margin-top:10px; display:flex; justify-content:flex-end; gap:5px;">
+                <button class="btn" style="padding:4px 8px; font-size:11px; background:#457b9d;" onclick="viewCommunityBoard('${c.id}', '${escapeHtml(c.title)}')">中を見る（投稿一覧）</button>
+                <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="editCommunity('${c.id}')">編集</button>
+                <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteAdminCommunity('${c.id}')">削除</button>
+              </div>
+            </div>`;
+        });
+        if(res.communities.length === 0) el.innerHTML = "<p>テーブルがありません</p>";
     }
+  }
+  
+  function editCommunity(id) {
+      const c = allCommunities.find(x => x.id === id);
+      if(!c) return;
+      document.getElementById("edCommId").value = c.id;
+      document.getElementById("edCommTitle").value = c.title;
+      document.getElementById("edCommDesc").value = c.description;
+      document.getElementById("communityEditModal").style.display = "flex";
+  }
 
-    // 承認レコード保存
-    const rec = {
-      status:"approved",
-      lineUserId: currentApproveApp.lineUserId,
-      displayName: currentApproveApp.displayName || "",
-      name: currentApproveApp.name || "",
-      age: currentApproveApp.age || "",
-      phone: currentApproveApp.phone || "",
-      memberId,
-      pin,
-      issuedAt: nowISO()
-    };
-    addApproved(rec);
+  async function saveCommunity() {
+      const id = document.getElementById("edCommId").value;
+      const title = document.getElementById("edCommTitle").value.trim();
+      const desc = document.getElementById("edCommDesc").value.trim();
+      if(!title) return alert("タイトルを入力してください");
+      
+      const res = await api("update_community", { communityId: id, title: title, description: desc });
+      if(res.ok) { closeModal("communityEditModal"); loadCommunities(); } 
+      else { alert("エラーが発生しました"); }
+  }
 
-    // 申請から削除（承認済みへ移動）
-    removePending(currentApproveApp.lineUserId);
+  function viewCommunityBoard(id, title) {
+      switchTab('board'); loadBoard(id, title);
+  }
 
-    // 採番を進める（memberIdが自動生成IDだった場合も、手動でも“次へ進む”でOK）
-    // 次番号が同じままだと連番が詰まるので進める
-    bumpNo();
-    document.getElementById("nextNo").value = getNextNo();
-    document.getElementById("noHint").textContent = `次の会員ID：SRN-${pad4(getNextNo())}`;
+  async function deleteAdminCommunity(id) {
+      if(!confirm("このテーブルを削除しますか？\n※テーブル内の投稿は残りますが、一覧からアクセスできなくなります。")) return;
+      await api("delete_community", { communityId: id });
+      loadCommunities();
+  }
 
-    alert("承認して保存しました。送信用メッセージをコピーしてLINEで送ってください。");
-    currentApproveApp = null;
-    // dialogは自動で閉じる（form method=dialog）
-  });
+  /* --- Board (コミュニティの中身) --- */
+  async function loadBoard(filterCommId = "", filterCommTitle = "") {
+    if(!filterCommId) return; 
+    
+    document.getElementById("adminBoardList").innerHTML = "Loading...";
+    const filterName = document.getElementById("boardFilterName");
+    filterName.textContent = filterCommTitle;
 
-  // 管理PIN
-  document.getElementById("btnPin").addEventListener("click", ()=>{
-    const pin = document.getElementById("pinInput").value.trim();
-    const saved = getPin();
-    if(!saved) return alert("まだPINが設定されていません。先にPINを設定してください。");
-    if(pin === saved){
-      setAdminOk();
-      alert("PIN認証OK");
-      checkGuard();
-    }else{
-      alert("PINが違います");
+    const res = await api("list_posts", { limit: 100, isAdmin: "true" });
+    if(res.ok) {
+        const el = document.getElementById("adminBoardList"); el.innerHTML = "";
+        let count = 0;
+        
+        res.posts.forEach(p => {
+            if(p.communityId !== filterCommId) return; 
+            count++;
+
+            let reps = p.replies.map(r => `<div style="margin-left:10px; font-size:11px; color:#666; border-left:1px solid #ccc; padding-left:5px; margin-top:2px;">└ ${escapeHtml(r.userProfile.nickname)}: ${escapeHtml(r.body)}</div>`).join("");
+            
+            el.innerHTML += `
+            <div class="letter-card" style="display:block; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <b style="color:var(--pri);">${escapeHtml(p.title)}</b> 
+                <span style="font-size:10px; color:#888;">${new Date(p.createdAt).toLocaleString()}</span>
+              </div>
+              <div style="font-size:13px; margin-bottom:5px; white-space:pre-wrap;">${escapeHtml(p.body)}</div>
+              <div style="font-size:11px; color:#888; margin-bottom:5px;">投稿者: ${escapeHtml(p.userProfile.nickname)} (ID: ${p.lineUserId})</div>
+              ${reps}
+              <div style="text-align:right; margin-top:10px;">
+                <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteAdminPost('${p.id}', '${filterCommId}', '${filterCommTitle}')">投稿を削除</button>
+              </div>
+            </div>`;
+        });
+        if(count === 0) el.innerHTML = "<p>このテーブルにはまだ投稿がありません</p>";
     }
-  });
-  document.getElementById("btnSetPin").addEventListener("click", ()=>{
-    const pin = prompt("新しい管理PIN（4桁以上推奨）");
-    if(!pin) return;
-    setPin(pin.trim());
-    alert("PINを設定しました");
-  });
-  document.getElementById("btnClearPin").addEventListener("click", ()=>{
-    if(!confirm("管理PINを削除しますか？")) return;
-    clearPin();
-    alert("PINを削除しました");
-    checkGuard();
-  });
+  }
 
-  // guard
-  checkGuard();
-});
+  async function deleteAdminPost(id, filterCommId, filterCommTitle) {
+      if(!confirm("この投稿を削除しますか？")) return;
+      await api("delete_post", { postId: id });
+      loadBoard(filterCommId, filterCommTitle);
+  }
+
+  /* --- Diaries --- */
+  async function loadDiaries() {
+    const res = await api("list_diaries", { limit: 100, isAdmin: "true" });
+    if(res.ok) {
+        const el = document.getElementById("adminDiaryList"); el.innerHTML = "";
+        res.diaries.forEach(d => {
+            let img = d.imageSrc ? `<img src="${d.imageSrc}" style="max-height:100px; max-width:100px; display:block; margin:5px 0; border:1px solid #ccc;">` : "";
+            el.innerHTML += `
+            <div class="letter-card" style="display:block; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <b style="color:var(--pri);">${escapeHtml(d.title)}</b> 
+                <span class="badge ${d.privacy==='public'?'bg-green':'bg-gray'}">${d.privacy}</span>
+              </div>
+              <div style="font-size:11px; color:#888;">${d.date} / 執筆者ID: ${d.memberId}</div>
+              ${img}
+              <div style="font-size:13px; margin-top:8px; white-space:pre-wrap;">${escapeHtml(d.body)}</div>
+              <div style="text-align:right; margin-top:10px;">
+                <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteAdminDiary('${d.id}')">削除</button>
+              </div>
+            </div>`;
+        });
+        if(res.diaries.length === 0) el.innerHTML = "<p>日記がありません</p>";
+    }
+  }
+  async function deleteAdminDiary(id) {
+      if(!confirm("この日記を削除しますか？")) return;
+      await api("delete_diary", { diaryId: id });
+      loadDiaries();
+  }
+
+  /* --- Ledger --- */
+  function changeMonth(d) {
+    let dt = new Date(ledgerYear, ledgerMonth + d, 1);
+    ledgerYear = dt.getFullYear(); ledgerMonth = dt.getMonth();
+    renderLedgerBook();
+  }
+  function renderLedgerBook() {
+    const el = document.getElementById("ledgerRows"); el.innerHTML = "";
+    document.getElementById("ledgerTitleYearMonth").textContent = `${ledgerYear}年 ${ledgerMonth+1}月`;
+    const targets = allLetters.filter(l => {
+        if(!l.status.includes('matched')) return false;
+        const d = new Date(l.createdAt); return d.getFullYear() === ledgerYear && d.getMonth() === ledgerMonth;
+    }).sort((a,b)=> new Date(a.createdAt) - new Date(b.createdAt));
+
+    let sumPaid = 0; let sumUnpaid = 0;
+    if(targets.length === 0) { el.innerHTML = `<div style="padding:20px; text-align:center; color:#ccc;">取引なし</div>`; } 
+    else {
+        targets.forEach(l => {
+            const date = new Date(l.createdAt).getDate();
+            const isPaid = (l.status === 'matched_paid');
+            const price = l.price !== undefined && l.price !== "" ? Number(l.price) : 5000; 
+            
+            if(isPaid) sumPaid += price; else sumUnpaid += price;
+            let actionHtml = `<button class="btn-pay" onclick="stampPay('${l.id}')">入金確認</button>`;
+            if(isPaid) actionHtml = `<div class="stamp-mark">受領</div>`;
+            
+            let opHtml = `
+              <div style="display:flex; gap:4px; justify-content:flex-end;">
+                <button class="btn" style="padding:2px 6px; font-size:10px; background:#888;" onclick="editLedgerPrice('${l.id}', ${price})">編集</button>
+                <button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="deleteLedgerItem('${l.id}')">削除</button>
+              </div>
+            `;
+
+            el.innerHTML += `
+              <div class="ledger-row" id="row-${l.id}">
+                <div class="l-col">${ledgerMonth+1}/${date}</div>
+                <div class="l-col" style="font-size:12px;">${escapeHtml(l.fromName)} → ${escapeHtml(l.toName)}</div>
+                <div class="l-col l-amt">¥${price.toLocaleString()}</div>
+                <div class="l-stamp-area">${actionHtml}</div>
+                <div class="l-col" style="text-align:right;">${opHtml}</div>
+              </div>`;
+        });
+    }
+    document.getElementById("sumPaid").textContent = `¥${sumPaid.toLocaleString()}`;
+    document.getElementById("sumUnpaid").textContent = `¥${sumUnpaid.toLocaleString()}`;
+  }
+  
+  async function stampPay(id) {
+    if(!confirm("入金を確認しましたか？\nハンコを押します。")) return;
+    const res = await api("update_letter_status", { id: id, status: "matched_paid" });
+    if(res.ok) {
+        document.getElementById(`row-${id}`).querySelector(".l-stamp-area").innerHTML = `<div class="stamp-mark stamp-anim">受領</div>`;
+        loadLetters(); 
+    }
+  }
+
+  async function editLedgerPrice(id, currentPrice) {
+      const newPriceStr = prompt("新しい金額を入力してください（半角数字）", currentPrice);
+      if(newPriceStr === null) return;
+      const newPrice = parseInt(newPriceStr, 10);
+      if(isNaN(newPrice)) return alert("有効な数値を入力してください");
+      
+      const res = await api("update_letter_price", { id: id, price: newPrice });
+      if(res.ok) { loadLetters(); } 
+      else { alert("金額の更新に失敗しました"); }
+  }
+
+  async function deleteLedgerItem(id) {
+      if(!confirm("この取引（手紙のやり取り）を帳簿から完全に削除しますか？")) return;
+      const res = await api("delete_letter", { id: id });
+      if(res.ok) { 
+          loadLetters(); 
+      } else {
+          alert("削除に失敗しました");
+      }
+  }
+
+  async function broadcastLetter() {
+    const body = document.getElementById("bcBody").value;
+    if(!body) return alert("メッセージを入力してください");
+    if(!confirm("全会員のポストに手紙を送ります。よろしいですか？")) return;
+    const res = await api("broadcast_letter", { body: body });
+    if(res.ok) { alert(res.count + "通送信しました"); document.getElementById("bcBody").value = ""; } else { alert("送信失敗"); }
+  }
+
+  function closeModal(id) { document.getElementById(id).style.display="none"; }
+  function escapeHtml(s) { return s ? String(s).replace(/&/g, "&amp;") : ""; }
 </script>
-</main>
 </body>
 </html>

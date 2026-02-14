@@ -1,99 +1,411 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>プロフィール作成</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script defer src="app.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>プロフィール編集｜セレネスCafe&Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  
+  <style>
+    :root {
+      --pri: #5a3e32;
+      --sec: #c97b63;
+      --paper-light: #fffdf8;
+      --paper-dark: #2a2a2a;
+    }
+
+    html, body {
+      margin: 0; padding: 0; background: transparent; font-family: "Shippori Mincho", serif;
+      overflow-y: auto !important; height: auto !important; min-height: 100vh;
+      color: #333; transition: color 0.3s, background 0.3s;
+    }
+
+    .day-bg, .night-bg { position: fixed; inset: 0; z-index: -3; pointer-events: none; background-size: cover; background-position: center; }
+    .day-bg { 
+      background-color: #9c6f44; 
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 50px),
+        linear-gradient(0deg, rgba(0,0,0,0.15) 0%, transparent 20%);
+    }
+    .night-bg { 
+      display: none; background-color: #2b1d16; 
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 50px),
+        radial-gradient(circle at 50% 100%, rgba(200,150,100,0.15), transparent 70%); 
+    }
+    body[data-mode="bar"] .day-bg { display: none; }
+    body[data-mode="bar"] .night-bg { display: block; }
+    
+    body[data-mode="bar"] { color: #eaddcf; }
+    body[data-mode="bar"] .card { background: #dcd1c4; border-color: #b5a695; color: #333; box-shadow: 2px 6px 20px rgba(0,0,0,0.6); }
+
+    .table-item { position: fixed; bottom: -10px; right: -10px; z-index: -1; pointer-events: none; opacity: 0.9; transition: transform 0.3s; }
+    .drink-emoji { font-size: 100px; filter: drop-shadow(5px 15px 10px rgba(0,0,0,0.4)); }
+    .drink-emoji::before { content: '☕️'; }
+    body[data-mode="bar"] .table-item { opacity: 0.7; }
+    body[data-mode="bar"] .drink-emoji { filter: drop-shadow(5px 15px 10px rgba(0,0,0,0.8)); }
+    body[data-mode="bar"] .drink-emoji::before { content: '🍸'; }
+
+    .steam-svg { position: absolute; top: -20px; left: 35px; width: 60px; height: 60px; fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 2; stroke-linecap: round; filter: blur(2px); transition: opacity 10s ease; }
+    body[data-mode="bar"] .steam-svg { display: none; } 
+    .table-item.cooled .steam-svg { opacity: 0; } 
+    .steam-svg path { animation: steamAnim 3s infinite alternate ease-in-out; }
+    .steam-svg path:nth-child(2) { animation-delay: -1s; }
+    .steam-svg path:nth-child(3) { animation-delay: -2s; }
+    @keyframes steamAnim { 0% { transform: translateY(0) translateX(0); opacity: 0.2; } 100% { transform: translateY(-15px) translateX(8px); opacity: 0.8; } }
+    .jiggle { animation: jiggleAnim 0.4s ease-in-out; }
+    @keyframes jiggleAnim { 0% { transform: rotate(0deg); } 25% { transform: rotate(4deg); } 50% { transform: rotate(-2deg); } 75% { transform: rotate(1deg); } 100% { transform: rotate(0deg); } }
+
+    /* ★ ヘッダー (固定表示 & デザイン統一) */
+    header { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 250, 246, 0.95) !important; backdrop-filter: blur(10px); 
+      border-bottom: 1px solid rgba(0,0,0,0.1); 
+      z-index: 1000; padding: 0 16px; box-sizing: border-box;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    }
+    body[data-mode="bar"] header { 
+      background: rgba(20, 20, 20, 0.9) !important; 
+      border-bottom-color: rgba(255,255,255,0.1); 
+    }
+    
+    .wrap { width: 100%; max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* おしゃれな店名ロゴ */
+    .brand { 
+      font-family: 'Dancing Script', cursive; font-size: 26px; 
+      color: var(--pri) !important; letter-spacing: 0.15em; font-weight: 600;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+      transition: 0.3s;
+    }
+    body[data-mode="bar"] .brand { 
+      color: #eaddcf !important; 
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .navRight { display: flex; align-items: center; gap: 10px; }
+
+    /* ★ チケット風ボタン */
+    .btn.ghost { 
+      border: 1px solid var(--pri); background: transparent; color: var(--pri); 
+      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
+      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); transition: 0.3s; position: relative;
+    }
+    .btn.ghost::before, .btn.ghost::after {
+      content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
+      background: #fdf6e3; /* ヘッダー背景色と合わせる（昼） */
+      border-radius: 50%; transform: translateY(-50%);
+      border: 1px solid var(--pri);
+    }
+    .btn.ghost::before { left: -4px; border-right-color: transparent; }
+    .btn.ghost::after { right: -4px; border-left-color: transparent; }
+
+    body[data-mode="bar"] .btn.ghost { border-color: #eaddcf; color: #eaddcf; }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { 
+        background: #141414; /* 夜ヘッダー色 */
+        border-color: #eaddcf; 
+    }
+
+    .card {
+      background: #fdf6e3; border: 1px solid #e0d0c0; border-radius: 4px;
+      box-shadow: 2px 4px 15px rgba(0,0,0,0.1); padding: 40px 30px;
+      margin: 30px auto; max-width: 600px; position: relative;
+    }
+    
+    /* コンテンツ全体の余白調整 */
+    main { padding-top: 100px; }
+    
+    input[type=text], textarea, select {
+      width: 100%; box-sizing: border-box;
+      padding: 8px 0; margin-bottom: 24px;
+      border: none; border-bottom: 1px dashed #c0a080;
+      background: transparent;
+      font-size: 16px; font-family: "Shippori Mincho", serif; color: #4a3324;
+      border-radius: 0; outline: none; transition: 0.3s;
+    }
+    input[type=text]:focus, textarea:focus, select:focus {
+      border-bottom: 1px solid var(--pri); background: rgba(255,255,255,0.2);
+    }
+    body[data-mode="bar"] select option { color: #333; }
+    
+    label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 4px; color: var(--pri); font-family: 'Zen Kurenaido', sans-serif; }
+    
+    .row { display: flex; gap: 20px; }
+    .col { flex: 1; }
+    
+    .form-select {
+      appearance: none; -webkit-appearance: none;
+      background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23c0a080" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 5px center;
+      background-size: 12px;
+      cursor: pointer;
+    }
+
+    .avatar-wrapper { width: 100px; height: 100px; margin: 0 auto 20px; position: relative; cursor: pointer; display: block; }
+    .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15); background: #eee; }
+    .avatar-add-icon { position: absolute; bottom: 0; right: 0; background: var(--sec); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    .btn.primary { background: var(--pri); color: #fff; border: none; padding: 14px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-family: 'Zen Kurenaido', sans-serif; font-size: 16px; letter-spacing: 0.1em; box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: 0.2s; }
+    .btn.primary:active { transform: scale(0.98); box-shadow: 0 2px 3px rgba(0,0,0,0.15); }
+    .btn.primary:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+    
+    .public-setting { margin: 24px 0 30px; padding: 16px; background: rgba(255,255,255,0.4); border: 1px dotted #c0a080; border-radius: 4px; display: flex; align-items: center; gap: 12px; }
+
+    .stamp-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(2); border: 3px double #a63737; color: #a63737; padding: 10px 20px; font-family: 'Courier New', serif; font-weight: 900; font-size: 24px; text-transform: uppercase; border-radius: 8px; opacity: 0; pointer-events: none; transform-origin: center center; display: flex; flex-direction: column; align-items: center; mix-blend-mode: multiply; z-index: 100; background: rgba(255,255,255,0.8); }
+    .stamp-overlay.active { animation: stampIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .stamp-date { font-size: 10px; margin-top: 4px; border-top: 1px solid #a63737; width: 100%; text-align: center; }
+    @keyframes stampIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(3) rotate(-10deg); } 100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1) rotate(-5deg); } }
+  </style>
 </head>
 <body>
-<header>
-  <div class="wrap">
-    <div class="brand">紹介サービス｜セレネス</div>
-    <nav>
-      <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="board.html">掲示板</a>
-      <span data-auth class="row"></span>
-    </nav>
+  <div class="day-bg"></div>
+  <div class="night-bg"></div>
+
+  <div class="table-item" id="tableDrink">
+     <div class="drink-emoji"></div>
+     <svg class="steam-svg" viewBox="0 0 24 24">
+       <path d="M6 24 C 6 15, 10 12, 8 4" />
+       <path d="M12 24 C 12 15, 16 12, 14 4" />
+       <path d="M18 24 C 18 15, 22 12, 20 4" />
+     </svg>
   </div>
-</header>
 
-<main>
-  <h1>プロフィール作成</h1>
-
-  <section class="card" style="max-width:780px">
-    <div class="notice">
-      掲示板の「投稿者名」は、ここで設定した <strong>投稿名</strong> が表示されます（LINE表示名ではありません）。
+  <header>
+    <div class="wrap">
+      <div class="brand">Guest Book</div>
+      <nav class="navRight">
+        <a class="btn ghost" href="member.html">指定席に戻る</a>
+      </nav>
     </div>
+  </header>
 
-    <form id="formProfile" style="margin-top:12px">
-      <h2>掲示板用の表示</h2>
-      <label>投稿名（掲示板に表示される名前）</label>
-      <input id="handle" maxlength="20" placeholder="例：けい / セレネス好き" />
-
-      <div class="hr"></div>
-      <h2>希望条件（紹介のため）</h2>
-
-      <label>譲れない条件（最大6つまで推奨）</label>
-      <textarea id="must" placeholder="例：・喫煙しない　・休日の過ごし方　・金銭感覚　など"></textarea>
-
-      <label>希望エリア</label>
-      <input id="area" placeholder="例：秋田市 / 秋田県内 / 全国" />
-
-      <label>希望年齢</label>
-      <input id="ageRange" placeholder="例：30〜45" />
-
-      <label>自己紹介（任意）</label>
-      <textarea id="bio" placeholder="例：普段は仕事中心ですが、休日はカフェ巡りが好きです。"></textarea>
-
-      <div class="row" style="margin-top:14px">
-        <button class="btn primary" type="submit">保存する</button>
-        <a class="btn" href="member.html">会員ページへ</a>
-        <a class="btn" href="board.html">掲示板へ</a>
+  <main>
+    <section class="card">
+      <div class="stamp-overlay" id="stamp">
+        <span>ACCEPTED</span>
+        <div class="stamp-date" id="stampDate"></div>
       </div>
 
-      <p class="small" style="margin-top:10px">
-        ※ここで保存した内容は、まずはブラウザ内（localStorage）に保存されます。
-      </p>
-    </form>
-  </section>
+      <form id="profForm">
+        <div style="text-align:center;">
+          <label for="fileInput" class="avatar-wrapper">
+            <img id="avatarPreview" class="avatar-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
+            <div class="avatar-add-icon"><span class="material-icons-outlined" style="font-size:18px;">photo_camera</span></div>
+          </label>
+          <input type="file" id="fileInput" accept="image/*" style="display:none">
+          <div style="font-size:13px; color:#888; font-family:'Zen Kurenaido',sans-serif; margin-bottom:4px;">写真をタップして貼り替え</div>
+          <div style="font-size:11px; color:#a63737; font-weight:bold; line-height:1.4;">
+            ※顔写真や、個人情報が分かるものは<br>アップロードしないでください
+          </div>
+        </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const s = requireLineLogin(); if(!s) return;
+        <div class="hr" style="border-top: 2px double #e0d0c0; margin: 30px 0;"></div>
 
-  // 登録がない場合は登録へ
-  const m = getMember(s.lineUserId);
-  if(!m){
-    alert("登録情報が見つかりません。新規登録をお願いします。");
-    location.href = "register.html";
-    return;
-  }
+        <label>お名前（ニックネーム）</label>
+        <input type="text" id="nickname" required maxlength="20" placeholder="例：セレネス 太郎">
 
-  // 既存プロフィールを読み込み
-  const p = loadProfile(s.lineUserId) || {};
-  document.getElementById("handle").value   = p.handle || "";
-  document.getElementById("must").value     = p.must || "";
-  document.getElementById("area").value     = p.area || "";
-  document.getElementById("ageRange").value = p.ageRange || "";
-  document.getElementById("bio").value      = p.bio || "";
+        <label>生年月日 <span style="font-size:11px; color:#888; font-weight:normal;">※非公開</span></label>
+        <div class="row" style="margin-bottom: 24px;">
+          <div class="col" style="flex:1.5;">
+            <select id="birthYear" class="form-select" required>
+              <option value="">年</option>
+            </select>
+          </div>
+          <div class="col" style="flex:1;">
+            <select id="birthMonth" class="form-select" required>
+              <option value="">月</option>
+            </select>
+          </div>
+          <div class="col" style="flex:1;">
+            <select id="birthDay" class="form-select" required>
+              <option value="">日</option>
+            </select>
+          </div>
+        </div>
 
-  document.getElementById("formProfile").addEventListener("submit", (e) => {
-    e.preventDefault();
-    saveProfile(s.lineUserId, {
-      handle: document.getElementById("handle").value.trim(),
-      must: document.getElementById("must").value.trim(),
-      area: document.getElementById("area").value.trim(),
-      ageRange: document.getElementById("ageRange").value.trim(),
-      bio: document.getElementById("bio").value.trim()
+        <div class="row">
+          <div class="col">
+            <label>性別</label>
+            <select id="gender" disabled class="form-select">
+              <option value="男性">男性</option>
+              <option value="女性">女性</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>居住エリア</label>
+            <select id="pref" class="form-select">
+              <option value="北海道">北海道</option><option value="青森県">青森県</option><option value="岩手県">岩手県</option><option value="宮城県">宮城県</option><option value="秋田県">秋田県</option><option value="山形県">山形県</option><option value="福島県">福島県</option>
+              <option value="茨城県">茨城県</option><option value="栃木県">栃木県</option><option value="群馬県">群馬県</option><option value="埼玉県">埼玉県</option><option value="千葉県">千葉県</option><option value="東京都" selected>東京都</option><option value="神奈川県">神奈川県</option>
+              <option value="新潟県">新潟県</option><option value="富山県">富山県</option><option value="石川県">石川県</option><option value="福井県">福井県</option><option value="山梨県">山梨県</option><option value="長野県">長野県</option><option value="岐阜県">岐阜県</option><option value="静岡県">静岡県</option><option value="愛知県">愛知県</option>
+              <option value="三重県">三重県</option><option value="滋賀県">滋賀県</option><option value="京都府">京都府</option><option value="大阪府">大阪府</option><option value="兵庫県">兵庫県</option><option value="奈良県">奈良県</option><option value="和歌山県">和歌山県</option>
+              <option value="鳥取県">鳥取県</option><option value="島根県">島根県</option><option value="岡山県">岡山県</option><option value="広島県">広島県</option><option value="山口県">山口県</option>
+              <option value="徳島県">徳島県</option><option value="香川県">香川県</option><option value="愛媛県">愛媛県</option><option value="高知県">高知県</option>
+              <option value="福岡県">福岡県</option><option value="佐賀県">佐賀県</option><option value="長崎県">長崎県</option><option value="熊本県">熊本県</option><option value="大分県">大分県</option><option value="宮崎県">宮崎県</option><option value="鹿児島県">鹿児島県</option><option value="沖縄県">沖縄県</option>
+            </select>
+          </div>
+        </div>
+
+        <label style="margin-top:10px;">自己紹介（一言メッセージ）</label>
+        <textarea id="bio" rows="3" placeholder="例：はじめまして。カフェ巡りが好きです。よろしくおねがいします。"></textarea>
+
+        <label>趣味・好きなこと</label>
+        <textarea id="hobbies" rows="2" placeholder="例：読書、映画鑑賞、キャンプ"></textarea>
+
+        <label>お相手への希望</label>
+        <textarea id="wants" rows="2" placeholder="例：一緒にのんびり過ごせる方"></textarea>
+
+        <div class="public-setting">
+          <input type="checkbox" id="profilePublic" style="width:20px; height:20px; margin:0;">
+          <div>
+            <div style="font-weight:bold; font-family:'Zen Kurenaido'; color:var(--pri);">プロフィールを公開する</div>
+            <div style="font-size:11px; color:#666;">OFFにすると、他の人からは「非公開」と表示されます。</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn primary">保存して更新する</button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      function isNightNow(){ const h = new Date().getHours(); return (h >= 18 || h < 6); }
+      function applyDayNight(){ 
+        const night = isNightNow(); 
+        if(night) document.body.setAttribute("data-mode", "bar");
+        else document.body.removeAttribute("data-mode");
+      }
+      applyDayNight(); setInterval(applyDayNight, 60*1000);
+
+      function getSession(){ try { return JSON.parse(localStorage.getItem("ma_member_session") || "null"); } catch(e){ return null; } }
+      const session = getSession();
+      if(!session || !session.memberId){ alert("ログインが必要です"); location.replace("login.html"); return; }
+      const myId = session.memberId;
+
+      const nicknameEl = document.getElementById("nickname");
+      const genderEl = document.getElementById("gender");
+      const prefEl = document.getElementById("pref");
+      const bioEl = document.getElementById("bio");
+      const hobbiesEl = document.getElementById("hobbies");
+      const wantsEl = document.getElementById("wants");
+      const publicEl = document.getElementById("profilePublic");
+      const avatarPreview = document.getElementById("avatarPreview");
+      let currentAvatarData = "";
+
+      const bySel = document.getElementById("birthYear");
+      const bmSel = document.getElementById("birthMonth");
+      const bdSel = document.getElementById("birthDay");
+      const curY = new Date().getFullYear();
+      for(let i=curY-18; i>=curY-80; i--) bySel.insertAdjacentHTML('beforeend', `<option value="${i}">${i}年</option>`);
+      for(let i=1; i<=12; i++) bmSel.insertAdjacentHTML('beforeend', `<option value="${i}">${i}月</option>`);
+      for(let i=1; i<=31; i++) bdSel.insertAdjacentHTML('beforeend', `<option value="${i}">${i}日</option>`);
+
+      try {
+        const localKey = "ma_profile_by_memberId";
+        const all = JSON.parse(localStorage.getItem(localKey) || "{}");
+        const cache = all[myId];
+        if(cache) {
+          if(cache.nickname) nicknameEl.value = cache.nickname;
+          if(cache.gender) genderEl.value = cache.gender;
+          if(cache.pref) prefEl.value = cache.pref;
+          if(cache.bio) bioEl.value = cache.bio;
+          if(cache.hobbies) hobbiesEl.value = cache.hobbies;
+          if(cache.wants) wantsEl.value = cache.wants;
+          if(cache.birthdate) {
+             const parts = cache.birthdate.split("-");
+             if(parts.length === 3) {
+                 bySel.value = parseInt(parts[0], 10);
+                 bmSel.value = parseInt(parts[1], 10);
+                 bdSel.value = parseInt(parts[2], 10);
+             }
+          }
+          const isPub = (String(cache.profilePublic).toLowerCase() === "true" || cache.profilePublic === true);
+          publicEl.checked = isPub;
+          if(cache.avatarDataUrl) {
+            currentAvatarData = cache.avatarDataUrl;
+            avatarPreview.src = cache.avatarDataUrl;
+          }
+        }
+      } catch(e) {}
+
+      async function loadData() {
+        const url = new URL(GAS_URL);
+        url.searchParams.append("action", "get_profile");
+        url.searchParams.append("targetId", myId);
+        url.searchParams.append("_", Date.now()); 
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          if(data.ok && data.profile) {
+            const p = data.profile;
+            nicknameEl.value = p.nickname || "";
+            if(p.gender) genderEl.value = p.gender;
+            if(p.pref) prefEl.value = p.pref;
+            bioEl.value = p.bio || "";
+            hobbiesEl.value = p.hobbies || "";
+            wantsEl.value = p.wants || "";
+            if(p.birthdate) {
+               const parts = p.birthdate.split("-");
+               if(parts.length === 3) {
+                   bySel.value = parseInt(parts[0], 10);
+                   bmSel.value = parseInt(parts[1], 10);
+                   bdSel.value = parseInt(parts[2], 10);
+               }
+            }
+            publicEl.checked = (String(p.profilePublic).toLowerCase() === "true");
+            if(p.avatarDataUrl) {
+              currentAvatarData = p.avatarDataUrl;
+              avatarPreview.src = p.avatarDataUrl;
+            }
+          }
+        } catch(e) { console.error(e); }
+      }
+      loadData();
+
+      document.getElementById("fileInput").addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement("canvas");
+            let w = img.width; let h = img.height;
+            const max = 100; 
+            if(w > max || h > max) {
+              if(w > h) { h = Math.round(h * (max/w)); w = max; }
+              else { w = Math.round(w * (max/h)); h = max; }
+            }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            currentAvatarData = canvas.toDataURL("image/jpeg", 0.5);
+            avatarPreview.src = currentAvatarData;
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById("profForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector("button[type=submit]");
+        if(!bySel.value || !bmSel.value || !bdSel.value) { alert("生年月日をすべて選択してください"); return; }
+        const birthdate = `${bySel.value}-${bmSel.value.padStart(2,'0')}-${bdSel.value.padStart(2,'0')}`;
+        btn.disabled = true; btn.textContent = "保存中...";
+        const params = { action: "update_profile", memberId: myId, nickname: nicknameEl.value, gender: genderEl.value, pref: prefEl.value, bio: bioEl.value, hobbies: hobbiesEl.value, wants: wantsEl.value, profilePublic: publicEl.checked, avatarDataUrl: currentAvatarData, birthdate: birthdate, updatedAt: new Date().toISOString() };
+        const formData = new FormData();
+        for (const k in params) formData.append(k, params[k]);
+        try { await fetch(GAS_URL, { method: "POST", body: formData }); const now = new Date(); const dateStr = now.getFullYear() + "." + (now.getMonth()+1).toString().padStart(2,'0') + "." + now.getDate().toString().padStart(2,'0'); document.getElementById("stampDate").textContent = dateStr; btn.textContent = "保存しました"; document.getElementById("stamp").classList.add("active"); setTimeout(() => { location.href = "member.html"; }, 1200); } catch (err) { alert("サーバーへの送信に失敗しました。"); btn.disabled = false; btn.textContent = "保存して更新する"; }
+      };
     });
-    alert("保存しました！");
-    location.href = "member.html";
-  });
-});
-</script>
-
-</main>
+  </script>
 </body>
 </html>

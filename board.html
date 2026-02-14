@@ -2,321 +2,850 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>掲示板</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script defer src="app.js"></script>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>掲示板｜セレネスCafe&Bar</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  
   <style>
-    .post{display:grid; gap:10px}
-    .replies{margin-top:10px; display:grid; gap:8px}
-    .reply{
-      padding:10px; border:1px solid var(--line); border-radius:12px; background:#fafafa;
+    :root {
+      --pri: #5a3e32;
+      --sec: #c97b63;
+      --paper-light: #fffdf8;
+      --paper-dark: #2a2a2a;
     }
-    .reply .meta{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:6px}
-    .replyForm{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
-    .replyForm textarea{min-height:70px}
-    .replyForm .grow{flex:1; min-width:240px}
-    .miniBtn{padding:8px 10px; border-radius:10px}
-    details summary{cursor:pointer; user-select:none}
-    .toBadge{
-      display:inline-flex; padding:3px 8px; border-radius:999px;
-      border:1px solid #d1d5db; background:#fff; font-size:12px; color:#374151;
-      margin-bottom:6px;
+
+    html, body {
+      margin: 0; padding: 0; font-family: "Shippori Mincho", serif; 
+      height: 100dvh; width: 100vw; overflow: hidden; color: #333; transition: color 0.3s;
     }
+
+    /* 背景 */
+    .bg-layer {
+      position: absolute; inset: 0; z-index: -2; background-color: #d4a373;
+      background-image: radial-gradient(rgba(0,0,0,0.05) 15%, transparent 16%), radial-gradient(rgba(0,0,0,0.05) 15%, transparent 16%);
+      background-size: 20px 20px; background-position: 0 0, 10px 10px;
+    }
+    body[data-mode="bar"] .bg-layer {
+      background-color: #5c3a21;
+      background-image: radial-gradient(rgba(0,0,0,0.15) 15%, transparent 16%), radial-gradient(rgba(0,0,0,0.15) 15%, transparent 16%);
+    }
+
+    .app-container { display: flex; flex-direction: column; height: 100dvh; width: 100%; position: relative; z-index: 1; }
+
+    header { 
+      flex-shrink: 0; background: rgba(255, 250, 246, 0.95) !important; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.1); 
+      height: 60px; display: flex; align-items: center; padding: 0 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      justify-content: space-between;
+    }
+    body[data-mode="bar"] header { background: rgba(20, 20, 20, 0.9) !important; border-bottom-color: rgba(255,255,255,0.1); }
+    
+    .brand { 
+      font-family: 'Dancing Script', cursive; font-size: 24px; 
+      color: var(--pri) !important; letter-spacing: 0.1em; font-weight: 600;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    }
+    body[data-mode="bar"] .brand { color: #eaddcf !important; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    
+    .navRight { display: flex; gap: 10px; align-items: center; }
+    
+    .btn.ghost { 
+      border: 1px solid var(--pri); background: transparent; color: var(--pri); 
+      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
+      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); transition: 0.3s; position: relative;
+    }
+    .btn.ghost::before, .btn.ghost::after {
+      content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
+      background: rgba(255, 250, 246, 1); border-radius: 50%; transform: translateY(-50%);
+      border: 1px solid var(--pri);
+    }
+    .btn.ghost::before { left: -4px; border-right-color: transparent; }
+    .btn.ghost::after { right: -4px; border-left-color: transparent; }
+    body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #201414; border-color: #d7ccc8; }
+
+    /* タブバー */
+    .tab-bar {
+      flex-shrink: 0; display: flex; overflow-x: auto; background: rgba(255,255,255,0.3); 
+      padding: 8px 12px; gap: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    
+    .tab-item {
+      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-family: "Shippori Mincho";
+      background: rgba(255,255,255,0.6); color: #555; border: 1px solid rgba(0,0,0,0.1);
+      white-space: nowrap; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .tab-item.active { background: var(--pri); color: #fff; border-color: var(--pri); font-weight: bold; }
+    body[data-mode="bar"] .tab-item { background: rgba(0,0,0,0.4); color: #ccc; border-color: rgba(255,255,255,0.1); }
+    body[data-mode="bar"] .tab-item.active { background: #d7ccc8; color: #3e2723; }
+
+    main { 
+      flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; 
+      padding: 16px 12px 120px 12px; scrollbar-width: none; box-sizing: border-box;
+    }
+    main::-webkit-scrollbar { display: none; } 
+
+    /* テーブル一覧 */
+    .comm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 600px; margin: 0 auto; }
+    .comm-card {
+      background: var(--paper-light); border-radius: 2px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 16px; text-align: center;
+      cursor: pointer; transition: transform 0.2s; border: 1px solid rgba(0,0,0,0.05);
+      position: relative; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .comm-card:active { transform: scale(0.98); }
+    body[data-mode="bar"] .comm-card { background: #dcd1c4; color: #333; }
+    .comm-card::before {
+      content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(2deg);
+      width: 40px; height: 20px; background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
+    }
+    .comm-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; color: var(--pri); font-family: 'Zen Kurenaido'; line-height: 1.3;}
+    .comm-desc { font-size: 11px; color: #666; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .comm-count { font-size: 10px; color: #999; margin-top: 8px; }
+
+    /* 掲示板 */
+    .board-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 12px; max-width: 600px; margin: 0 auto; align-items: start; }
+    
+    .flyer {
+      background: var(--paper-light); width: 100%; position: relative;
+      box-shadow: 2px 4px 10px rgba(0,0,0,0.15); border-radius: 2px; color: #333; transition: transform 0.3s ease;
+    }
+    body[data-mode="bar"] .flyer { background: #dcd1c4; box-shadow: 2px 4px 10px rgba(0,0,0,0.4); }
+    
+    .pin {
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%;
+      box-shadow: inset -1px -1px 3px rgba(0,0,0,0.3), 1px 2px 3px rgba(0,0,0,0.3); z-index: 10;
+    }
+    .pin::after { content: ''; position: absolute; top: 8px; left: 5px; width: 2px; height: 8px; background: rgba(0,0,0,0.2); transform: rotate(30deg); }
+    .pin-red { background: #e63946; } .pin-blue { background: #457b9d; }
+    .pin-yellow { background: #e9c46a; } .pin-green { background: #2a9d8f; }
+
+    .flyer-content { padding: 24px 10px 12px 10px; }
+    .flyer-title { font-weight: bold; font-size: 16px; color: var(--pri); margin-bottom: 8px; text-align: center; font-family: 'Zen Kurenaido', sans-serif; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px; line-height: 1.3; }
+    .flyer-body { font-size: 13px; line-height: 1.6; color: #444; white-space: pre-wrap; word-break: break-word; font-family: 'Zen Kurenaido', sans-serif; min-height: 60px; }
+    
+    .ng-blur { filter: blur(4px); user-select: none; cursor: not-allowed; }
+    .ng-warning { font-size: 10px; color: #d32f2f; margin-bottom: 4px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
+
+    .reply-list { margin-top: 12px; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .reply-item {
+      background: rgba(255,255,255,0.7); padding: 8px 10px; border-radius: 4px;
+      font-size: 12px; color: #444; position: relative; box-shadow: 1px 2px 5px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
+    }
+    .reply-item::before {
+      content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%) rotate(-2deg);
+      width: 24px; height: 10px; background: rgba(201,123,99,0.4); 
+    }
+    body[data-mode="bar"] .reply-item { background: rgba(0,0,0,0.2); color: #ddd; border-color: rgba(255,255,255,0.1); }
+    body[data-mode="bar"] .reply-item::before { background: rgba(255,255,255,0.2); }
+    
+    .reply-author { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; color: #777; cursor: pointer; }
+    .reply-author:active { opacity: 0.7; }
+    .reply-author img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+
+    .flyer-author { margin-top: 10px; text-align: right; font-size: 10px; color: #777; font-family: sans-serif; display: flex; align-items: center; justify-content: flex-end; gap: 4px; cursor: pointer; padding: 2px; border-radius: 4px; transition: 0.2s;}
+    .flyer-author:hover { background: rgba(0,0,0,0.05); }
+    .flyer-author:active { transform: scale(0.95); opacity: 0.8; }
+    .flyer-author img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+    .flyer-author span { text-decoration: underline dotted rgba(0,0,0,0.3); }
+
+    .tear-tabs { display: flex; border-top: 1px dashed #ccc; height: 45px; } 
+    .tear-tab {
+      flex: 1; border-right: 1px dashed #ccc; display: flex; align-items: center; justify-content: center;
+      background: var(--paper-light); cursor: pointer; position: relative; overflow: hidden;
+      font-family: 'Zen Kurenaido', sans-serif; font-size: 11px; color: var(--sec); font-weight: bold;
+      writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 1px; transition: background 0.2s;
+    }
+    body[data-mode="bar"] .tear-tab { background: #dcd1c4; border-color: #b5a695; color: #a63737; }
+    .tear-tab:last-child { border-right: none; }
+    .tear-tab.torn { animation: tearOffAnim 0.5s forwards cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
+    @keyframes tearOffAnim { 0% { transform: translateY(0) rotate(0); opacity: 1; } 40% { transform: translateY(10px) rotate(5deg); opacity: 1; } 100% { transform: translateY(60px) rotate(15deg); opacity: 0; } }
+
+    .my-post-action { background: #eee; text-align: center; padding: 8px; font-size: 11px; color: #888; cursor: pointer; transition: 0.2s; border-radius: 0 0 2px 2px; font-family: sans-serif; }
+    .my-post-action:hover { background: #e0e0e0; color: #d32f2f; }
+    body[data-mode="bar"] .my-post-action { background: #b5a695; color: #444; }
+
+    /* FAB */
+    .fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; background: #e63946; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(230, 57, 70, 0.5); cursor: pointer; font-size: 28px; z-index: 100; transition: transform 0.2s; }
+    body[data-mode="bar"] .fab { background: #a63737; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .fab:active { transform: scale(0.9); }
+
+    /* Modal */
+    .editor-overlay { position: fixed; inset: 0; z-index: 2000; display: none; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+
+    .board-editor { background: #fffdf8; width: 100%; max-width: 400px; border-radius: 2px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    body[data-mode="bar"] .board-editor { background: #dcd1c4; color: #333; }
+    .editor-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; }
+    .editor-title-text { font-weight: bold; color: var(--pri); font-size: 16px; font-family: 'Zen Kurenaido', sans-serif; }
+    .editor-body { padding: 20px; display: flex; flex-direction: column; }
+    
+    .board-editor .btn.ghost { background: rgba(255,255,255,0.6) !important; border: 1px solid #999 !important; color: #333 !important; font-weight: bold; }
+    
+    input.board-in-title, textarea.board-in-body { width: 100%; font-family: 'Zen Kurenaido', sans-serif; color: #333; background: transparent; border: none; outline: none; box-sizing: border-box; }
+    input.board-in-title { font-size: 20px; font-weight: bold; margin-bottom: 16px; border-bottom: 1px dotted #ccc; padding-bottom: 8px; }
+    textarea.board-in-body { flex: 1; min-height: 150px; font-size: 16px; line-height: 1.8; resize: none; }
+
+    .btn.primary { background: #e63946; color: #fff; border: none; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+    body[data-mode="bar"] .btn.primary { background: #a63737; }
+    .btn.primary:active { transform: scale(0.95); }
+    
+    /* プロフィールカード */
+    .profile-card { background: var(--paper-light); width: 100%; max-width: 400px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; overflow: hidden; }
+    body[data-mode="bar"] .profile-card { background: #dcd1c4; color: #333; }
+    
+    .prof-header { display:flex; gap:16px; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:16px; }
+    .prof-avatar-lg { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); background:#f3f4f6; }
+    .prof-name { font-weight:900; font-size:24px; color:var(--pri); margin:0; line-height:1.2; }
+    body[data-mode="bar"] .prof-name { color: #333; }
+    
+    .prof-section { margin-bottom:16px; text-align: left; }
+    .prof-label { font-weight:bold; font-size:13px; color:#9ca3af; border-left:4px solid var(--pri); padding-left:8px; margin-bottom:6px; }
+    .prof-text { font-size:15px; line-height:1.6; white-space:pre-wrap; color:#374151; }
+    .prof-value-type { font-weight: 900; font-size: 18px; color: #4b5563; margin-bottom: 12px; padding: 4px 0; }
+    .chart-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top:10px; }
+    .chart-legend { display:flex; gap:16px; font-size:12px; margin-top:12px; color:#666; justify-content: center; }
+    .legend-item { display:flex; align-items:center; gap:6px; }
+    .legend-dot { width:10px; height:10px; border-radius:50%; }
+
+    /* ローダーの改善 */
+    .loader { text-align:center; padding:40px; color:#555; font-size:14px; font-family: sans-serif; text-shadow: none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;}
+    .loader .material-icons-outlined { animation: spin 1s linear infinite; font-size: 24px; color: var(--pri); }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    body[data-mode="bar"] .loader { color: #ddd; }
+    body[data-mode="bar"] .loader .material-icons-outlined { color: #eaddcf; }
   </style>
 </head>
+
 <body>
-<header>
-  <div class="wrap">
-    <div class="brand">紹介サービス｜セレネス</div>
-    <nav>
-      <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="board.html">掲示板</a>
-      <span data-auth class="row"></span>
-    </nav>
-  </div>
-</header>
+  <div class="bg-layer"></div>
 
-<main>
-  <h1>掲示板（会員限定）</h1>
+  <div class="app-container">
+    <header>
+      <div class="brand">Cork Board</div>
+      <nav class="navRight">
+        <a class="btn ghost" href="diary.html">手帳</a>
+        <a class="btn ghost" href="member.html">指定席に戻る</a>
+      </nav>
+    </header>
+    
+    <div class="tab-bar">
+      <div class="tab-item active" id="tabMain">🏠 カウンター</div>
+      <div class="tab-item" id="tabList">🪑 テーブルリスト</div>
+      <div class="tab-item" id="tabCreate">➕ テーブル準備</div>
+    </div>
 
-  <div class="grid cols2">
-    <section class="card">
-      <h2>投稿する</h2>
-      <div class="notice">
-        投稿者名は「プロフィールの投稿名」が表示されます。未設定の場合は 会員登録名 → LINE表示名 の順です。
+    <main>
+      <div id="viewBoard">
+        <div id="boardHeader" style="text-align:center; color:#fff; margin-bottom:10px; font-family:'Zen Kurenaido'; text-shadow:1px 1px 2px rgba(0,0,0,0.5); display:none;"></div>
+        <div id="boardList" class="board-grid">
+          <div class="loader"><span class="material-icons-outlined">refresh</span>読み込み中...</div>
+        </div>
       </div>
 
-      <div class="hr"></div>
-
-      <div id="who" class="item">読み込み中…</div>
-
-      <form id="formPost" style="margin-top:12px">
-        <label>タイトル</label>
-        <input id="title" required maxlength="60" placeholder="例：はじめまして！" />
-
-        <label>本文</label>
-        <textarea id="body" required maxlength="2000" placeholder="例：自己紹介や、募集など"></textarea>
-
-        <div class="row" style="margin-top:14px">
-          <button class="btn primary" type="submit">投稿</button>
-          <a class="btn" href="profile.html">投稿名を設定</a>
-          <a class="btn" href="member.html">会員ページ</a>
+      <div id="viewCommunityList" style="display:none;">
+        <div style="text-align:center; color:#fff; margin-bottom:16px; font-family:'Zen Kurenaido'; text-shadow:1px 1px 2px rgba(0,0,0,0.5);">
+          相席するテーブルを選んでください
         </div>
-      </form>
-
-      <p class="small" style="margin-top:10px">
-        ※公開運用する場合は、通報・承認制・NGワードなどの対策を追加しましょう。
-      </p>
-    </section>
-
-    <section class="card">
-      <h2>投稿一覧</h2>
-      <div id="list" class="list"></div>
-    </section>
+        <div id="commGrid" class="comm-grid"></div>
+      </div>
+    </main>
   </div>
 
-<script>
-function posterName(lineUserId){
-  const p = loadProfile(lineUserId);
-  if(p && p.handle && p.handle.trim()) return p.handle.trim();
+  <div class="fab" id="btnNewPost" title="言葉を綴る">✒️</div>
 
-  const m = getMember(lineUserId);
-  if(m && m.name && m.name.trim()) return m.name.trim();
-  if(m && m.displayName && m.displayName.trim()) return m.displayName.trim();
-
-  return "会員";
-}
-
-function render(){
-  const s = requireLineLogin(); if(!s) return;
-
-  const me = getMember(s.lineUserId);
-  if(!me){
-    alert("登録情報が見つかりません。新規登録をお願いします。");
-    location.href = "register.html";
-    return;
-  }
-
-  const myName = posterName(s.lineUserId);
-  document.getElementById("who").innerHTML = `
-    <div>あなたの投稿者名：<strong>${escapeHtml(myName)}</strong></div>
-    <div class="small">変更する場合は「投稿名を設定」へ</div>
-  `;
-
-  const posts = listPosts();
-  const box = document.getElementById("list");
-  box.innerHTML = posts.length ? "" : `<div class="item">まだ投稿がありません</div>`;
-
-  posts.forEach(p => {
-    const mine = (p.lineUserId === s.lineUserId);
-    const name = posterName(p.lineUserId);
-
-    const replies = listReplies(p.id);
-    const replyCount = replies.length;
-
-    const el = document.createElement("div");
-    el.className = "item post";
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start">
-        <div style="flex:1">
-          <div style="font-weight:800">${escapeHtml(p.title)}</div>
-          <div style="white-space:pre-wrap; margin-top:6px">${escapeHtml(p.body)}</div>
-          <div style="margin-top:8px" class="row">
-            <span class="badge">${escapeHtml(name)}</span>
-            <span class="small">${escapeHtml(p.createdAt || "")}</span>
-            <span class="small">返信：${replyCount}件</span>
-            <button class="btn miniBtn" data-reply-to-post="${p.id}" data-reply-to-name="${escapeHtml(name)}" data-reply-to-user="${escapeHtml(p.lineUserId)}">この投稿者に返信</button>
-          </div>
-        </div>
-        ${mine ? `<button class="btn miniBtn" data-del-post="${p.id}">削除</button>` : ``}
+  <div id="modalCreateComm" class="editor-overlay">
+    <div class="board-editor">
+      <div class="editor-header">
+        <button class="btn ghost" onclick="document.getElementById('modalCreateComm').style.display='none'">やめる</button>
+        <div class="editor-title-text">テーブルを用意する</div>
+        <button class="btn primary" id="btnSubmitComm">作成</button>
       </div>
-
-      <details ${replyCount ? "open" : ""}>
-        <summary class="small">返信を見る / 書く</summary>
-
-        <div class="replies" data-replies="${p.id}">
-          ${replyCount ? replies.map(r => replyHTML(r, s.lineUserId)).join("") : `<div class="small">まだ返信がありません</div>`}
-        </div>
-
-        <div class="small" data-to-info="${p.id}" style="margin-top:10px; display:none"></div>
-
-        <form class="replyForm" data-reply-form="${p.id}">
-          <input type="hidden" data-to-name value="">
-          <input type="hidden" data-to-user value="">
-          <input type="hidden" data-to-replyid value="">
-          <textarea class="grow" required maxlength="1000" placeholder="返信を書く…"></textarea>
-          <button class="btn primary miniBtn" type="submit">返信</button>
-          <button class="btn miniBtn" type="button" data-cancel-to>宛先解除</button>
-        </form>
-      </details>
-    `;
-    box.appendChild(el);
-  });
-
-  // 投稿削除
-  box.querySelectorAll("[data-del-post]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const s2 = requireLineLogin(); if(!s2) return;
-      const id = btn.getAttribute("data-del-post");
-      deletePost(id, s2.lineUserId);
-      render();
-    });
-  });
-
-  // 宛先セット（投稿者へ）
-  box.querySelectorAll("[data-reply-to-post]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const postId = btn.getAttribute("data-reply-to-post");
-      const toName = btn.getAttribute("data-reply-to-name");
-      const toUser = btn.getAttribute("data-reply-to-user");
-      setReplyTo(postId, { name: toName, lineUserId: toUser, replyId: "" });
-    });
-  });
-
-  // 返信送信
-  box.querySelectorAll("[data-reply-form]").forEach(form=>{
-    form.addEventListener("submit", (e)=>{
-      e.preventDefault();
-      const s2 = requireLineLogin(); if(!s2) return;
-
-      const postId = form.getAttribute("data-reply-form");
-      const ta = form.querySelector("textarea");
-      const body = ta.value.trim();
-      if(!body) return;
-
-      const toName = form.querySelector("[data-to-name]").value;
-      const toUser = form.querySelector("[data-to-user]").value;
-      const toRid  = form.querySelector("[data-to-replyid]").value;
-
-      const replyTo = (toName || toUser || toRid)
-        ? { name: toName || "", lineUserId: toUser || "", replyId: toRid || "" }
-        : null;
-
-      addReply(postId, s2.lineUserId, body, replyTo);
-
-      ta.value = "";
-      clearReplyTo(postId);
-      render();
-    });
-
-    // 宛先解除
-    form.querySelector("[data-cancel-to]")?.addEventListener("click", ()=>{
-      const postId = form.getAttribute("data-reply-form");
-      clearReplyTo(postId);
-    });
-  });
-
-  // 返信削除
-  box.querySelectorAll("[data-del-reply]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const s2 = requireLineLogin(); if(!s2) return;
-      const rid = btn.getAttribute("data-del-reply");
-      deleteReply(rid, s2.lineUserId);
-      render();
-    });
-  });
-
-  // 返信の「この人に返信」ボタン
-  box.querySelectorAll("[data-reply-to-reply]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const postId = btn.getAttribute("data-post");
-      const toName = btn.getAttribute("data-to-name");
-      const toUser = btn.getAttribute("data-to-user");
-      const toRid  = btn.getAttribute("data-to-replyid");
-      setReplyTo(postId, { name: toName, lineUserId: toUser, replyId: toRid });
-    });
-  });
-}
-
-function setReplyTo(postId, to){
-  const form = document.querySelector(`[data-reply-form="${cssEscape(postId)}"]`);
-  const info = document.querySelector(`[data-to-info="${cssEscape(postId)}"]`);
-  if(!form || !info) return;
-
-  form.querySelector("[data-to-name]").value = to.name || "";
-  form.querySelector("[data-to-user]").value = to.lineUserId || "";
-  form.querySelector("[data-to-replyid]").value = to.replyId || "";
-
-  info.style.display = "block";
-  info.innerHTML = `<span class="toBadge">@${escapeHtml(to.name || "宛先")}</span> に返信中`;
-
-  // フォーカス
-  form.querySelector("textarea")?.focus();
-}
-
-function clearReplyTo(postId){
-  const form = document.querySelector(`[data-reply-form="${cssEscape(postId)}"]`);
-  const info = document.querySelector(`[data-to-info="${cssEscape(postId)}"]`);
-  if(!form || !info) return;
-
-  form.querySelector("[data-to-name]").value = "";
-  form.querySelector("[data-to-user]").value = "";
-  form.querySelector("[data-to-replyid]").value = "";
-
-  info.style.display = "none";
-  info.innerHTML = "";
-}
-
-function replyHTML(r, myLineUserId){
-  return `
-  <div class="reply ${mine ? "mine" : ""}">
-  const name = posterName(r.lineUserId);
-
-  const to = r.replyTo && (r.replyTo.name || r.replyTo.lineUserId || r.replyTo.replyId)
-    ? r.replyTo
-    : null;
-
-  const toLine = to ? `<div class="toBadge">@${escapeHtml(to.name || "宛先")}</div>` : "";
-
-  return `
-    <div class="reply">
-      ${toLine}
-      <div style="white-space:pre-wrap">${escapeHtml(r.body)}</div>
-      <div class="meta">
-        <span class="badge">${escapeHtml(name)}</span>
-        <span class="small">${escapeHtml(r.createdAt || "")}</span>
-        <button class="btn miniBtn"
-          data-reply-to-reply
-          data-post="${escapeHtml(r.postId)}"
-          data-to-name="${escapeHtml(name)}"
-          data-to-user="${escapeHtml(r.lineUserId)}"
-          data-to-replyid="${escapeHtml(r.id)}"
-        >この人に返信</button>
-        ${mine ? `<button class="btn miniBtn" data-del-reply="${escapeHtml(r.id)}">削除</button>` : ``}
+      <div class="editor-body">
+        <input type="text" id="inCommTitle" class="board-in-title" placeholder="テーブル名 (例: 猫好きの席)" maxlength="15">
+        <textarea id="inCommDesc" class="board-in-body" placeholder="どんな話題で盛り上がりますか？" style="min-height:100px; font-size:14px;"></textarea>
       </div>
     </div>
-  `;
-}
+  </div>
 
-// CSS.escape が無い環境向けの簡易版
-function cssEscape(s){
-  return (s || "").replace(/"/g, '\\"');
-}
+  <div id="modalJoinComm" class="editor-overlay">
+    <div class="board-editor">
+      <div class="editor-header">
+        <button class="btn ghost" onclick="document.getElementById('modalJoinComm').style.display='none'">やめる</button>
+        <div class="editor-title-text">テーブルに参加</div>
+        <button class="btn primary" id="btnJoinComm">着席する</button>
+      </div>
+      <div class="editor-body" style="text-align: center; padding: 30px 20px;">
+        <p style="margin-bottom: 20px; font-family:'Zen Kurenaido'; font-size: 16px; color:var(--pri);" id="joinCommMsg"></p>
+        <p style="font-size: 12px; color: #888; line-height: 1.6;">このテーブルに参加すると、<br>会話を見たり言葉を綴ったりできます。</p>
+      </div>
+    </div>
+  </div>
 
-document.addEventListener("DOMContentLoaded", () => {
-  const s = requireLineLogin(); if(!s) return;
+  <div id="editor" class="editor-overlay">
+    <div class="board-editor">
+      <div class="pin pin-red" style="top:10px;"></div>
+      <div class="editor-header">
+        <button class="btn ghost" id="btnCancelEdit">やめる</button>
+        <div class="editor-title-text">言葉を綴る</div>
+        <button class="btn primary" id="btnSavePost">壁に貼る</button>
+      </div>
+      <div class="editor-body">
+        <input type="text" id="inTitle" class="board-in-title" placeholder="見出し" maxlength="20">
+        <textarea id="inBody" class="board-in-body" placeholder="自由に書いてください。"></textarea>
+      </div>
+    </div>
+  </div>
 
-  document.getElementById("formPost").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const s2 = requireLineLogin(); if(!s2) return;
+  <div id="replyModal" class="editor-overlay">
+    <div class="board-editor" style="max-height: 300px;">
+      <div class="editor-header">
+        <button class="btn ghost" onclick="document.getElementById('replyModal').style.display='none'">やめる</button>
+        <div class="editor-title-text" id="replyModalTitle">返信を書く</div>
+        <button class="btn primary" id="btnSendReply">貼り付ける</button>
+      </div>
+      <div class="editor-body">
+        <textarea id="inReplyBody" class="board-in-body" placeholder="返信メッセージ" style="min-height:80px;"></textarea>
+      </div>
+    </div>
+  </div>
 
-    addPost(
-      s2.lineUserId,
-      document.getElementById("title").value.trim(),
-      document.getElementById("body").value.trim()
-    );
+  <div id="profileModal" class="editor-overlay">
+    <div class="profile-card" style="padding:0; text-align:left; overflow:hidden;">
+      <button class="btn ghost" onclick="closeProfile()" style="position:absolute; top:10px; right:10px; border:none; background:transparent; font-size:20px; z-index:10; color:#999;">×</button>
+      <div id="profileBody" style="padding: 24px; max-height: 75vh; overflow-y: auto;">読み込み中...</div>
+    </div>
+  </div>
 
-    document.getElementById("title").value = "";
-    document.getElementById("body").value = "";
-    render();
-  });
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+    
+    const CACHE_POSTS = "ma_board_posts_cache";
+    const CACHE_PROFILES = "ma_board_profiles";
+    const CACHE_COMM_LIST = "ma_board_comm_list";
+    
+    let currentCommunityId = "";
+    let myId = "";
+    let profileCache = {};
+    let postCache = {};
+    let commListCache = [];
 
-  render();
-});
-</script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const h = new Date().getHours();
+      if (h >= 18 || h < 6) document.body.setAttribute("data-mode", "bar");
 
-</main>
+      try {
+        const sess = JSON.parse(localStorage.getItem("ma_member_session"));
+        if(!sess || !sess.memberId) throw new Error();
+        myId = sess.memberId;
+
+        const TIMEOUT_MS = 12 * 60 * 60 * 1000;
+        if (sess.loginAt) {
+           const loginTime = new Date(sess.loginAt).getTime();
+           const now = new Date().getTime();
+           if (now - loginTime > TIMEOUT_MS) {
+               alert("長らくご滞在ありがとうございました。\n一旦、お席をリセットさせていただきます。（再ログインが必要です）");
+               localStorage.removeItem("ma_member_session");
+               location.replace("login.html");
+               return;
+           }
+        }
+      } catch(e){ alert("ログインしてください"); location.href="login.html"; return; }
+
+      try { profileCache = JSON.parse(localStorage.getItem(CACHE_PROFILES) || "{}"); } catch(e){}
+      try { postCache = JSON.parse(localStorage.getItem(CACHE_POSTS) || "{}"); } catch(e){}
+      try { commListCache = JSON.parse(localStorage.getItem(CACHE_COMM_LIST) || "[]"); } catch(e){}
+
+      async function api(action, params = {}) {
+        const url = new URL(GAS_URL);
+        url.searchParams.append("action", action);
+        for (const k in params) {
+            if(params[k] !== undefined && params[k] !== null) url.searchParams.append(k, params[k]);
+        }
+        try {
+            const res = await fetch(url.toString(), { redirect: "follow" });
+            return await res.json();
+        } catch (e) { return { ok: false, error: e.message }; }
+      }
+
+      function _escapeHtml(s){ return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
+      const escapeHtml = _escapeHtml;
+
+      function parseValues(val) {
+          let parsed = null;
+          let type = "未診断";
+          try {
+             if (typeof val === 'string' && val.trim().startsWith('{')) parsed = JSON.parse(val);
+             else if (typeof val === 'object') parsed = val;
+             else type = val;
+          } catch(e){}
+          let scores = null;
+          if(parsed) {
+             if(parsed.typeName) type = parsed.typeName;
+             else if(parsed.type) type = parsed.type;
+             if(parsed.talk!==undefined) scores = [parsed.talk, parsed.passion, parsed.logic, parsed.empathy, parsed.stability];
+             else if(parsed.rawScores) scores = parsed.rawScores;
+             else if(parsed.scores && Array.isArray(parsed.scores)) scores = parsed.scores;
+             else if(parsed.scores && typeof parsed.scores === 'object') scores = Object.values(parsed.scores);
+          }
+          if(!scores && type!=="未診断" && !type.includes("エラー")) scores = getScoresFromType(type);
+          if(!scores) scores = [3,3,3,3,3];
+          scores = scores.map(v => Number(v) || 3);
+          return { type, scores };
+      }
+
+      function getScoresFromType(typeStr) {
+         if(!typeStr) return [3,3,3,3,3];
+         let hash = 0;
+         for(let i=0; i<typeStr.length; i++) hash = typeStr.charCodeAt(i) + ((hash << 5) - hash);
+         const sc = [];
+         for(let j=0; j<5; j++) sc.push(Math.abs((hash >> j) % 5) + 1);
+         return sc;
+      }
+
+      function createRadarChartSvg(targetScores, myScores) {
+        const s = targetScores || [3,3,3,3,3];
+        const max = 5; const size=220; const c=size/2; const r=70;
+        const getP = (arr) => arr.map((v,i)=>{
+           const a = (Math.PI*2*i)/5 - Math.PI/2;
+           const d = (v/max)*r;
+           return `${c+d*Math.cos(a)},${c+d*Math.sin(a)}`;
+        }).join(" ");
+        let bg = "";
+        for(let i=1; i<=5; i++){
+           const pts = [0,1,2,3,4].map(idx=>{
+              const a = (Math.PI*2*idx)/5 - Math.PI/2;
+              const d = (i/max)*r;
+              return `${c+d*Math.cos(a)},${c+d*Math.sin(a)}`;
+           }).join(" ");
+           bg += `<polygon points="${pts}" fill="none" stroke="#eee" stroke-width="1"/>`;
+        }
+        const polyT = getP(s);
+        let svgMy = "";
+        if(myScores) {
+            const polyM = getP(myScores);
+            svgMy = `<polygon points="${polyM}" fill="rgba(79,124,255,0.2)" stroke="rgba(79,124,255,0.8)" stroke-width="2" stroke-dasharray="4 2"/>`;
+        }
+        const labels=["会話","行動","論理","共感","規律"];
+        let txts = "";
+        labels.forEach((l,i)=>{
+            const a = (Math.PI*2*i)/5 - Math.PI/2;
+            const tx = c + (r+20)*Math.cos(a);
+            const ty = c + (r+20)*Math.sin(a);
+            txts += `<text x="${tx}" y="${ty+4}" text-anchor="middle" font-size="11" fill="#666">${l}</text>`;
+        });
+        return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${bg}${svgMy}<polygon points="${polyT}" fill="rgba(201,123,99,0.4)" stroke="rgba(201,123,99,1)" stroke-width="2"/>${txts}</svg>`;
+      }
+
+      const tabMain = document.getElementById("tabMain");
+      const tabList = document.getElementById("tabList");
+      const tabCreate = document.getElementById("tabCreate");
+      const viewBoard = document.getElementById("viewBoard");
+      const viewCommList = document.getElementById("viewCommunityList");
+      const fabPost = document.getElementById("btnNewPost");
+
+      tabMain.onclick = () => {
+        switchTab("main");
+        currentCommunityId = "";
+        document.getElementById("boardHeader").style.display = "none";
+        loadPosts(""); 
+      };
+
+      tabList.onclick = () => {
+        switchTab("list");
+        loadCommunities();
+      };
+
+      tabCreate.onclick = () => {
+        document.getElementById("inCommTitle").value = "";
+        document.getElementById("inCommDesc").value = "";
+        document.getElementById("modalCreateComm").style.display = "flex";
+      };
+
+      function switchTab(mode) {
+        [tabMain, tabList, tabCreate].forEach(t => t.classList.remove("active"));
+        if(mode === "main") tabMain.classList.add("active");
+        else if(mode === "list") tabList.classList.add("active");
+        
+        viewBoard.style.display = (mode === "main" || mode === "comm_view") ? "block" : "none";
+        viewCommList.style.display = (mode === "list") ? "block" : "none";
+        fabPost.style.display = (mode === "main" || mode === "comm_view") ? "flex" : "none";
+      }
+
+      window.selectCommunity = (id, title, members) => {
+        const isJoined = members && members.includes(myId);
+        
+        if (!isJoined && id !== "") {
+            document.getElementById("joinCommMsg").innerHTML = `「<b>${escapeHtml(title)}</b>」<br>の席に着きますか？`;
+            document.getElementById("btnJoinComm").onclick = async () => {
+                const btn = document.getElementById("btnJoinComm");
+                btn.textContent = "着席中..."; btn.disabled = true;
+                
+                const res = await api("join_community", { communityId: id, memberId: myId });
+                
+                btn.textContent = "着席する"; btn.disabled = false;
+                
+                if(res.ok) {
+                    document.getElementById("modalJoinComm").style.display = "none";
+                    const comm = commListCache.find(c => c.id === id);
+                    if(comm) {
+                        if (!comm.members) comm.members = [];
+                        comm.members.push(myId);
+                        comm.memberCount = comm.members.length;
+                        localStorage.setItem(CACHE_COMM_LIST, JSON.stringify(commListCache));
+                        renderCommList(commListCache, document.getElementById("commGrid"));
+                    }
+                    openCommunityBoard(id, title);
+                } else {
+                    alert("エラーが発生しました");
+                }
+            };
+            document.getElementById("modalJoinComm").style.display = "flex";
+        } else {
+            openCommunityBoard(id, title);
+        }
+      };
+
+      function openCommunityBoard(id, title) {
+        switchTab("comm_view");
+        const header = document.getElementById("boardHeader");
+        header.innerHTML = `現在地：${escapeHtml(title)}`;
+        header.style.display = "block";
+        currentCommunityId = id;
+        loadPosts(id);
+      }
+
+      async function loadCommunities() {
+        const grid = document.getElementById("commGrid");
+        if (commListCache && commListCache.length > 0) {
+            renderCommList(commListCache, grid);
+        } else {
+            grid.innerHTML = `<div class="loader"><span class="material-icons-outlined">refresh</span>テーブルを探しています...</div>`;
+        }
+
+        try {
+            const res = await api("list_communities");
+            if(res.ok) {
+                commListCache = res.communities;
+                localStorage.setItem(CACHE_COMM_LIST, JSON.stringify(commListCache));
+                renderCommList(res.communities, grid);
+            } else if (!commListCache.length) {
+                grid.innerHTML = `<div class="loader">読み込みエラー</div>`;
+            }
+        } catch(e) {
+            if (!commListCache.length) grid.innerHTML = `<div class="loader">通信エラー</div>`; 
+        }
+      }
+
+      function renderCommList(list, container) {
+          if(!list || list.length === 0) {
+              container.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#fff;">まだテーブルがありません。<br>あなたが最初の席を用意しませんか？</div>`;
+              return;
+          }
+          container.innerHTML = "";
+          list.forEach(c => {
+              const div = document.createElement("div");
+              div.className = "comm-card";
+              const isJoined = c.members && c.members.includes(myId);
+              const badge = isJoined ? `<div style="position:absolute; top:8px; right:8px; font-size:10px; background:var(--pri); color:#fff; padding:2px 6px; border-radius:10px;">参加中</div>` : '';
+              div.innerHTML = `
+                ${badge}
+                <div class="comm-title">${escapeHtml(c.title)}</div>
+                <div class="comm-desc">${escapeHtml(c.description)}</div>
+                <div class="comm-count">👤 ${c.memberCount || 1}名</div>
+              `;
+              div.onclick = () => selectCommunity(c.id, c.title, c.members);
+              container.appendChild(div);
+          });
+      }
+
+      document.getElementById("btnSubmitComm").onclick = async () => {
+          const title = document.getElementById("inCommTitle").value.trim();
+          const desc = document.getElementById("inCommDesc").value.trim();
+          if(!title) return alert("テーブルの名前を入力してください");
+          
+          const btn = document.getElementById("btnSubmitComm"); btn.textContent = "作成中..."; btn.disabled = true;
+          const res = await api("create_community", { title: title, description: desc, memberId: myId });
+          btn.textContent = "作成"; btn.disabled = false;
+          
+          if(res.ok) {
+              document.getElementById("modalCreateComm").style.display = "none";
+              tabList.click();
+          } else { alert("エラー: " + res.error); }
+      };
+
+      async function loadPosts(commId) {
+        const listEl = document.getElementById("boardList");
+        const cacheKey = commId || "main";
+        
+        let hasCache = false;
+        if (postCache[cacheKey]) {
+            try { 
+                renderPosts(postCache[cacheKey], listEl);
+                hasCache = true; 
+            } catch(e){}
+        } 
+        
+        // ★ 読み込み中の表示を改善
+        if (!hasCache) {
+            listEl.innerHTML = `<div class="loader"><span class="material-icons-outlined">refresh</span>読み込み中...</div>`;
+        }
+
+        try {
+            const res = await api("list_posts", { limit: 30, communityId: commId });
+            if(res.ok) {
+                const posts = res.posts || [];
+                postCache[cacheKey] = posts;
+                try { localStorage.setItem(CACHE_POSTS, JSON.stringify(postCache)); } catch(e){}
+                renderPosts(posts, listEl);
+            } else { 
+                if (!hasCache) listEl.innerHTML = `<div class="loader">読み込みエラー</div>`; 
+            }
+        } catch(e) { 
+            if (!hasCache) listEl.innerHTML = `<div class="loader">通信エラー</div>`; 
+        }
+      }
+
+      function renderPosts(posts, container) {
+        if(!posts || posts.length === 0) {
+          container.innerHTML = `<div class="loader">まだ書き込みがありません。<br>一番乗りで言葉を綴りませんか？</div>`;
+          return;
+        }
+        
+        container.innerHTML = "";
+        const pins = ['pin-red', 'pin-blue', 'pin-yellow', 'pin-green'];
+
+        posts.forEach(post => {
+            const isMine = (String(post.lineUserId) === String(myId));
+            const userProf = post.userProfile || {};
+            const dispName = escapeHtml(userProf.nickname || "匿名");
+            const avatar = userProf.avatarDataUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+            
+            const rot = (Math.random() * 6 - 3).toFixed(1);
+            const pinColor = pins[Math.floor(Math.random() * pins.length)];
+
+            if(post.lineUserId) { profileCache[post.lineUserId] = { ...profileCache[post.lineUserId], ...userProf }; }
+
+            let bodyHtml = escapeHtml(post.body);
+            let warningHtml = "";
+            if(post.hasNg) {
+              bodyHtml = `<span class="ng-blur">この投稿には不適切な表現が含まれている可能性があります。</span>`;
+              warningHtml = `<div class="ng-warning">⚠️ 表示制限</div>`;
+            }
+
+            let repliesHtml = '';
+            if (post.replies && post.replies.length > 0) {
+                repliesHtml = `<div class="reply-list">`;
+                post.replies.forEach(reply => {
+                    const rName = escapeHtml(reply.userProfile.nickname);
+                    const rAva = reply.userProfile.avatarDataUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+                    if(reply.memberId) { profileCache[reply.memberId] = { ...profileCache[reply.memberId], ...reply.userProfile }; }
+                    
+                    let rBody = escapeHtml(reply.body);
+                    if(reply.hasNg) rBody = `<span class="ng-blur">表示制限</span>`;
+
+                    repliesHtml += `
+                      <div class="reply-item">
+                        <div class="reply-author" onclick="openProfileFromUid('${reply.memberId}')">
+                           <img src="${rAva}"> <span>${rName}</span>
+                        </div>
+                        <div>${rBody}</div>
+                      </div>
+                    `;
+                });
+                repliesHtml += `</div>`;
+            }
+
+            const div = document.createElement("div");
+            div.className = "flyer";
+            div.style.transform = `rotate(${rot}deg)`;
+            
+            let tabsHtml = '';
+            if(isMine) {
+                tabsHtml = `<div class="my-post-action" onclick="deletePost('${post.id}')">🗑️ 剥がす</div>`;
+            } else {
+                tabsHtml = `<div class="tear-tabs">`;
+                for(let i=0; i<3; i++) {
+                    tabsHtml += `<div class="tear-tab" onclick="tearTab(this, '${post.id}', '${dispName}')">✉️返事</div>`;
+                }
+                tabsHtml += `</div>`;
+            }
+
+            div.innerHTML = `
+              <div class="pin ${pinColor}"></div>
+              <div class="flyer-content">
+                <div class="flyer-title">${escapeHtml(post.title)}</div>
+                ${warningHtml}
+                <div class="flyer-body">${bodyHtml}</div>
+                ${repliesHtml}
+                <div class="flyer-author" onclick="openProfileFromUid('${post.lineUserId}')">
+                  <img src="${avatar}"> <span>${dispName}</span>
+                </div>
+              </div>
+              ${tabsHtml}
+            `;
+            container.appendChild(div);
+        });
+        localStorage.setItem(CACHE_PROFILES, JSON.stringify(profileCache));
+      }
+
+      document.getElementById("btnNewPost").onclick = () => {
+          document.getElementById("inTitle").value = "";
+          document.getElementById("inBody").value = "";
+          document.getElementById("editor").style.display = "flex";
+      };
+      document.getElementById("btnCancelEdit").onclick = () => { document.getElementById("editor").style.display = "none"; };
+      
+      document.getElementById("btnSavePost").onclick = async () => {
+        const title = document.getElementById("inTitle").value.trim();
+        const body = document.getElementById("inBody").value.trim();
+        if(!title || !body) return alert("見出しと本文を書いてください");
+        
+        const btn = document.getElementById("btnSavePost"); btn.textContent = "貼っています..."; btn.disabled = true;
+        const res = await api("add_post", { lineUserId: myId, title: title, body: body, communityId: currentCommunityId });
+        btn.textContent = "壁に貼る"; btn.disabled = false;
+        
+        if(res.ok) { 
+            document.getElementById("editor").style.display = "none"; 
+            loadPosts(currentCommunityId); 
+        } else { alert("エラー: " + res.error); }
+      };
+
+      window.tearTab = function(el, postId, targetName) {
+          if (el.classList.contains('torn')) return;
+          el.classList.add('torn');
+          setTimeout(() => {
+              document.getElementById("replyModalTitle").textContent = `${escapeHtml(targetName)} さんへ`;
+              document.getElementById("inReplyBody").value = "";
+              document.getElementById("replyModal").style.display = "flex";
+              window.currentReplyPostId = postId;
+          }, 600);
+      };
+
+      document.getElementById("btnSendReply").onclick = async () => {
+        const body = document.getElementById("inReplyBody").value.trim();
+        if(!body) return alert("メッセージを書いてください");
+        const res = await api("add_reply", { postId: window.currentReplyPostId, memberId: myId, body: body });
+        if(res.ok) { 
+            document.getElementById("replyModal").style.display = "none"; 
+            loadPosts(currentCommunityId); 
+        } else { alert("エラー"); }
+      };
+
+      window.deletePost = async function(postId) {
+          if(!confirm("剥がしますか？")) return;
+          const res = await api("delete_post", { postId: postId, lineUserId: myId });
+          if(res.ok) { loadPosts(currentCommunityId); }
+      };
+
+      window.openProfileFromUid = async function(uid) {
+        const modal = document.getElementById("profileModal");
+        const body = document.getElementById("profileBody");
+        modal.style.display = "flex";
+        
+        const cached = profileCache[uid];
+        if(cached) renderProfileFull(cached, profileCache[myId]||{}, body, uid);
+        else body.innerHTML = `<div class="loader"><span class="material-icons-outlined">refresh</span>読み込み中...</div>`;
+
+        try {
+            const [resTarget, resMy] = await Promise.all([
+                api("get_profile", { targetId: uid }),
+                uid !== myId ? api("get_profile", { targetId: myId }) : Promise.resolve({ ok:true, profile:null })
+            ]);
+
+            if(resTarget.ok) {
+                const prof = resTarget.profile;
+                const myProf = (resMy && resMy.profile) ? resMy.profile : (profileCache[myId] || {});
+                
+                profileCache[uid] = prof;
+                if(uid === myId) profileCache[myId] = prof;
+                else if(myProf.memberId) profileCache[myId] = myProf;
+                
+                localStorage.setItem(CACHE_PROFILES, JSON.stringify(profileCache));
+                renderProfileFull(prof, myProf, body, uid);
+            }
+        } catch(e) { 
+            if(!cached) body.innerHTML = `<div class="loader">読み込みエラー</div>`; 
+        }
+      };
+      
+      function renderProfileFull(prof, myProf, container, uid) {
+          // ★ 非公開プロフィールのチェック
+          const isMine = (prof.memberId === myId);
+          // profilePublicがtrueまたは文字列"true"以外なら非公開
+          let isPublic = (prof.profilePublic === true || String(prof.profilePublic) === "true");
+
+          if (!isPublic && !isMine) {
+             container.innerHTML = `
+                <div style="text-align:center; padding:60px 20px; color:#999;">
+                    <div style="font-size:48px; margin-bottom:16px;">🔒</div>
+                    <div style="font-weight:bold;">このプロフィールは非公開です</div>
+                </div>
+             `;
+             return;
+          }
+
+          let targetScores = [3,3,3,3,3];
+          let typeName = "未診断";
+          if(prof.valuesResult) {
+              const parsed = parseValues(prof.valuesResult);
+              if(parsed.scores) targetScores = parsed.scores;
+              if(parsed.type) typeName = parsed.type;
+          } else if(prof.typeName) {
+              typeName = prof.typeName;
+              targetScores = getScoresFromType(prof.typeName);
+          }
+
+          let myScores = null;
+          if(myProf && myProf.valuesResult) {
+              const parsed = parseValues(myProf.valuesResult);
+              if(parsed.scores) myScores = parsed.scores;
+          }
+
+          const chartSvg = createRadarChartSvg(targetScores, myScores);
+          
+          container.innerHTML = `
+            <div class="prof-header">
+               <img class="prof-avatar-lg" src="${prof.avatarDataUrl || ''}" onerror="this.style.display='none'">
+               <div>
+                 <div class="prof-name">${escapeHtml(prof.nickname)}</div>
+                 <div style="font-size:12px; color:#666;">${escapeHtml(prof.gender || "")}</div>
+               </div>
+            </div>
+            <div class="prof-section">
+              <div class="prof-label">自己紹介</div>
+              <div class="prof-text">${escapeHtml(prof.bio || "未入力")}</div>
+            </div>
+            <div class="prof-section">
+              <div class="prof-label">趣味・好きなこと</div>
+              <div class="prof-text">${escapeHtml(prof.hobbies || "未入力")}</div>
+            </div>
+            <div class="prof-section">
+              <div class="prof-label">相手への希望</div>
+              <div class="prof-text">${escapeHtml(prof.wants || "未入力")}</div>
+            </div>
+            
+            <div class="prof-section">
+              <div class="prof-label">価値観タイプ: ${escapeHtml(typeName)}</div>
+              <div class="chart-wrapper">
+                 ${chartSvg}
+                 <div class="chart-legend">
+                   <div class="legend-item"><div class="legend-dot" style="background:#c97b63"></div>相手</div>
+                   ${myScores ? `<div class="legend-item"><div class="legend-dot" style="background:rgba(79,124,255,0.8)"></div>自分</div>` : ""}
+                 </div>
+              </div>
+            </div>
+
+            ${uid !== myId ? `<div style="margin-top:20px"><button class="btn primary" style="width:100%" onclick="location.href='letter.html?to=${uid}&name=${encodeURIComponent(prof.nickname)}'">手紙を送る</button></div>` : ""}
+          `;
+      }
+      window.closeProfile = function() { document.getElementById("profileModal").style.display = 'none'; };
+
+      loadPosts("");
+    });
+  </script>
 </body>
 </html>

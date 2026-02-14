@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>郵便受け｜Sereness Cafe & Bar</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <script defer src="app.js"></script>
+
+  <style>
+    :root {
+      --pri: #5a3e32;
+      --sec: #c97b63;
+      --paper: #f4ecd8;
+      --wood: #5d4037;
+      --wood-dark: #3e2723;
+    }
+
+    /* 木目調の背景（カフェの壁やテーブル） */
+    .wood-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background-color: #8d6e63;
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 2px, transparent 2px, transparent 40px),
+        linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 40%);
+    }
+    body[data-mode="bar"] .wood-bg { background-color: #3e2723; }
+
+    html, body {
+      margin: 0; padding: 0; font-family: "Shippori Mincho", serif; 
+      color: var(--pri); height: 100vh; overflow: hidden;
+    }
+    body[data-mode="bar"] { color: #eaddcf; }
+
+    /* ★ ヘッダー (デザイン統一) */
+    header { 
+      position: absolute; top: 0; left: 0; width: 100%; height: 70px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 20px; box-sizing: border-box; z-index: 10;
+      /* 背景を少し暗くしてチケットの穴を目立たせる */
+      background: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
+    }
+    
+    .wrap { width: 100%; max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+
+    /* おしゃれな店名ロゴ */
+    .brand { 
+      font-family: 'Dancing Script', cursive; font-size: 28px; 
+      color: #fff; letter-spacing: 0.1em; font-weight: 700;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+    body[data-mode="bar"] .brand { color: #eaddcf; }
+
+    /* ★ チケット風ボタン (Inbox専用調整) */
+    .btn.ghost { 
+      border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.1); color: #fff; 
+      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
+      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); 
+      transition: 0.3s; position: relative; backdrop-filter: blur(4px);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .btn.ghost:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
+    
+    /* チケットの穴（背景が木目なので、穴の色は透明っぽく見せる工夫） */
+    .btn.ghost::before, .btn.ghost::after {
+      content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
+      background: #8d6e63; /* 背景の木目色に近い色を指定 */
+      border-radius: 50%; transform: translateY(-50%);
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after {
+      background: #3e2723; /* 夜の背景色 */
+    }
+    .btn.ghost::before { left: -4px; border-right-color: transparent; }
+    .btn.ghost::after { right: -4px; border-left-color: transparent; }
+
+    /* --- 木製の郵便受け（トレイ） --- */
+    .mailbox-container {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 90%; max-width: 400px; height: 60vh;
+      background: #5d4037;
+      border: 8px solid #3e2723;
+      border-radius: 4px;
+      box-shadow: 
+        inset 0 0 30px rgba(0,0,0,0.6), 
+        0 20px 40px rgba(0,0,0,0.5);
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      padding: 20px; perspective: 1000px;
+      overflow-y: auto;
+    }
+    
+    /* 銘板 */
+    .mailbox-plate {
+      background: #d4af37; color: #3e2723;
+      padding: 4px 16px; margin-bottom: 20px;
+      font-family: 'Dancing Script'; font-size: 18px; font-weight: bold;
+      border: 1px solid #b8860b; border-radius: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    }
+
+    /* 封筒（スタック表示） */
+    .letter-stack {
+      position: relative; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+
+    .envelope {
+      width: 90%; height: 140px;
+      background: #fdf6e3;
+      border: 1px solid #dcc;
+      position: relative;
+      cursor: pointer;
+      transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transform-origin: center bottom;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: -80px; /* 重ねる */
+    }
+    .envelope:hover { transform: translateY(-20px) rotate(1deg); z-index: 10; }
+    
+    /* 封筒のフタ部分 */
+    .envelope::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.03) 50%);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      z-index: 1; pointer-events: none;
+    }
+    
+    /* 封蝋 */
+    .wax-seal {
+      width: 40px; height: 40px; background: #a63737; border-radius: 50%;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 1px 3px 5px rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-family: 'Dancing Script'; font-size: 18px;
+      position: relative; z-index: 2; border: 2px solid #8a2a2a;
+    }
+    
+    /* 宛名書き */
+    .env-address {
+      position: absolute; bottom: 15px; left: 20px; 
+      font-family: 'Zen Kurenaido'; font-size: 14px; color: #5a3e32;
+      writing-mode: vertical-rl; text-orientation: mixed; height: 80px;
+    }
+
+    /* ★ 運営（マスター）からの手紙用スタイル */
+    .envelope.official {
+      background: #1a237e; /* 濃紺 */
+      border: 2px solid #ffd700; /* 金色の枠線 */
+      color: #fff;
+    }
+    .envelope.official::before {
+      background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.1) 50%);
+      border-bottom: 1px solid rgba(255,215,0, 0.3);
+    }
+    .envelope.official .env-address {
+      color: #fff; /* 文字色を白に */
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      font-size: 12px;
+      height: 95px;
+    }
+    .envelope.official .env-address span {
+      color: #ffd700 !important; /* Fromの色を金色に */
+      font-weight: bold;
+      font-size: 9px !important;
+    }
+    .envelope.official .wax-seal {
+      background: #ffd700; /* 金色の封蝋 */
+      color: #3e2723;
+      border-color: #b8860b;
+      box-shadow: inset 0 0 5px rgba(255,255,255,0.5), 1px 3px 5px rgba(0,0,0,0.5);
+    }
+
+    /* NEWバッジ */
+    .new-badge-corner {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #d32f2f;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      border: 2px solid #fff;
+      z-index: 5;
+      font-family: sans-serif;
+      animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes bounceIn { 0%{transform:scale(0);} 60%{transform:scale(1.2);} 100%{transform:scale(1);} }
+
+    .empty-msg {
+      color: rgba(255,255,255,0.5); font-size: 13px; text-align: center; margin-top: 100px;
+      line-height: 2;
+    }
+
+    /* --- 手紙閲覧モーダル --- */
+    .reader-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100;
+      display: none; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.5s; backdrop-filter: blur(5px);
+    }
+    .reader-overlay.active { opacity: 1; }
+
+    .paper-sheet {
+      width: 90%; max-width: 500px; height: 85vh;
+      background: #fffcf9;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.8);
+      padding: 40px 30px;
+      overflow-y: auto;
+      font-family: "Shippori Mincho", serif;
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiM5ZTllOWUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+');
+      transform: translateY(50px); transition: transform 0.6s;
+    }
+    .reader-overlay.active .paper-sheet { transform: translateY(0); }
+
+    .letter-header {
+      border-bottom: 1px double #ccc; padding-bottom: 15px; margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .sender-name { font-size: 18px; font-weight: bold; color: var(--pri); }
+    .gift-icon { color: #c97b63; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+
+    /* 本文（縦書き） */
+    .letter-body {
+      writing-mode: vertical-rl; text-orientation: mixed;
+      width: 100%; height: 350px;
+      font-size: 16px; line-height: 2.4; color: #333;
+      white-space: pre-wrap; overflow-x: auto;
+      background-image: linear-gradient(to left, rgba(0,0,0,0.05) 1px, transparent 1px);
+      background-size: 40px 100%; background-position: right top;
+      padding: 10px 0; margin-bottom: 30px;
+    }
+
+    /* ポラロイド（画像がある場合） */
+    .polaroid {
+      background: #fff; padding: 10px 10px 30px 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transform: rotate(-2deg); margin: 0 auto 30px; max-width: 90%;
+      border: 1px solid #eee;
+    }
+    .polaroid img { width: 100%; display: block; filter: sepia(0.3); }
+
+    /* アクションボタン */
+    .action-area { text-align: center; margin-top: 20px; }
+    .btn-action {
+      display: block; width: 100%; padding: 16px; border: none; border-radius: 2px;
+      font-family: 'Shippori Mincho'; font-size: 15px; cursor: pointer; margin-bottom: 12px;
+      transition: 0.2s; letter-spacing: 0.1em;
+    }
+    .btn-yes { background: #8b3a3a; color: #fff; box-shadow: 0 4px 10px rgba(139, 58, 58, 0.4); }
+    .btn-yes:active { transform: translateY(2px); }
+    .btn-no { background: transparent; color: #888; text-decoration: underline; font-size: 12px; }
+
+    .close-btn {
+      position: absolute; top: 15px; right: 15px;
+      width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ccc;
+      background: transparent; color: #888; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* BGMプレイヤー（非表示） */
+    #bgmPlayer { display: none; }
+
+  </style>
+</head>
+<body>
+  <div class="wood-bg"></div>
+
+  <header>
+    <div class="wrap">
+      <div class="brand">Inbox</div>
+      <nav>
+        <a href="member.html" class="btn ghost">指定席へ戻る</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="mailbox-container">
+    <div class="mailbox-plate">Letters</div>
+    <div id="letterStack" class="letter-stack">
+      <div class="empty-msg">
+        ポストを確認しています...
+      </div>
+    </div>
+  </div>
+
+  <div id="readerModal" class="reader-overlay">
+    <div class="paper-sheet">
+      <button class="close-btn" onclick="closeReader()">×</button>
+      
+      <div class="letter-header">
+        <div>
+          <div style="font-size:10px; color:#888;">From</div>
+          <div class="sender-name" id="viewFrom"></div>
+        </div>
+        <div class="gift-icon" id="viewGifts"></div>
+      </div>
+
+      <div style="background:#f4f4f4; padding:10px; border-radius:4px; font-size:12px; color:#555; margin-bottom:20px; font-family:sans-serif;">
+        <strong style="color:#5d4037; display:block; margin-bottom:4px;">Master's Note:</strong>
+        <span id="viewAdminComment"></span>
+      </div>
+
+      <div id="viewContent"></div>
+
+      <div class="action-area" id="actionArea">
+        <p style="font-size:12px; color:#5a3e32; margin-bottom:12px;">
+          この手紙に、お返事（相席の了承）をしますか？
+        </p>
+        <button class="btn-action btn-yes" onclick="acceptLetter()">お話ししてみたい</button>
+        <button class="btn-action btn-no" onclick="declineLetter()">今回はそっと閉じる</button>
+      </div>
+      
+      <div id="waitingArea" style="display:none; text-align:center; padding-top:40px;">
+        <span class="material-icons-outlined" style="font-size:48px; color:#8b3a3a; margin-bottom:16px;">mark_email_read</span>
+        <p style="font-size:14px; font-weight:bold; color:#5a3e32;">了承の連絡をしました。</p>
+        <p style="font-size:12px; color:#888; line-height:1.8;">
+          お相手（男性）がお会計（テーブルの準備）を済ませるまで<br>
+          しばらくお待ちください。<br>
+          準備が整い次第、通知いたします。
+        </p>
+        <p style="font-size:12px; color:#a63737; margin-top:20px;">
+          後ほどマスターからご連絡いたします。<br>
+          少々お待ちください。
+        </p>
+        <button class="btn-action btn-no" onclick="closeReader()">閉じる</button>
+      </div>
+
+    </div>
+  </div>
+
+  <audio id="bgmPlayer" loop></audio>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+    
+    let myId = "";
+    let myLettersCache = [];
+    let currentLetterId = null;
+
+    async function api(action, params = {}) {
+      const url = new URL(GAS_URL);
+      url.searchParams.append("action", action);
+      for (const k in params) url.searchParams.append(k, params[k]);
+      try { const res = await fetch(url.toString(), { redirect: "follow" }); return await res.json(); } catch (e) { return { ok: false }; }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const h = new Date().getHours();
+      if(h >= 18 || h < 6) document.body.setAttribute("data-mode", "bar");
+      
+      try {
+        const sess = JSON.parse(localStorage.getItem("ma_member_session"));
+        if(sess && sess.memberId) myId = sess.memberId;
+        else myId = "Fara"; 
+      } catch(e){ myId = "Fara"; }
+
+      fetchInbox();
+    });
+
+    async function fetchInbox() {
+      const stack = document.getElementById("letterStack");
+      const res = await api("get_my_inbox", { memberId: myId });
+      
+      if(res.ok) {
+        myLettersCache = res.letters;
+        renderInbox(res.letters);
+      } else {
+        stack.innerHTML = `<div class="empty-msg">読み込みに失敗しました</div>`;
+      }
+    }
+
+    function renderInbox(letters) {
+      const stack = document.getElementById("letterStack");
+      
+      if(letters.length === 0) {
+        stack.innerHTML = `
+          <div class="empty-msg">
+            今はまだ、手紙は届いていません。<br>
+            静かな時間を楽しみながら<br>お待ちください。
+          </div>`;
+        return;
+      }
+
+      stack.innerHTML = ""; 
+      
+      letters.forEach((l, i) => {
+        const div = document.createElement("div");
+        div.className = "envelope";
+        div.style.zIndex = i + 1;
+        div.style.transform = `rotate(${Math.random()*4 - 2}deg) translateY(${i * -5}px)`;
+        
+        div.onclick = () => openLetter(l.id);
+
+        let statusBadge = "";
+        if(l.status.includes('matched')) statusBadge = `<span style="font-size:10px;background:#eee;padding:1px 4px;margin-left:4px;">返事済</span>`;
+
+        let unreadMark = "";
+        if (!l.isRead) {
+          unreadMark = `<div id="badge-${l.id}" class="new-badge-corner">NEW</div>`;
+        }
+
+        // ★ 運営（MASTER）からの手紙の場合の判定とスタイル適用
+        let isOfficial = false;
+        let senderName = escapeHtml(l.fromName);
+        
+        if(l.fromMemberId === "MASTER" || l.fromName === "Sereness Master" || l.fromName === "マスター") {
+            isOfficial = true;
+            senderName = "👑 マスター"; // 王冠アイコン＋「マスター」表記
+            div.classList.add("official"); // 特別なCSSクラス（紺色＋金枠）
+        }
+
+        div.innerHTML = `
+          <div class="wax-seal">S</div>
+          <div class="env-address">
+            To: ${escapeHtml(l.toName)} 様<br>
+            <span style="font-size:10px; color:#888;">From: ${senderName} ${statusBadge}</span>
+          </div>
+          ${unreadMark}
+        `;
+        stack.appendChild(div);
+      });
+    }
+
+    function openLetter(id) {
+      currentLetterId = id;
+      const l = myLettersCache.find(x => x.id === id);
+      if(!l) return;
+
+      if (!l.isRead) {
+        l.isRead = true; 
+        api("read_letter", { id: id }); 
+        
+        const badge = document.getElementById("badge-" + id);
+        if(badge) badge.style.display = "none";
+      }
+
+      // ★ 開いた後のモーダルでも「マスター」と表示する
+      let isOfficial = false;
+      let senderDisp = l.fromName;
+      if(l.fromMemberId === "MASTER" || l.fromName === "Sereness Master" || l.fromName === "マスター") {
+          senderDisp = "👑 マスター";
+          isOfficial = true;
+      }
+      document.getElementById("viewFrom").textContent = senderDisp;
+      
+      document.getElementById("viewAdminComment").textContent = l.adminComment || "（メッセージなし）";
+      
+      let giftHtml = "";
+      if(l.giftFlower) giftHtml += `<span>🌼 ${l.giftFlower}</span>`;
+      if(l.giftBgm) giftHtml += `<span style="margin-left:8px;">🎵 BGM</span>`;
+      document.getElementById("viewGifts").innerHTML = giftHtml;
+
+      const contentEl = document.getElementById("viewContent");
+      if(l.imageSrc) {
+        contentEl.innerHTML = `<div class="polaroid"><img src="${l.imageSrc}"></div><div class="letter-body">${escapeHtml(l.body)}</div>`;
+      } else {
+        contentEl.innerHTML = `<div class="letter-body">${escapeHtml(l.body)}</div>`;
+      }
+
+      const actionArea = document.getElementById("actionArea");
+      const waitingArea = document.getElementById("waitingArea");
+
+      // ★ 運営からの手紙の場合は「お話してみたい」ボタンを出さず、「閉じる」のみにする
+      if (isOfficial) {
+          waitingArea.style.display = "none";
+          actionArea.style.display = "block";
+          // シンプルな閉じるボタンのみ表示
+          actionArea.innerHTML = `<button class="btn-action btn-no" onclick="closeReader()">閉じる</button>`;
+      } else if(l.status.startsWith("matched")) {
+          // マッチング済み
+          actionArea.style.display = "none";
+          waitingArea.style.display = "block";
+      } else {
+          // 通常の手紙（未回答）
+          waitingArea.style.display = "none";
+          actionArea.style.display = "block";
+          actionArea.innerHTML = `
+            <p style="font-size:12px; color:#5a3e32; margin-bottom:12px;">
+              この手紙に、お返事（相席の了承）をしますか？
+            </p>
+            <button class="btn-action btn-yes" onclick="acceptLetter()">お話ししてみたい</button>
+            <button class="btn-action btn-no" onclick="declineLetter()">今回はそっと閉じる</button>
+          `;
+      }
+
+      const modal = document.getElementById("readerModal");
+      modal.style.display = "flex";
+      setTimeout(() => modal.classList.add("active"), 10);
+
+      playBgm(l.giftBgm);
+    }
+
+    function closeReader() {
+      const modal = document.getElementById("readerModal");
+      modal.classList.remove("active");
+      stopBgm();
+      setTimeout(() => { modal.style.display = "none"; }, 500);
+    }
+
+    async function acceptLetter() {
+      if(!confirm("お相手に「相席OK」の連絡をします。\nよろしいですか？")) return;
+      
+      const res = await api("update_letter_status", { id: currentLetterId, status: "matched_waiting_payment" });
+      
+      if(res.ok) {
+        fadeOutBgm();
+        document.getElementById("actionArea").style.display = "none";
+        document.getElementById("waitingArea").style.display = "block";
+        fetchInbox();
+      } else {
+        alert("通信エラーが発生しました");
+      }
+    }
+
+    function declineLetter() {
+      if(!confirm("今回は見送りますか？")) return;
+      closeReader();
+    }
+
+    function playBgm(bgmName) {
+      if(!bgmName) return;
+      const p = document.getElementById("bgmPlayer");
+      let src = "";
+      if(bgmName.includes("雨")) src = "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg";
+      else if(bgmName.includes("焚き火")) src = "https://actions.google.com/sounds/v1/ambiences/fireplace.ogg";
+      else if(bgmName.includes("ジャズ")) src = "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg";
+      if(src) { p.src = src; p.volume = 0.2; p.play().catch(()=>{}); }
+    }
+    
+    function stopBgm() { document.getElementById("bgmPlayer").pause(); }
+
+    function fadeOutBgm() {
+      const p = document.getElementById("bgmPlayer");
+      let vol = p.volume;
+      const fade = setInterval(() => {
+        if (vol > 0.02) { vol -= 0.02; p.volume = vol; } 
+        else { clearInterval(fade); p.pause(); p.volume = 0.2; }
+      }, 50); 
+    }
+
+    function escapeHtml(s) { return s ? s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : ""; }
+  </script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>手紙を綴る｜Sereness Cafe & Bar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    :root {
+      --pri: #5a3e32;
+      --sec: #c97b63;
+      --paper: #f4ecd8;
+      --accent: #a63737;
+    }
+
+    /* 木目調の背景 */
+    .wood-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background-color: #8d6e63;
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 2px, transparent 2px, transparent 40px),
+        linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 40%);
+    }
+    body[data-mode="bar"] .wood-bg { background-color: #3e2723; }
+
+    html, body {
+      margin: 0; padding: 0; font-family: "Shippori Mincho", serif; 
+      color: var(--pri); min-height: 100vh; overflow-x: hidden; /* アニメーション用 */
+    }
+    body[data-mode="bar"] { color: #eaddcf; }
+
+    /* ヘッダー */
+    header { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 250, 246, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,0.1); z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    body[data-mode="bar"] header { background: rgba(43, 43, 43, 0.95); border-bottom-color: rgba(255,255,255,0.1); }
+    
+    .wrap { width: 100%; max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+    .brand { font-family: 'Dancing Script', cursive; font-size: 26px; color: var(--pri); font-weight: 700; }
+    body[data-mode="bar"] .brand { color: #eaddcf; }
+
+    /* ★ チケット風ボタン */
+    .btn.ghost { 
+      border: 1px solid var(--pri); background: transparent; color: var(--pri); 
+      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
+      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      position: relative; transition: 0.3s;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+    }
+    .btn.ghost:hover { background: rgba(62, 39, 35, 0.05); transform: translateY(-1px); }
+
+    /* チケットの穴 */
+    .btn.ghost::before, .btn.ghost::after {
+      content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
+      background: rgba(255, 250, 246, 1); /* ヘッダー背景色 */
+      border-radius: 50%; transform: translateY(-50%);
+      border: 1px solid var(--pri);
+    }
+    .btn.ghost::before { left: -4px; border-right-color: transparent; }
+    .btn.ghost::after { right: -4px; border-left-color: transparent; }
+
+    /* 夜モードのボタン */
+    body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
+    body[data-mode="bar"] .btn.ghost:hover { background: rgba(255,255,255,0.1); }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after {
+      background: #2b2b2b; /* 夜ヘッダー色 */
+      border-color: #d7ccc8;
+    }
+
+    /* メインレイアウト */
+    .container {
+      max-width: 900px; margin: 90px auto 40px; padding: 20px;
+      display: flex; flex-direction: column; gap: 30px;
+    }
+    @media (min-width: 768px) {
+      .container { flex-direction: row; align-items: flex-start; }
+    }
+
+    /* 入力フォーム側 */
+    .editor-panel {
+      flex: 1; background: rgba(255,255,255,0.9); padding: 30px;
+      border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      z-index: 10; /* アニメーションより手前に */
+    }
+    body[data-mode="bar"] .editor-panel { background: rgba(40, 30, 25, 0.9); }
+
+    h2 { font-family: 'Dancing Script'; font-size: 32px; margin-bottom: 20px; text-align: center; color: var(--accent); }
+    body[data-mode="bar"] h2 { color: #c97b63; }
+
+    .form-group { margin-bottom: 25px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px; color: var(--pri); opacity: 0.8; }
+    body[data-mode="bar"] label { color: #eaddcf; }
+    
+    textarea {
+      width: 100%; height: 200px; padding: 15px; box-sizing: border-box;
+      border: 1px solid #ccc; border-radius: 4px; font-family: "Shippori Mincho", serif;
+      font-size: 16px; line-height: 1.8; resize: vertical;
+      background: #fffcf9;
+    }
+    body[data-mode="bar"] textarea { background: #3e2723; color: #eaddcf; border-color: #5d4037; }
+
+    /* セレクトボックス（BGM用） */
+    select.stylish-select {
+      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;
+      font-family: "Shippori Mincho", serif; font-size: 14px;
+      background: rgba(255,255,255,0.8); cursor: pointer;
+    }
+    body[data-mode="bar"] select.stylish-select { background: #3e2723; color: #eaddcf; border-color: #5d4037; }
+
+    /* 切手選択オプション */
+    .stamp-options {
+      display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
+    }
+    .stamp-option { cursor: pointer; position: relative; }
+    .stamp-option input { display: none; } 
+    .stamp-option img {
+      width: 60px; height: 70px; object-fit: cover;
+      border-radius: 3px; border: 2px solid transparent;
+      transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      filter: grayscale(0.4) sepia(0.2);
+    }
+    .stamp-option input:checked + img {
+      border-color: var(--accent);
+      transform: scale(1.1) rotate(-2deg) translateY(-2px);
+      filter: grayscale(0) sepia(0);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+      z-index: 2;
+    }
+    body[data-mode="bar"] .stamp-option input:checked + img { border-color: #c97b63; }
+
+    /* 送信ボタン */
+    .btn-submit {
+      display: block; width: 100%; padding: 15px;
+      background: var(--accent); color: #fff; border: none; border-radius: 4px;
+      font-size: 16px; font-family: "Shippori Mincho", serif; letter-spacing: 0.1em;
+      cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(166, 55, 55, 0.3);
+    }
+    .btn-submit:hover { background: #8a2a2a; transform: translateY(-2px); }
+    body[data-mode="bar"] .btn-submit { background: #c97b63; }
+    body[data-mode="bar"] .btn-submit:hover { background: #b06a53; }
+
+    /* プレビュー側 */
+    .letter-preview {
+      flex: 1; display: flex; justify-content: center;
+      position: sticky; top: 100px;
+      perspective: 1000px; /* 3Dアニメーション用 */
+    }
+    
+    .card {
+      width: 90%; max-width: 400px; min-height: 500px;
+      background: #fffcf9;
+      background-image: 
+        linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px),
+        url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjZmZmY2Y5Ij48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlYWQ1Y2UiPjwvcmVjdD4KPC9zdmc+');
+      background-size: 40px 100%, 100% 40px, auto;
+      border: 1px solid #e0d0c0;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 10px 25px rgba(0,0,0,0.2);
+      position: relative;
+      padding: 60px 40px 40px;
+      transform: rotate(1deg);
+      transition: all 0.5s ease;
+    }
+    body[data-mode="bar"] .card {
+      background-color: #dcd1c4;
+      background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+      border-color: #b5a695;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    /* プレビュー内の切手 */
+    .preview-stamp {
+      position: absolute; top: 25px; left: 25px;
+      width: 55px; height: 65px; object-fit: cover;
+      border-radius: 2px; box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+      transform: rotate(-3deg); z-index: 2; transition: all 0.5s ease-out;
+    }
+    .fade-in-stamp { animation: stampAppear 0.5s ease-out; }
+    @keyframes stampAppear {
+      from { opacity: 0; transform: rotate(-3deg) scale(0.8) translateY(-10px); }
+      to { opacity: 1; transform: rotate(-3deg) scale(1) translateY(0); }
+    }
+    
+    /* 封蝋 */
+    .wax-seal {
+      position: absolute; bottom: 30px; right: 30px;
+      width: 40px; height: 40px; background: var(--accent); border-radius: 50%;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 2px 4px 6px rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-family: 'Dancing Script', cursive; font-size: 20px;
+      border: 2px solid rgba(138, 42, 42, 0.8);
+    }
+    body[data-mode="bar"] .wax-seal { background: #c97b63; border-color: #b06a53; }
+    .wax-seal::after { content: "S"; }
+
+    /* 本文プレビュー */
+    .preview-text {
+      writing-mode: vertical-rl; text-orientation: mixed;
+      width: 100%; height: 400px;
+      font-size: 16px; line-height: 2.4; color: #4a3324;
+      white-space: pre-wrap; overflow-x: auto; overflow-y: hidden;
+    }
+    body[data-mode="bar"] .preview-text { color: #333; }
+
+    /* ★ 送信アニメーション（空へ飛んでいく） */
+    @keyframes flyAway {
+      0% { 
+        transform: translateY(0) rotate(1deg) scale(1); 
+        opacity: 1; 
+      }
+      40% { 
+        transform: translateY(30px) rotate(-5deg) scale(0.9); 
+        opacity: 1; 
+      }
+      100% { 
+        transform: translateY(-800px) translateX(100px) rotate(20deg) scale(0.6); 
+        opacity: 0; 
+      }
+    }
+    .fly-away {
+      animation: flyAway 1.8s ease-in-out forwards;
+      pointer-events: none; /* クリック無効化 */
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wood-bg"></div>
+
+  <header>
+    <div class="wrap">
+      <div class="brand">Sereness Letter</div>
+      <nav>
+        <a href="member.html" class="btn ghost">指定席に戻る</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <div class="editor-panel">
+      <h2>Letter</h2>
+      
+      <div class="form-group" style="text-align:center; margin-bottom:30px;">
+        <div style="font-family:'Zen Kurenaido'; font-size:22px; color:var(--pri); display:inline-block; border-bottom: 1px solid var(--sec); padding:0 20px 8px;">
+          To. <span id="formToName"></span> 様
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <textarea id="body" placeholder="静かな空間で、ゆっくりと言葉を紡いでみませんか。"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>切手を選ぶ</label>
+        <div class="stamp-options">
+          <label class="stamp-option">
+            <input type="radio" name="stamp" value="rose" checked>
+            <img src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2060%2070%22%3E%3Crect%20width%3D%2260%22%20height%3D%2270%22%20fill%3D%22%23f4ecd8%22%20stroke%3D%22%23dcc%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%223%202%22%2F%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23e0c0b0%22%2F%3E%3Cpath%20d%3D%22M30%2020c-5%205-10%200-10%2010s5%2015%2010%205c5%2010%2010%205%2010-5s-5-5-10-10z%22%20fill%3D%22%23a63737%22%2F%3E%3Ctext%20x%3D%2230%22%20y%3D%2265%22%20font-family%3D%22Dancing%20Script%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%235a3e32%22%3ESereness%20Post%3C%2Ftext%3E%3C%2Fsvg%3E" alt="薔薇">
+          </label>
+          <label class="stamp-option">
+            <input type="radio" name="stamp" value="bird">
+            <img src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2060%2070%22%3E%3Crect%20width%3D%2260%22%20height%3D%2270%22%20fill%3D%22%23e6f0f9%22%20stroke%3D%22%23add%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%223%202%22%2F%3E%3Cpath%20d%3D%22M15%2040c5-10%2015-15%2025-5s5%2020-5%2025c-10%205-25%200-30-10z%22%20fill%3D%22%2387ceeb%22%20opacity%3D%220.7%22%2F%3E%3Cpath%20d%3D%22M40%2035c-2-5-8-5-10%200s0%2010%205%2010c5%200%207-5%205-10z%22%20fill%3D%22%234682b4%22%2F%3E%3Ctext%20x%3D%2230%22%20y%3D%2265%22%20font-family%3D%22Dancing%20Script%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%234682b4%22%3EBlue%20Bird%3C%2Ftext%3E%3C%2Fsvg%3E" alt="青い鳥">
+          </label>
+          <label class="stamp-option">
+            <input type="radio" name="stamp" value="moon">
+            <img src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2060%2070%22%3E%3Crect%20width%3D%2260%22%20height%3D%2270%22%20fill%3D%22%232b2b4f%22%20stroke%3D%22%23c0a080%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%223%202%22%2F%3E%3Cpath%20d%3D%22M40%2025a15%2015%200%201%201-20%2020%2010%2010%200%201%200%2020-20z%22%20fill%3D%22%23ffd700%22%2F%3E%3Ccircle%20cx%3D%2215%22%20cy%3D%2220%22%20r%3D%222%22%20fill%3D%22%23fff%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%221%22%20fill%3D%22%23fff%22%2F%3E%3Ctext%20x%3D%2230%22%20y%3D%2265%22%20font-family%3D%22Dancing%20Script%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%23c0a080%22%3EMidnight%3C%2Ftext%3E%3C%2Fsvg%3E" alt="月と星">
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>同封BGMを添える</label>
+        <select id="bgmSelect" class="stylish-select">
+          <option value="">なし</option>
+          <option value="rain">雨の音 - Rainy Days</option>
+          <option value="fire">焚き火 - Fireplace</option>
+          <option value="jazz">カフェジャズ - Cafe Jazz</option>
+        </select>
+        <p style="font-size:11px; color:#888; margin-top:4px;">※お相手が手紙を開いた時に、静かに流れます。</p>
+      </div>
+      
+      <button class="btn-submit" onclick="sendLetter()">封をする（送信）</button>
+      <p style="text-align:center; font-size:12px; color:#888; margin-top:15px;">
+        ※一度送信すると、取り消しはできません。
+      </p>
+    </div>
+
+    <div class="letter-preview">
+      <div class="card" id="previewCard">
+        <img id="previewStampImg" class="preview-stamp" src="" alt="stamp">
+        <div class="wax-seal"></div>
+        <div id="previewText" class="preview-text">
+          （ここに本文がプレビューされます）
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
+    let myId = "";
+    let toId = "";
+    let toName = "";
+
+    const stampImages = {
+      rose: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2060%2070%22%3E%3Crect%20width%3D%2260%22%20height%3D%2270%22%20fill%3D%22%23f4ecd8%22%20stroke%3D%22%23dcc%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%223%202%22%2F%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23e0c0b0%22%2F%3E%3Cpath%20d%3D%22M30%2020c-5%205-10%200-10%2010s5%2015%2010%205c5%2010%2010%205%2010-5s-5-5-10-10z%22%20fill%3D%22%23a63737%22%2F%3E%3Ctext%20x%3D%2230%22%20y%3D%2265%22%20font-family%3D%22Dancing%20Script%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%235a3e32%22%3ESereness%20Post%3C%2Ftext%3E%3C%2Fsvg%3E',
+      bird: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2060%2070%22%3E%3Crect%20width%3D%2260%22%20height%3D%2270%22%20fill%3D%22%23e6f0f9%22%20stroke%3D%22%23add%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%223%202%22%2F%3E%3Cpath%20d%3D%22M15%2040c5-10%2015-15%2025-5s5%2020-5%2025c-10%205-25%200-30-10z%22%20fill%3D%22%2387ceeb%22%20opacity%3D%220.7%22%2F%3E%3Cpath%20d%3D%22M40%2035c-2-5-8-5-10%200s0%2010%205%2010c5%200%207-5%205-10z%22%20fill%3D%22%234682b4%22%2F%3E%3Ctext%20x%3D%2230%22%20y%3D%2265%22%20font-family%3D%22Dancing%20Script%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%234682b4%22%3EBlue%20Bird%3C%2Ftext%3E%3C%2Fsvg%3E',
+      moon: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2060%2070%22%3E%3Crect%20width%3D%2260%22%20height%3D%2270%22%20fill%3D%22%232b2b4f%22%20stroke%3D%22%23c0a080%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%223%202%22%2F%3E%3Cpath%20d%3D%22M40%2025a15%2015%200%201%201-20%2020%2010%2010%200%201%200%2020-20z%22%20fill%3D%22%23ffd700%22%2F%3E%3Ccircle%20cx%3D%2215%22%20cy%3D%2220%22%20r%3D%222%22%20fill%3D%22%23fff%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%221%22%20fill%3D%22%23fff%22%2F%3E%3Ctext%20x%3D%2230%22%20y%3D%2265%22%20font-family%3D%22Dancing%20Script%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%23c0a080%22%3EMidnight%3C%2Ftext%3E%3C%2Fsvg%3E'
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // 夜モード判定
+      const h = new Date().getHours();
+      if(h >= 18 || h < 6) document.body.setAttribute("data-mode", "bar");
+
+      // ログインチェック
+      try {
+        const sess = JSON.parse(localStorage.getItem("ma_member_session"));
+        if(!sess || !sess.memberId) { alert("ログインが必要です"); location.href="login.html"; return; }
+        myId = sess.memberId;
+      } catch(e) { location.href="login.html"; return; }
+
+      // URLパラメータ取得
+      const urlParams = new URLSearchParams(window.location.search);
+      toId = urlParams.get('to');
+      toName = urlParams.get('name');
+
+      if(!toId) { alert("宛先が指定されていません"); location.href="member.html"; return; }
+
+      document.getElementById("formToName").textContent = toName || "お相手";
+
+      // 本文プレビュー
+      const bodyInput = document.getElementById("body");
+      const previewText = document.getElementById("previewText");
+      bodyInput.addEventListener("input", () => {
+        previewText.textContent = bodyInput.value || "（ここに本文がプレビューされます）";
+      });
+
+      // 切手選択
+      const previewStampImg = document.getElementById('previewStampImg');
+      document.querySelectorAll('input[name="stamp"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          const selectedStamp = this.value;
+          if (stampImages[selectedStamp]) {
+            previewStampImg.classList.remove('fade-in-stamp');
+            void previewStampImg.offsetWidth; 
+            previewStampImg.src = stampImages[selectedStamp];
+            previewStampImg.classList.add('fade-in-stamp');
+          }
+        });
+      });
+      
+      const initialStamp = document.querySelector('input[name="stamp"]:checked');
+      if(initialStamp && stampImages[initialStamp.value]) {
+        previewStampImg.src = stampImages[initialStamp.value];
+      }
+    });
+
+    async function sendLetter() {
+      const body = document.getElementById("body").value;
+      if(!body.trim()) { alert("本文を入力してください"); return; }
+      
+      const selectedStampRadio = document.querySelector('input[name="stamp"]:checked');
+      const stamp = selectedStampRadio ? selectedStampRadio.value : '';
+      const bgm = document.getElementById("bgmSelect").value;
+
+      if(!confirm("この内容で手紙を送りますか？\n（送信後は取り消せません）")) return;
+
+      const btn = document.querySelector('.btn-submit');
+      btn.disabled = true; btn.textContent = "封をしています...";
+
+      try {
+        const url = new URL(GAS_URL);
+        url.searchParams.append("action", "send_letter");
+        url.searchParams.append("fromId", myId);
+        url.searchParams.append("toId", toId);
+        url.searchParams.append("body", body);
+        url.searchParams.append("stamp", stamp);
+        url.searchParams.append("bgm", bgm); 
+
+        const res = await fetch(url.toString(), { redirect: "follow" });
+        const json = await res.json();
+        
+        if(json.ok) {
+          // ★ 送信アニメーション開始
+          const card = document.getElementById('previewCard');
+          card.classList.add('fly-away');
+          
+          btn.textContent = "ポストへ投函中...";
+
+          // アニメーション完了後に遷移
+          setTimeout(() => {
+             alert("手紙をポストに投函しました。\nお相手に届くまで、しばらくお待ちください。");
+             location.href = "member.html";
+          }, 1800);
+        } else {
+          alert("送信に失敗しました: " + (json.error || "不明なエラー"));
+          btn.disabled = false; btn.textContent = "封をする（送信）";
+        }
+      } catch(e) {
+        alert("通信エラーが発生しました");
+        btn.disabled = false; btn.textContent = "封をする（送信）";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -2,94 +2,326 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ログイン（会員ID）</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script defer src="app.js"></script>
-</head>
-<body>
-<header>
-  <div class="wrap">
-    <div class="brand">会員アプリ</div>
-    <nav>
-      <a class="btn ghost" href="index.html">ホーム</a>
-      <a class="btn ghost" href="board.html">掲示板</a>
-      <span data-auth class="row"></span>
-    </nav>
-  </div>
-</header>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Entrance｜セレネスCafe&Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 
-<main>
-  <h1>ログイン（会員ID）</h1>
-
-  <section class="card" style="max-width:720px">
-    <div id="msg" class="item">会員IDでログインしてください。</div>
-
-    <form id="formLogin" style="margin-top:14px">
-      <label>会員ID</label>
-      <input id="memberId" required placeholder="例：SRN-1234" />
-
-      <div class="grid cols2">
-        <div>
-          <label>名前</label>
-          <input id="name" required placeholder="例：山田 太郎" />
-        </div>
-        <div>
-          <label>年齢</label>
-          <input id="age" type="number" min="18" max="99" required placeholder="例：35" />
-        </div>
-      </div>
-
-      <label>電話番号</label>
-      <input id="phone" required inputmode="tel" placeholder="例：09012345678" />
-
-      <div class="row" style="margin-top:14px">
-        <button class="btn primary" type="submit">ログイン</button>
-        <a class="btn" href="register.html">新規登録（申請）</a>
-      </div>
-
-      <p class="small" style="margin-top:10px">
-        ※会員IDは、面談後に運営が発行します。
-      </p>
-    </form>
-  </section>
-
-  <script>
-  document.getElementById("loginForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-
-  const memberId = document.getElementById("memberId").value.trim();
-  const name = document.getElementById("name").value.trim();
-  const age = document.getElementById("age").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-
-  if(!memberId || !name || !age || !phone){
-    alert("すべて入力してください");
-    return;
-  }
-
-  try{
-    const res = await gasLogin(memberId, name, age, phone);
-
-    if(!res || !res.ok){
-      alert("ログインできませんでした。入力内容をご確認ください。");
-      return;
+  <style>
+    :root {
+      --pri: #5a3e32;
+      --sec: #c97b63;
+      --paper-light: #fffdf8;
+      --paper-dark: #2a2a2a;
     }
 
-    // memberとしてログイン
-    localStorage.setItem("ma_member_session", JSON.stringify({
-      memberId,
-      loginAt: new Date().toISOString()
-    }));
+    html, body {
+      margin: 0; padding: 0; background: transparent; font-family: "Shippori Mincho", serif;
+      overflow-y: auto !important; height: auto !important; min-height: 100vh;
+      color: #333; transition: color 0.5s, background 0.5s;
+    }
 
-    location.href = "member.html";
+    /* ★ 昼夜の背景（入り口の雰囲気） */
+    .day-bg, .night-bg { position: fixed; inset: 0; z-index: -2; pointer-events: none; background-size: cover; background-position: center; transition: opacity 1s; }
+    
+    /* 昼：木漏れ日と明るい壁 */
+    .day-bg { 
+      background-color: #f3e6de;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.8), transparent 40%),
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 10px);
+    }
+    
+    /* 夜：落ち着いたレンガ調と街灯 */
+    .night-bg { 
+      display: none; background-color: #1a1512;
+      background-image: 
+        radial-gradient(circle at 50% 30%, rgba(255, 180, 100, 0.15), transparent 60%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 4px);
+    }
+    
+    body[data-mode="bar"] .day-bg { opacity: 0; }
+    body[data-mode="bar"] .night-bg { display: block; opacity: 1; }
+    body[data-mode="bar"] { color: #eaddcf; }
 
-  }catch(err){
-    console.error(err);
-    alert("通信エラーが発生しました");
+    /* 入り口の看板（ヘッダー） */
+    .signboard {
+      text-align: center; margin-top: 40px; margin-bottom: 20px;
+      font-family: 'Dancing Script', cursive; font-size: 32px; color: var(--pri);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    body[data-mode="bar"] .signboard { color: #eaddcf; text-shadow: 0 0 10px rgba(255, 200, 150, 0.5); }
+
+    /* ★ 予約台帳（Guest Book）のデザイン */
+    .guest-book {
+      background: #fdf6e3; border: 1px solid #d4c5b0; border-radius: 4px 16px 16px 4px;
+      box-shadow: 
+        -5px 0 15px rgba(0,0,0,0.1) inset, /* 本の背の影 */
+        5px 10px 25px rgba(0,0,0,0.15);   /* 本全体の影 */
+      padding: 40px 30px; margin: 0 auto; max-width: 400px;
+      position: relative;
+    }
+    body[data-mode="bar"] .guest-book {
+      background: #2a221d; border-color: #4a3b32;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.5) inset, 5px 10px 30px rgba(0,0,0,0.7);
+    }
+
+    /* 本の装飾（背表紙） */
+    .guest-book::before {
+      content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px;
+      border-left: 1px dashed #c0a080;
+    }
+    
+    .book-title {
+      text-align: center; font-family: 'Zen Kurenaido', sans-serif; 
+      font-weight: 900; font-size: 20px; color: var(--pri); margin-bottom: 30px;
+      border-bottom: 2px double #c0a080; padding-bottom: 10px; display: inline-block;
+      width: 100%; letter-spacing: 0.1em;
+    }
+    body[data-mode="bar"] .book-title { color: #eaddcf; border-bottom-color: #555; }
+
+    /* 入力フォーム（下線スタイル） */
+    .form-group { margin-bottom: 24px; position: relative; }
+    .form-label {
+      font-size: 13px; color: var(--sec); font-family: 'Zen Kurenaido', sans-serif;
+      margin-bottom: 4px; display: block;
+    }
+    body[data-mode="bar"] .form-label { color: #b5a695; }
+
+    input {
+      width: 100%; border: none; border-bottom: 1px solid #ccc;
+      background: transparent; padding: 8px 0; font-size: 16px;
+      font-family: "Shippori Mincho", serif; color: #333;
+      border-radius: 0; outline: none; transition: 0.3s;
+    }
+    body[data-mode="bar"] input { color: #fff; border-bottom-color: #555; }
+    
+    input:focus { border-bottom: 1px solid var(--pri); }
+    body[data-mode="bar"] input:focus { border-bottom-color: #eaddcf; }
+    
+    input::placeholder { color: #ccc; font-size: 14px; }
+    body[data-mode="bar"] input::placeholder { color: #555; }
+
+    /* 入店ボタン */
+    .btn-enter {
+      width: 100%; padding: 14px; margin-top: 20px;
+      background: var(--pri); color: #fff; border: none; border-radius: 4px;
+      font-family: 'Zen Kurenaido', sans-serif; font-size: 16px; font-weight: bold;
+      letter-spacing: 0.2em; cursor: pointer; transition: 0.3s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-enter:hover { background: #6b4e40; transform: translateY(-1px); }
+    .btn-enter:active { transform: translateY(1px); box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+    body[data-mode="bar"] .btn-enter { background: #8b3a3a; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+
+    .note { font-size: 11px; color: #999; margin-top: 20px; text-align: center; line-height: 1.6; }
+    
+    /* ステータスオーバーレイ */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+      display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(4px);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .overlay.active { opacity: 1; }
+    .status-msg {
+      color: #fff; font-family: 'Zen Kurenaido', sans-serif; font-size: 18px; text-align: center;
+      background: rgba(0,0,0,0.7); padding: 20px 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="day-bg"></div>
+  <div class="night-bg"></div>
+
+  <div class="signboard">Sereness Cafe & Bar</div>
+
+  <div class="guest-book">
+    <div class="book-title">Guest List</div>
+    <div id="msg" style="display:none; color:#a63737; font-size:13px; text-align:center; margin-bottom:15px;"></div>
+
+    <form id="formLogin">
+      <div class="form-group">
+        <label class="form-label">Member ID</label>
+        <input id="memberId" required placeholder="会員証のID (例: SRN1001)" />
+      </div>
+
+      <div class="form-group" style="display:flex; gap:15px;">
+        <div style="flex:2;">
+          <label class="form-label">Name</label>
+          <input id="name" required placeholder="お名前" />
+        </div>
+        <div style="flex:1;">
+          <label class="form-label">Age</label>
+          <input id="age" type="number" min="18" max="99" required placeholder="年齢" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input id="phone" required inputmode="tel" placeholder="電話番号" />
+      </div>
+
+      <button class="btn-enter" type="submit">入店する</button>
+
+      <div class="note">
+        ※こちらは会員様専用の入り口です。<br>
+        ※初回の方は面談後の承認が必要です。
+      </div>
+    </form>
+  </div>
+
+  <div id="loginOverlay" class="overlay">
+    <div class="status-msg" id="statusText">確認中...</div>
+  </div>
+
+<script>
+/* ============== 重要設定 ============== */
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec"; 
+/* ===================================== */
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  
+  /* 昼夜切り替え */
+  function isNightNow(){ const h = new Date().getHours(); return (h >= 18 || h < 6); }
+  function applyDayNight(){ 
+    if(isNightNow()) document.body.setAttribute("data-mode", "bar");
+    else document.body.removeAttribute("data-mode");
   }
+  applyDayNight(); setInterval(applyDayNight, 60000);
+
+  /* ドアベル音 */
+  function playDoorBell() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const t = ctx.currentTime;
+        const osc1 = ctx.createOscillator(); const g1 = ctx.createGain();
+        const osc2 = ctx.createOscillator(); const g2 = ctx.createGain();
+        const osc3 = ctx.createOscillator(); const g3 = ctx.createGain();
+        
+        // カラン...
+        osc1.frequency.setValueAtTime(1200, t);
+        g1.gain.setValueAtTime(0.1, t); g1.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+        osc1.connect(g1); g1.connect(ctx.destination); osc1.start(t); osc1.stop(t+1.5);
+
+        // コロン...
+        osc2.frequency.setValueAtTime(1600, t+0.15);
+        g2.gain.setValueAtTime(0.1, t+0.15); g2.gain.exponentialRampToValueAtTime(0.001, t + 1.6);
+        osc2.connect(g2); g2.connect(ctx.destination); osc2.start(t+0.15); osc2.stop(t+1.6);
+        
+        // カラン...
+        osc3.frequency.setValueAtTime(1400, t+0.3);
+        g3.gain.setValueAtTime(0.1, t+0.3); g3.gain.exponentialRampToValueAtTime(0.001, t + 1.8);
+        osc3.connect(g3); g3.connect(ctx.destination); osc3.start(t+0.3); osc3.stop(t+1.8);
+    } catch(e){}
+  }
+
+  const form = document.getElementById("formLogin");
+  const overlay = document.getElementById("loginOverlay");
+  const statusText = document.getElementById("statusText");
+
+  function showStatus(msg) {
+    statusText.textContent = msg;
+    overlay.style.display = "flex";
+    setTimeout(()=>overlay.classList.add("active"), 10);
+  }
+  function hideStatus() {
+    overlay.classList.remove("active");
+    setTimeout(()=>overlay.style.display = "none", 300);
+  }
+
+  overlay.addEventListener("click", hideStatus);
+
+  async function gasLogin(memberId, name, age, phone) {
+    if(!GAS_API_URL) return null;
+    const url = new URL(GAS_API_URL);
+    url.searchParams.append("action", "login");
+    url.searchParams.append("memberId", memberId);
+    url.searchParams.append("name", name);
+    url.searchParams.append("age", age);
+    url.searchParams.append("phone", phone);
+    const res = await fetch(url.toString());
+    return await res.json();
+  }
+
+  async function gasGetProfile(memberId) {
+    const url = new URL(GAS_API_URL);
+    url.searchParams.append("action", "get_profile");
+    url.searchParams.append("targetId", memberId);
+    try {
+      const res = await fetch(url.toString());
+      return await res.json();
+    } catch(e) { return null; }
+  }
+
+  form.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+
+    const memberId = document.getElementById("memberId").value.trim();
+    const name     = document.getElementById("name").value.trim();
+    const age      = document.getElementById("age").value.trim();
+    const phone    = document.getElementById("phone").value.trim();
+
+    if(!memberId || !name || !age || !phone) return;
+
+    showStatus("予約リストを確認中...");
+
+    try{
+      const res = await gasLogin(memberId, name, age, phone);
+
+      if(!res){
+        showStatus("通信エラーが発生しました");
+        return;
+      }
+
+      if(res.ok){
+        showStatus("ようこそ、お待ちしておりました。");
+        playDoorBell(); // ★入店音
+
+        const profRes = await gasGetProfile(memberId);
+        
+        localStorage.setItem("ma_member_session", JSON.stringify({
+          memberId: memberId,
+          name: name,
+          loginAt: new Date().toISOString()
+        }));
+
+        const pKey = "ma_profile_by_memberId";
+        let allProfiles = {};
+        try { allProfiles = JSON.parse(localStorage.getItem(pKey)) || {}; } catch(e) {}
+
+        if (profRes && profRes.ok && profRes.profile) {
+          allProfiles[memberId] = { ...profRes.profile, lastLoginAt: new Date().toISOString() };
+        } else {
+          allProfiles[memberId] = {
+            memberId: memberId, nickname: name, gender: "", area: "", bio: "（未設定）", hobbies: "", wants: "",
+            profilePublic: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+          };
+        }
+        localStorage.setItem(pKey, JSON.stringify(allProfiles));
+
+        setTimeout(() => {
+          location.href = "member.html";
+        }, 1500); // 音を聞かせるため少し待つ
+
+      } else {
+        let errMsg = "お名前が見つかりませんでした。";
+        switch(res.error){
+          case "not_found": errMsg = `ID「${memberId}」のご予約はありません。`; break;
+          case "not_approved": errMsg = "まだ入店許可が下りていません。"; break;
+          case "invalid_credentials": errMsg = "ご予約情報と一致しませんでした。"; break;
+        }
+        showStatus(errMsg);
+      }
+
+    }catch(err){
+      console.error(err);
+      showStatus("サーバーと通信できませんでした。");
+    }
+  });
 });
-  </script>
-</main>
+</script>
+
 </body>
 </html>
