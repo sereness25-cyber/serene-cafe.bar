@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>規約・ポリシー｜セレネスCafe&Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&family=Dancing+Script:wght@600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  
+  <style>
+    :root {
+      --pri: #5a3e32;
+      --sec: #c97b63;
+      --paper-light: #fffdf8;
+      --paper-dark: #2a2a2a;
+    }
+
+    html, body {
+      margin: 0; padding: 0; background: transparent; font-family: "Shippori Mincho", serif;
+      overflow-y: auto !important; height: auto !important; min-height: 100vh;
+      color: #333; transition: color 0.3s, background 0.3s;
+    }
+
+    /* カフェテーブル背景 */
+    .day-bg, .night-bg { position: fixed; inset: 0; z-index: -2; pointer-events: none; background-size: cover; background-position: center; }
+    .day-bg { background-color: #ab7f5a; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 2px, transparent 2px, transparent 60px); }
+    .night-bg { display: none; background-color: #2b1d16; background-image: radial-gradient(circle at 50% 100%, rgba(200,150,100,0.1), transparent 70%); }
+    body[data-mode="bar"] .day-bg { display: none; }
+    body[data-mode="bar"] .night-bg { display: block; }
+
+    /* テーブルの小物（ドリンク） */
+    .table-item { position: fixed; bottom: -10px; right: -10px; z-index: -1; pointer-events: none; opacity: 0.9; transition: transform 0.3s; }
+    .drink-emoji { font-size: 120px; filter: drop-shadow(5px 15px 10px rgba(0,0,0,0.4)); }
+    .drink-emoji::before { content: '☕️'; }
+    body[data-mode="bar"] .table-item { opacity: 0.7; }
+    body[data-mode="bar"] .drink-emoji { filter: drop-shadow(5px 15px 10px rgba(0,0,0,0.8)); }
+    body[data-mode="bar"] .drink-emoji::before { content: '🍸'; }
+
+    /* 湯気アニメーション */
+    .steam-svg {
+      position: absolute; top: -20px; left: 35px; width: 60px; height: 60px;
+      fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 2; stroke-linecap: round; filter: blur(2px);
+      transition: opacity 10s ease;
+    }
+    body[data-mode="bar"] .steam-svg { display: none; }
+    .steam-svg path { animation: steamAnim 3s infinite alternate ease-in-out; }
+    .steam-svg path:nth-child(2) { animation-delay: -1s; }
+    .steam-svg path:nth-child(3) { animation-delay: -2s; }
+    @keyframes steamAnim {
+      0% { transform: translateY(0) translateX(0); opacity: 0.2; }
+      100% { transform: translateY(-15px) translateX(8px); opacity: 0.8; }
+    }
+
+    /* 夜モード設定 */
+    body[data-mode="bar"] { color: #eaddcf; }
+    body[data-mode="bar"] .paper-card { background: #dcd1c4; border-color: #b5a695; color: #333; box-shadow: 2px 6px 15px rgba(0,0,0,0.5); }
+    body[data-mode="bar"] .brand { color: #eaddcf !important; }
+    body[data-mode="bar"] h2 { border-bottom-color: #8b5a4a !important; color: #5a3e32 !important; }
+    body[data-mode="bar"] h3 { color: #5a3e32 !important; }
+
+    /* ヘッダー (固定表示) */
+    header { 
+      background: rgba(255, 250, 246, 0.95) !important; 
+      backdrop-filter: blur(10px); 
+      border-bottom: 1px solid rgba(0,0,0,0.1); 
+      position: fixed; 
+      top: 0; left: 0; width: 100%; box-sizing: border-box;
+      z-index: 1000; 
+      height: 60px; 
+      display: flex; align-items: center; padding: 0 16px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    }
+    body[data-mode="bar"] header { background: rgba(20, 20, 20, 0.9) !important; border-bottom-color: rgba(255,255,255,0.1); }
+    
+    .wrap { width: 100%; max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* おしゃれな店名ロゴ */
+    .brand { 
+      font-family: 'Dancing Script', cursive; font-size: 24px; 
+      color: var(--pri) !important; letter-spacing: 0.15em; font-weight: 600;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    }
+    
+    .navRight { display: flex; gap: 10px; align-items: center; }
+
+    /* チケット風ボタン */
+    .btn.ghost { 
+      border: 1px solid var(--pri); background: transparent; color: var(--pri); 
+      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
+      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); transition: 0.3s; position: relative;
+    }
+    .btn.ghost::before, .btn.ghost::after {
+      content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
+      background: rgba(255, 250, 246, 0.95); 
+      border-radius: 50%; transform: translateY(-50%);
+      border: 1px solid var(--pri);
+    }
+    .btn.ghost::before { left: -4px; border-right-color: transparent; }
+    .btn.ghost::after { right: -4px; border-left-color: transparent; }
+    
+    body[data-mode="bar"] .btn.ghost { border-color: #eaddcf; color: #eaddcf; }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { 
+        background: rgba(20, 20, 20, 0.9); 
+        border-color: #eaddcf; 
+    }
+
+    /* コンテンツレイアウト */
+    .container { 
+      max-width: 800px; margin: 0 auto; 
+      padding: 90px 16px 120px; 
+    }
+
+    /* 契約書・メニュー風カード */
+    .paper-card {
+      background: #fdf6e3; border: 1px solid #e0d0c0; border-radius: 4px;
+      box-shadow: 2px 4px 15px rgba(0,0,0,0.1); padding: 40px 30px;
+      margin-bottom: 24px; position: relative;
+    }
+    
+    /* 画鋲 */
+    .pin {
+      position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 14px; height: 14px; border-radius: 50%;
+      background: #8b7355; box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3), 1px 2px 3px rgba(0,0,0,0.4); z-index: 10;
+    }
+    .pin::after { content: ''; position: absolute; top: 8px; left: 6px; width: 2px; height: 8px; background: rgba(0,0,0,0.2); transform: rotate(30deg); }
+
+    /* タブナビゲーション */
+    .tab-nav { display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px dashed #c0a080; padding-bottom: 8px; justify-content: center; flex-wrap: wrap; }
+    .tab-btn { 
+      padding: 8px 12px; font-weight: bold; cursor: pointer; color: #888; 
+      border-bottom: 2px solid transparent; transition: all 0.3s; 
+      font-family: 'Zen Kurenaido', sans-serif; font-size: 14px;
+    }
+    .tab-btn:hover { color: var(--pri); }
+    .tab-btn.active { color: var(--pri); border-bottom: 2px double var(--pri); transform: translateY(-2px); }
+
+    /* 規約本文のデザイン */
+    .legal-content { line-height: 1.9; color: #4a3324; font-size: 14px; text-align: justify; }
+    .legal-content h2 { 
+      font-size: 20px; margin-top: 10px; margin-bottom: 24px; padding-bottom: 10px; 
+      border-bottom: 1px solid var(--sec); color: var(--pri); text-align: center;
+      font-family: 'Zen Kurenaido', sans-serif; letter-spacing: 0.1em;
+    }
+    .legal-content h3 { 
+      font-size: 15px; margin-top: 32px; margin-bottom: 12px; font-weight: bold; 
+      color: var(--pri); font-family: 'Zen Kurenaido', sans-serif; 
+      border-left: 4px solid #e0d0c0; padding-left: 10px;
+    }
+    .legal-content p { margin-bottom: 16px; }
+    .legal-content ol { padding-left: 1.5em; margin-bottom: 20px; }
+    .legal-content li { margin-bottom: 8px; }
+
+    /* 特商法テーブル */
+    .tokusho-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+    .tokusho-table th, .tokusho-table td { border-bottom: 1px dotted #c0a080; padding: 12px 8px; text-align: left; vertical-align: top; }
+    .tokusho-table th { width: 30%; color: var(--pri); font-weight: 900; background: rgba(161, 136, 127, 0.1); border-radius: 4px; }
+    
+    body[data-mode="bar"] .tokusho-table th, body[data-mode="bar"] .tokusho-table td { border-bottom-color: #555; }
+    body[data-mode="bar"] .tokusho-table th { color: #5a3e32; background: rgba(0,0,0,0.05); }
+
+  </style>
+</head>
+<body>
+
+  <div class="day-bg"></div>
+  <div class="night-bg"></div>
+
+  <div class="table-item">
+     <div class="drink-emoji"></div>
+     <svg class="steam-svg" viewBox="0 0 24 24">
+       <path d="M6 24 C 6 15, 10 12, 8 4" />
+       <path d="M12 24 C 12 15, 16 12, 14 4" />
+       <path d="M18 24 C 18 15, 22 12, 20 4" />
+     </svg>
+  </div>
+
+  <header>
+    <div class="wrap">
+      <div class="brand">Sereness Legal</div>
+      <nav class="navRight">
+        <a class="btn ghost" href="member.html">指定席に戻る</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="paper-card">
+      <div class="pin"></div>
+      
+      <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchTab('terms')">利用規約</div>
+        <div class="tab-btn" onclick="switchTab('privacy')">プライバシーポリシー</div>
+        <div class="tab-btn" onclick="switchTab('tokusho')">特定商取引法に基づく表記</div>
+      </div>
+
+      <div id="terms" class="legal-content">
+        <h2>利用規約</h2>
+        <p>この利用規約（以下「本規約」といいます。）は、「セレネスCafe＆Bar」（以下「当サービス」といいます。）の提供条件及び当サービスと登録ユーザーの皆様との間の権利義務関係を定めるものです。</p>
+
+        <h3>第1条（適用）</h3>
+        <ol>
+          <li>本規約は、本サービスの提供条件及び本サービスの利用に関する当サービス運営者（以下「運営」といいます。）と登録ユーザーとの間の権利義務関係を定めることを目的とし、登録ユーザーと運営との間の本サービスの利用に関わる一切の関係に適用されます。</li>
+          <li>運営が当サービス上で掲載するルール、ガイドライン、諸規定等は、本規約の一部を構成するものとします。</li>
+        </ol>
+
+        <h3>第2条（定義）</h3>
+        <p>本規約において使用する用語は、各々以下に定める意味を有するものとします。</p>
+        <ol>
+          <li>「サービス利用契約」とは、本規約を契約条件として運営と登録ユーザーの間で締結される、本サービスの利用契約を意味します。</li>
+          <li>「登録ユーザー」とは、第3条に基づいて本サービスの利用者としての登録がなされた個人を意味します。</li>
+        </ol>
+
+        <h3>第3条（登録・利用資格）</h3>
+        <ol>
+          <li>本サービスの利用を希望する者は、本規約を遵守することに同意し、かつ運営の定める一定の情報（以下「登録事項」といいます。）を当社の定める方法で提供することにより、本サービスの利用登録を申請することができます。</li>
+          <li>次に掲げる事由のいずれかに該当する方は、登録及び利用を行うことができません。
+            <ol>
+              <li>満18歳未満の方、または高校生の方</li>
+              <li>既婚者の方（内縁関係、同棲中など、事実婚を含む）</li>
+              <li>成年被後見人、被保佐人または被補助人のいずれかであり、法定代理人、後見人、保佐人または補助人の同意等を得ていない方</li>
+              <li>反社会的勢力等（暴力団、暴力団員、右翼団体、反社会的勢力、その他これに準ずる者を意味します。）である、または資金提供その他を通じて反社会的勢力等の維持、運営に協力もしくは関与する等、反社会的勢力等との何らかの交流もしくは関与を行っていると運営が判断した場合</li>
+              <li>過去に運営との契約に違反した者またはその関係者であると運営が判断した場合</li>
+            </ol>
+          </li>
+        </ol>
+
+        <h3>第4条（ユーザーID及びパスワードの管理）</h3>
+        <ol>
+          <li>登録ユーザーは、自己の責任において、本サービスに関するユーザーID（会員ID）及びパスワード等を適切に管理及び保管するものとします。</li>
+          <li>これを第三者に利用させ、または貸与、譲渡、名義変更、売買等をしてはならないものとします。</li>
+          <li>パスワードまたはユーザーIDの管理不十分、使用上の過誤、第三者の使用等によって生じた損害に関する責任は登録ユーザーが負うものとします。</li>
+        </ol>
+
+        <h3>第5条（禁止事項）</h3>
+        <p>登録ユーザーは、本サービスの利用にあたり、以下の各号のいずれかに該当する行為または該当すると運営が判断する行為をしてはなりません。</p>
+        <ol>
+          <li>法令に違反する行為または犯罪行為に関連する行為</li>
+          <li>運営、本サービスの他の利用者またはその他の第三者に対する詐欺または脅迫行為</li>
+          <li>公序良俗に反する行為</li>
+          <li>運営、本サービスの他の利用者またはその他の第三者の知的財産権、肖像権、プライバシーの権利、名誉、その他の権利または利益を侵害する行為</li>
+          <li>本サービスを通じ、以下に該当する情報を送信すること
+            <ol>
+              <li>過度に暴力的または残虐な表現を含む情報</li>
+              <li>コンピューター・ウィルスその他の有害なコンピューター・プログラムを含む情報</li>
+              <li>運営、本サービスの他の利用者またはその他の第三者の名誉または信用を毀損する表現を含む情報</li>
+              <li>過度にわいせつな表現を含む情報</li>
+              <li>差別を助長する表現を含む情報</li>
+              <li>自殺、自傷行為を助長する表現を含む情報</li>
+              <li>薬物の不適切な利用を助長する表現を含む情報</li>
+              <li>反社会的な勢力への情報の提供</li>
+              <li>他人に不快感を与える表現を含む情報</li>
+            </ol>
+          </li>
+          <li>本サービスのネットワークまたはシステム等に過度な負荷をかける行為</li>
+          <li>本サービスの運営を妨害するおそれのある行為</li>
+          <li>当サービスのネットワークまたはシステム等に不正にアクセスし、または不正なアクセスを試みる行為</li>
+          <li>第三者に成りすます行為</li>
+          <li>本サービスの他の利用者のIDまたはパスワードを利用する行為</li>
+          <li>本サービス上で、宣伝、広告、勧誘、または営業行為を行うこと（運営が事前に許諾したものを除きます。）</li>
+          <li>本サービスの他の利用者の情報の収集</li>
+          <li>本サービスに関連して、反社会的勢力等に直接・間接に利益を提供する行為</li>
+          <li>前各号の行為を直接または間接に惹起し、または容易にする行為</li>
+          <li>その他、運営が不適切と判断する行為</li>
+        </ol>
+
+        <h3>第6条（本サービスの停止等）</h3>
+        <p>運営は、以下のいずれかに該当する場合には、登録ユーザーに事前に通知することなく、本サービスの全部または一部の提供を停止または中断することができるものとします。</p>
+        <ol>
+          <li>本サービスに係るコンピューター・システムの点検または保守作業を緊急に行う場合</li>
+          <li>コンピューター、通信回線等の障害、誤操作、過度なアクセスの集中、不正アクセス、ハッキング等により本サービスの運営ができなくなった場合</li>
+          <li>地震、落雷、火災、風水害、停電、天災地変などの不可抗力により本サービスの運営ができなくなった場合</li>
+          <li>その他、運営が停止または中断を必要と判断した場合</li>
+        </ol>
+
+        <h3>第7条（権利帰属）</h3>
+        <p>本サービスに関する知的財産権は全て運営または運営にライセンスを許諾している者に帰属しており、本規約に基づく本サービスの利用許諾は、本サービスに関する運営または運営にライセンスを許諾している者の知的財産権の使用許諾を意味するものではありません。</p>
+
+        <h3>第8条（登録抹消等）</h3>
+        <p>運営は、登録ユーザーが以下の各号のいずれかに該当する場合、事前に通知または催告することなく、投稿データを削除し、当該登録ユーザーについて本サービスの利用を一時的に停止し、または登録ユーザーとしての登録を抹消することができます。</p>
+        <ol>
+          <li>本規約のいずれかの条項に違反した場合</li>
+          <li>登録事項に虚偽の事実があることが判明した場合</li>
+          <li>支払停止もしくは支払不能となり、または破産手続開始、民事再生手続開始、会社更生手続開始、特別清算開始若しくはこれらに類する手続の開始の申立てがあった場合</li>
+          <li>6ヶ月以上本サービスの利用がない場合</li>
+          <li>運営からの問い合せその他の回答を求める連絡に対して30日間以上応答がない場合</li>
+          <li>第3条第2項各号に該当する場合</li>
+          <li>その他、運営が本サービスの利用、登録ユーザーとしての登録の継続を適当でないと判断した場合</li>
+        </ol>
+
+        <h3>第9条（退会）</h3>
+        <ol>
+          <li>登録ユーザーは、運営所定の手続きの完了により、本サービスから退会し、自己の登録ユーザーとしての登録を抹消することができます。</li>
+          <li>退会にあたり、運営に対して負っている債務がある場合は、登録ユーザーは、運営に対して負っている債務の一切について当然に期限の利益を失い、直ちに運営に対して全ての債務の支払を行わなければなりません。</li>
+        </ol>
+
+        <h3>第10条（違約金）</h3>
+        <ol>
+          <li>登録ユーザーが、既婚者であるにもかかわらず独身と偽って登録した場合、または年齢、性別その他の登録事項について故意に虚偽の情報を登録したことが発覚した場合、当該ユーザーは運営に対し、違約金として金15万円を直ちに支払うものとします。</li>
+          <li>前項の規定は、運営が当該ユーザーに対し、違約金の額を超える損害（対応に要した費用、弁護士費用、信用の毀損を含みますがこれらに限りません）の賠償を請求することを妨げるものではありません。</li>
+        </ol>
+
+        <h3>第11条（保証の否認及び免責）</h3>
+        <ol>
+          <li>運営は、本サービスが登録ユーザーの特定の目的に適合すること、期待する機能・商品的価値・正確性・有用性を有すること、登録ユーザーによる本サービスの利用が登録ユーザーに適用のある法令または業界団体の内部規則等に適合すること、継続的に利用できること、及び不具合が生じないことについて、明示又は黙示を問わず何ら保証するものではありません。</li>
+          <li>運営は、本サービスに関して登録ユーザーが被った損害につき、過去6ヶ月間に登録ユーザーが運営に支払った対価の金額を超えて賠償する責任を負わないものとし、また、付随的損害、間接損害、特別損害、将来の損害及び逸失利益にかかる損害については、賠償する責任を負わないものとします。</li>
+          <li>本サービスまたは当サービスウェブサイトに関連して登録ユーザーと他の登録ユーザーまたは第三者との間において生じた取引、連絡、紛争等については、登録ユーザーが自己の責任によって解決するものとし、運営は一切の責任を負いません。</li>
+        </ol>
+
+        <h3>第12条（利用者情報の取扱い）</h3>
+        <p>運営による登録ユーザーの利用者情報の取扱いについては、別途「プライバシーポリシー」の定めによるものとし、登録ユーザーはこのプライバシーポリシーに従って運営が登録ユーザーの利用者情報を取扱うことについて同意するものとします。</p>
+
+        <h3>第13条（本規約等の変更）</h3>
+        <p>運営は、運営が必要と認めた場合は、本規約を変更できるものとします。本規約を変更する場合、変更後の本規約の施行時期及び内容を当サービスウェブサイト上での掲示その他の適切な方法により周知し、または登録ユーザーに通知します。</p>
+
+        <h3>第14条（準拠法及び管轄裁判所）</h3>
+        <ol>
+          <li>本規約の準拠法は日本法とします。</li>
+          <li>本規約に起因し、または関連する一切の紛争については、東京地方裁判所を第一審の専属的合意管轄裁判所とします。</li>
+        </ol>
+      </div>
+
+      <div id="privacy" class="legal-content" style="display:none">
+        <h2>プライバシーポリシー</h2>
+        <p>「セレネスCafe＆Bar」（以下「当サービス」といいます。）は、本ウェブサイト上で提供するサービス（以下「本サービス」といいます。）における、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」といいます。）を定めます。</p>
+
+        <h3>第1条（個人情報）</h3>
+        <p>「個人情報」とは、個人情報保護法にいう「個人情報」を指すものとし、生存する個人に関する情報であって、当該情報に含まれる氏名、生年月日、住所、電話番号、連絡先その他の記述等により特定の個人を識別できる情報及び容貌、指紋、声紋にかかるデータ、及び健康保険証の保険者番号などの当該情報単体から特定の個人を識別できる情報（個人識別情報）を指します。</p>
+
+        <h3>第2条（個人情報の収集方法）</h3>
+        <p>当サービスは、ユーザーが利用登録をする際に氏名、生年月日、住所、電話番号、メールアドレス、銀行口座番号、クレジットカード番号、運転免許証番号などの個人情報をお尋ねすることがあります。</p>
+
+        <h3>第3条（個人情報を収集・利用する目的）</h3>
+        <p>当サービスが個人情報を収集・利用する目的は、以下のとおりです。</p>
+        <ol>
+          <li>当サービスの提供・運営のため</li>
+          <li>ユーザーからのお問い合わせに回答するため（本人確認を行うことを含む）</li>
+          <li>ユーザーが利用中のサービスの新機能、更新情報、キャンペーン等及び当サービスが提供する他のサービスの案内のメールを送付するため</li>
+          <li>メンテナンス、重要なお知らせなど必要に応じたご連絡のため</li>
+          <li>利用規約に違反したユーザーや、不正・不当な目的でサービスを利用しようとするユーザーの特定をし、ご利用をお断りするため</li>
+          <li>ユーザーにご自身の登録情報の閲覧や変更、削除、ご利用状況の閲覧を行っていただくため</li>
+          <li>有料サービスにおいて、ユーザーに利用料金を請求するため</li>
+          <li>上記の利用目的に付随する目的</li>
+        </ol>
+
+        <h3>第4条（利用目的の変更）</h3>
+        <ol>
+          <li>当サービスは、利用目的が変更前と関連性を有すると合理的に認められる場合に限り、個人情報の利用目的を変更するものとします。</li>
+          <li>利用目的の変更を行った場合には、変更後の目的について、当サービス所定の方法により、ユーザーに通知し、または本ウェブサイト上に公表するものとします。</li>
+        </ol>
+
+        <h3>第5条（個人情報の第三者提供）</h3>
+        <ol>
+          <li>当サービスは、次に掲げる場合を除いて、あらかじめユーザーの同意を得ることなく、第三者に個人情報を提供することはありません。ただし、個人情報保護法その他の法令で認められる場合を除きます。
+            <ol>
+              <li>人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき</li>
+              <li>公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合であって、本人の同意を得ることが困難であるとき</li>
+              <li>国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合であって、本人の同意を得ることにより当該事務の遂行に支障を及ぼすおそれがあるとき</li>
+            </ol>
+          </li>
+          <li>前項の定めにかかわらず、次に掲げる場合には、当該情報の提供先は第三者に該当しないものとします。
+            <ol>
+              <li>当サービスが利用目的の達成に必要な範囲内において個人情報の取扱いの全部または一部を委託する場合</li>
+              <li>合併その他の事由による事業の承継に伴って個人情報が提供される場合</li>
+            </ol>
+          </li>
+        </ol>
+
+        <h3>第6条（お問い合わせ窓口）</h3>
+        <p>本ポリシーに関するお問い合わせは、会員ページの「お問い合わせ」より公式LINEまたは運営までご連絡ください。</p>
+      </div>
+
+      <div id="tokusho" class="legal-content" style="display:none">
+        <h2>特定商取引法に基づく表記</h2>
+        <table class="tokusho-table">
+          <tr>
+            <th>販売事業者</th>
+            <td>再婚活相談所セレネス</td>
+          </tr>
+          <tr>
+            <th>運営統括責任者</th>
+            <td>竹内　圭</td>
+          </tr>
+          <tr>
+            <th>所在地</th>
+            <td>
+              消費者庁の定める特例に基づき、住所についてはその表示を省略しております。<br>
+              請求があり次第提供致します。
+            </td>
+          </tr>
+          <tr>
+            <th>電話番号</th>
+            <td>070-1147-9049<br><span style="font-size:11px; color:#888;">※お取引やサービスに関するお問い合わせは電話では受け付けておりません。公式LINEよりご連絡ください。</span></td>
+          </tr>
+          <tr>
+            <th>メールアドレス</th>
+            <td>sereness25@gmail.com</td>
+          </tr>
+          <tr>
+            <th>販売価格</th>
+            <td>各商品ページに記載（表示価格は消費税込み）</td>
+          </tr>
+          <tr>
+            <th>商品代金以外の必要料金</th>
+            <td>インターネット接続料金、通信料金（お客様負担）</td>
+          </tr>
+          <tr>
+            <th>お支払方法</th>
+            <td>クレジットカード決済</td>
+          </tr>
+          <tr>
+            <th>代金の支払時期</th>
+            <td>商品注文確定時にお支払いが確定します。</td>
+          </tr>
+          <tr>
+            <th>商品引渡し時期</th>
+            <td>決済完了後、即時（オンライン通話ルームのURL発行をもって引渡しとします）</td>
+          </tr>
+          <tr>
+            <th>返品・交換について</th>
+            <td>デジタルコンテンツの性質上、決済完了後の返品・キャンセル・返金はお受けできません。<br>ただし、当社のシステム不具合等によりサービスが利用できなかった場合は、この限りではありません。</td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      function isNightNow() { return (new Date().getHours() >= 18 || new Date().getHours() < 6); }
+      function applyDayNight() { 
+        if(isNightNow()) document.body.setAttribute("data-mode", "bar");
+        else document.body.removeAttribute("data-mode");
+      }
+      applyDayNight(); 
+      setInterval(applyDayNight, 60000);
+
+      try {
+          const s = JSON.parse(localStorage.getItem("ma_member_session"));
+          if(!s || !s.memberId) { 
+              // location.replace("login.html"); 
+              return; 
+          }
+      } catch(e){ 
+          // location.replace("login.html"); 
+          return; 
+      }
+    });
+
+    function switchTab(id){
+      const contents = document.querySelectorAll('.legal-content');
+      contents.forEach(el => el.style.display = 'none');
+
+      const target = document.getElementById(id);
+      if(target) target.style.display = 'block';
+      
+      const btns = document.querySelectorAll('.tab-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      window.scrollTo(0,0);
+    }
+  </script>
+</body>
+</html>
