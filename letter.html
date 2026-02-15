@@ -290,6 +290,7 @@
           <option value="rain">雨の音 - Rainy Days</option>
           <option value="fire">焚き火 - Fireplace</option>
           <option value="jazz">カフェジャズ - Cafe Jazz</option>
+          <option value="forest">森の音 - Morning Forest</option>
         </select>
         <p style="font-size:11px; color:#888; margin-top:4px;">※お相手が手紙を開いた時に、静かに流れます。</p>
       </div>
@@ -315,7 +316,7 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
     let myId = "";
-    let myName = ""; // 追加
+    let myName = "";
     let toId = "";
     let toName = "";
 
@@ -326,19 +327,16 @@
     };
 
     document.addEventListener("DOMContentLoaded", () => {
-      // 夜モード判定
       const h = new Date().getHours();
       if(h >= 18 || h < 6) document.body.setAttribute("data-mode", "bar");
 
-      // ログインチェック & 名前取得
       try {
         const sess = JSON.parse(localStorage.getItem("ma_member_session"));
         if(!sess || !sess.memberId) { alert("ログインが必要です"); location.href="login.html"; return; }
         myId = sess.memberId;
-        myName = sess.name || "匿名"; // セッションから名前を取得
+        myName = sess.name || "匿名";
       } catch(e) { location.href="login.html"; return; }
 
-      // URLパラメータ取得
       const urlParams = new URLSearchParams(window.location.search);
       toId = urlParams.get('to');
       toName = urlParams.get('name');
@@ -347,14 +345,12 @@
 
       document.getElementById("formToName").textContent = toName || "お相手";
 
-      // 本文プレビュー
       const bodyInput = document.getElementById("body");
       const previewText = document.getElementById("previewText");
       bodyInput.addEventListener("input", () => {
         previewText.textContent = bodyInput.value || "（ここに本文がプレビューされます）";
       });
 
-      // 切手選択
       const previewStampImg = document.getElementById('previewStampImg');
       document.querySelectorAll('input[name="stamp"]').forEach(radio => {
         radio.addEventListener('change', function() {
@@ -390,7 +386,6 @@
       try {
         const url = new URL(GAS_URL);
         url.searchParams.append("action", "send_letter");
-        // ★修正ポイント：GASに合わせてパラメータ名を変更 & 名前も送信
         url.searchParams.append("fromMemberId", myId);
         url.searchParams.append("fromName", myName);
         url.searchParams.append("toMemberId", toId);
@@ -403,13 +398,11 @@
         const json = await res.json();
         
         if(json.ok) {
-          // 送信アニメーション開始
           const card = document.getElementById('previewCard');
           card.classList.add('fly-away');
           
           btn.textContent = "ポストへ投函中...";
 
-          // アニメーション完了後に遷移
           setTimeout(() => {
              alert("手紙をポストに投函しました。\nお相手に届くまで、しばらくお待ちください。");
              location.href = "member.html";

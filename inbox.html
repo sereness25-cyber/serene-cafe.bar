@@ -503,6 +503,7 @@
       modal.style.display = "flex";
       setTimeout(() => modal.classList.add("active"), 10);
 
+      // ★ BGM再生
       playBgm(l.giftBgm);
     }
 
@@ -533,14 +534,29 @@
       closeReader();
     }
 
+    // ★ 修正: 英語のID (rain, fire, jazz, forest) と 日本語表記の両方に対応
     function playBgm(bgmName) {
       if(!bgmName) return;
       const p = document.getElementById("bgmPlayer");
       let src = "";
-      if(bgmName.includes("雨")) src = "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg";
-      else if(bgmName.includes("焚き火")) src = "https://actions.google.com/sounds/v1/ambiences/fireplace.ogg";
-      else if(bgmName.includes("ジャズ")) src = "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg";
-      if(src) { p.src = src; p.volume = 0.2; p.play().catch(()=>{}); }
+      
+      // 送信元(letter.html)のvalue値(rain, fire, jazz, forest)と、
+      // 以前のバージョンで保存された日本語名の両方をチェック
+      if(bgmName === "rain" || bgmName.includes("雨")) {
+          src = "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg";
+      } else if(bgmName === "fire" || bgmName.includes("焚き火")) {
+          src = "https://actions.google.com/sounds/v1/ambiences/fireplace.ogg";
+      } else if(bgmName === "jazz" || bgmName.includes("ジャズ")) {
+          src = "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg";
+      } else if(bgmName === "forest" || bgmName.includes("森")) {
+          src = "https://actions.google.com/sounds/v1/ambiences/forest_morning.ogg";
+      }
+      
+      if(src) { 
+          p.src = src; 
+          p.volume = 0.2; 
+          p.play().catch(e => console.log("Audio play failed:", e)); 
+      }
     }
     
     function stopBgm() { document.getElementById("bgmPlayer").pause(); }
