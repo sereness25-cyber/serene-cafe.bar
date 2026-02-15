@@ -298,9 +298,11 @@
     }
     @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
-    /* 退会セクションのデザイン (エモいカード風) */
+    /* 退会セクションのデザイン (修正：メールボックスのすぐ下に配置) */
     .exit-section {
-      margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.05);
+      margin-top: 10px; /* 余白を詰める */
+      padding-top: 0;   
+      border-top: none; /* 区切り線を消す */
       display: flex; justify-content: center;
     }
     body[data-mode="bar"] .exit-section { border-top-color: rgba(255,255,255,0.05); }
@@ -835,10 +837,10 @@
       const showName = (prof.nickname||"").trim() || memberId;
       const avatar = (prof.avatarDataUrl||"").trim() ? String(prof.avatarDataUrl) : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
       
-      // エリア情報の構築 (nullチェックを含む)
+      // ★修正: エリアは「県」のみ表示（市町村は隠す）
       const pref = prof.pref || "";
-      const city = prof.city || "";
-      let area = (pref + " " + city).trim();
+      // const city = prof.city || ""; // 削除
+      let area = pref.trim();
       if(area === "") area = "—";
 
       document.getElementById("info").innerHTML = 
@@ -848,7 +850,7 @@
         '<div class="infoGrid">' +
           '<div class="infoItem"><div class="infoLabel">お名前</div><div class="infoValue">'+escapeHtml(showName)+'</div></div>' +
           '<div class="infoItem"><div class="infoLabel">性別</div><div class="infoValue">'+escapeHtml(prof.gender||"—")+'</div></div>' +
-          '<div class="infoItem"><div class="infoLabel">エリア</div><div class="infoValue">'+escapeHtml(area)+'</div></div>' + // ★ここが確実にAreaになるよう修正
+          '<div class="infoItem"><div class="infoLabel">エリア</div><div class="infoValue">'+escapeHtml(area)+'</div></div>' + // ★県のみ表示
           '<div class="infoItem"><div class="infoLabel">タイプ</div><div class="infoValue">'+escapeHtml(parsed.type)+'</div></div>' +
         '</div>';
 
@@ -980,10 +982,10 @@
           letterBtnHtml = '<div style="margin-top:20px; text-align:center;"><button class="btnMini primary" style="width:100%; font-size:14px; padding:12px;" onclick="location.href=\'letter.html?to='+encodeURIComponent(prof.memberId)+'&name='+encodeURIComponent(prof.nickname || "匿名")+'\'">この人に手紙を綴る</button></div>';
       }
 
-      // ★ 修正: ポップアップのヘッダー下にもエリアを表示
+      // ★ 修正: ポップアップのヘッダー下にもエリアを表示（県のみ）
       const pref = prof.pref || "";
-      const city = prof.city || "";
-      let area = (pref + " " + city).trim();
+      // const city = prof.city || ""; // 削除
+      let area = pref.trim();
       if(area === "") area = "—";
 
       container.innerHTML = 

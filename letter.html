@@ -34,21 +34,17 @@
 
     html, body {
       margin: 0; padding: 0; font-family: "Shippori Mincho", serif; 
-      color: var(--pri); min-height: 100vh; overflow-x: hidden; /* アニメーション用 */
+      color: var(--pri); min-height: 100vh; overflow-x: hidden;
     }
     body[data-mode="bar"] { color: #eaddcf; }
 
-    /* ★スマホ最適化: ヘッダー */
+    /* ヘッダー */
     header { 
       position: fixed; top: 0; left: 0; width: 100%; 
-      height: 110px; /* 高さを確保 */
-      display: flex; align-items: flex-end; /* 下揃え */
-      justify-content: center;
+      height: 110px; display: flex; align-items: flex-end; justify-content: center;
       background: rgba(255, 250, 246, 0.95); backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(0,0,0,0.1); z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      padding-bottom: 25px; /* ボタンの位置を下げる */
-      box-sizing: border-box;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding-bottom: 25px; box-sizing: border-box;
     }
     body[data-mode="bar"] header { background: rgba(43, 43, 43, 0.95); border-bottom-color: rgba(255,255,255,0.1); }
     
@@ -56,49 +52,39 @@
     .brand { font-family: 'Dancing Script', cursive; font-size: 26px; color: var(--pri); font-weight: 700; }
     body[data-mode="bar"] .brand { color: #eaddcf; }
 
-    /* ★スマホ最適化: ボタン */
+    /* ボタン */
     .btn.ghost { 
       border: 1px solid var(--pri); background: transparent; color: var(--pri); 
-      padding: 10px 20px; /* タップしやすく */
-      border-radius: 4px; text-decoration: none; 
+      padding: 10px 20px; border-radius: 4px; text-decoration: none; 
       font-size: 13px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
       position: relative; transition: 0.3s;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
     }
     .btn.ghost:hover { background: rgba(62, 39, 35, 0.05); transform: translateY(-1px); }
 
-    /* チケットの穴 */
     .btn.ghost::before, .btn.ghost::after {
       content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
-      background: rgba(255, 250, 246, 1); /* ヘッダー背景色 */
-      border-radius: 50%; transform: translateY(-50%);
+      background: rgba(255, 250, 246, 1); border-radius: 50%; transform: translateY(-50%);
       border: 1px solid var(--pri);
     }
     .btn.ghost::before { left: -4px; border-right-color: transparent; }
     .btn.ghost::after { right: -4px; border-left-color: transparent; }
 
-    /* 夜モードのボタン */
     body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
     body[data-mode="bar"] .btn.ghost:hover { background: rgba(255,255,255,0.1); }
-    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after {
-      background: #2b2b2b; /* 夜ヘッダー色 */
-      border-color: #d7ccc8;
-    }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #2b2b2b; border-color: #d7ccc8; }
 
-    /* メインレイアウト（★スマホ最適化: margin-topを増やしてヘッダー被り防止） */
+    /* メインレイアウト */
     .container {
       max-width: 900px; margin: 130px auto 40px; padding: 20px;
       display: flex; flex-direction: column; gap: 30px;
     }
-    @media (min-width: 768px) {
-      .container { flex-direction: row; align-items: flex-start; }
-    }
+    @media (min-width: 768px) { .container { flex-direction: row; align-items: flex-start; } }
 
-    /* 入力フォーム側 */
+    /* エディタ */
     .editor-panel {
       flex: 1; background: rgba(255,255,255,0.9); padding: 30px;
-      border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      z-index: 10; /* アニメーションより手前に */
+      border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10;
     }
     body[data-mode="bar"] .editor-panel { background: rgba(40, 30, 25, 0.9); }
 
@@ -112,38 +98,37 @@
     textarea {
       width: 100%; height: 200px; padding: 15px; box-sizing: border-box;
       border: 1px solid #ccc; border-radius: 4px; font-family: "Shippori Mincho", serif;
-      font-size: 16px; line-height: 1.8; resize: vertical;
-      background: #fffcf9;
+      font-size: 16px; line-height: 1.8; resize: vertical; background: #fffcf9;
     }
     body[data-mode="bar"] textarea { background: #3e2723; color: #eaddcf; border-color: #5d4037; }
 
-    /* セレクトボックス（BGM用） */
-    select.stylish-select {
-      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;
-      font-family: "Shippori Mincho", serif; font-size: 14px;
-      background: rgba(255,255,255,0.8); cursor: pointer;
+    /* ファイルアップロードのデザイン */
+    .file-input-wrapper {
+      position: relative; width: 100%; border: 2px dashed #ccc; border-radius: 4px;
+      background: rgba(255,255,255,0.5); padding: 20px; text-align: center;
+      transition: 0.3s; cursor: pointer; color: #888;
     }
-    body[data-mode="bar"] select.stylish-select { background: #3e2723; color: #eaddcf; border-color: #5d4037; }
+    .file-input-wrapper:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.8); }
+    .file-input-wrapper input[type="file"] {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer;
+    }
+    .file-icon { font-size: 24px; margin-bottom: 8px; display: block; }
+    body[data-mode="bar"] .file-input-wrapper { background: rgba(0,0,0,0.2); border-color: #555; color: #aaa; }
+    body[data-mode="bar"] .file-input-wrapper:hover { border-color: #eaddcf; color: #eaddcf; }
 
-    /* 切手選択オプション */
-    .stamp-options {
-      display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
-    }
+    /* 切手選択 */
+    .stamp-options { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
     .stamp-option { cursor: pointer; position: relative; }
     .stamp-option input { display: none; } 
     .stamp-option img {
-      width: 60px; height: 70px; object-fit: cover;
-      border-radius: 3px; border: 2px solid transparent;
-      transition: all 0.3s;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      filter: grayscale(0.4) sepia(0.2);
+      width: 60px; height: 70px; object-fit: cover; border-radius: 3px; 
+      border: 2px solid transparent; transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); filter: grayscale(0.4) sepia(0.2);
     }
     .stamp-option input:checked + img {
-      border-color: var(--accent);
-      transform: scale(1.1) rotate(-2deg) translateY(-2px);
-      filter: grayscale(0) sepia(0);
-      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-      z-index: 2;
+      border-color: var(--accent); transform: scale(1.1) rotate(-2deg) translateY(-2px);
+      filter: grayscale(0) sepia(0); box-shadow: 0 5px 10px rgba(0,0,0,0.3); z-index: 2;
     }
     body[data-mode="bar"] .stamp-option input:checked + img { border-color: #c97b63; }
 
@@ -158,39 +143,31 @@
     body[data-mode="bar"] .btn-submit { background: #c97b63; }
     body[data-mode="bar"] .btn-submit:hover { background: #b06a53; }
 
-    /* プレビュー側 */
+    /* プレビュー */
     .letter-preview {
       flex: 1; display: flex; justify-content: center;
-      position: sticky; top: 130px; /* ★ヘッダー高さ分考慮 */
-      perspective: 1000px; /* 3Dアニメーション用 */
+      position: sticky; top: 130px; perspective: 1000px;
     }
     
     .card {
-      width: 90%; max-width: 400px; min-height: 500px;
-      background: #fffcf9;
+      width: 90%; max-width: 400px; min-height: 500px; background: #fffcf9;
       background-image: 
         linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px),
         url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjZmZmY2Y5Ij48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlYWQ1Y2UiPjwvcmVjdD4KPC9zdmc+');
       background-size: 40px 100%, 100% 40px, auto;
-      border: 1px solid #e0d0c0;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 10px 25px rgba(0,0,0,0.2);
-      position: relative;
-      padding: 60px 40px 40px;
-      transform: rotate(1deg);
-      transition: all 0.5s ease;
+      border: 1px solid #e0d0c0; box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 10px 25px rgba(0,0,0,0.2);
+      position: relative; padding: 60px 40px 40px;
+      transform: rotate(1deg); transition: all 0.5s ease;
     }
     body[data-mode="bar"] .card {
       background-color: #dcd1c4;
       background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
-      border-color: #b5a695;
-      box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 10px 30px rgba(0,0,0,0.5);
+      border-color: #b5a695; box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 10px 30px rgba(0,0,0,0.5);
     }
     
-    /* プレビュー内の切手 */
     .preview-stamp {
-      position: absolute; top: 25px; left: 25px;
-      width: 55px; height: 65px; object-fit: cover;
+      position: absolute; top: 25px; left: 25px; width: 55px; height: 65px; object-fit: cover;
       border-radius: 2px; box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
       transform: rotate(-3deg); z-index: 2; transition: all 0.5s ease-out;
     }
@@ -200,10 +177,9 @@
       to { opacity: 1; transform: rotate(-3deg) scale(1) translateY(0); }
     }
     
-    /* 封蝋 */
     .wax-seal {
-      position: absolute; bottom: 30px; right: 30px;
-      width: 40px; height: 40px; background: var(--accent); border-radius: 50%;
+      position: absolute; bottom: 30px; right: 30px; width: 40px; height: 40px; 
+      background: var(--accent); border-radius: 50%;
       box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 2px 4px 6px rgba(0,0,0,0.3);
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-family: 'Dancing Script', cursive; font-size: 20px;
@@ -212,34 +188,27 @@
     body[data-mode="bar"] .wax-seal { background: #c97b63; border-color: #b06a53; }
     .wax-seal::after { content: "S"; }
 
-    /* 本文プレビュー */
     .preview-text {
-      writing-mode: vertical-rl; text-orientation: mixed;
-      width: 100%; height: 400px;
-      font-size: 16px; line-height: 2.4; color: #4a3324;
-      white-space: pre-wrap; overflow-x: auto; overflow-y: hidden;
+      writing-mode: vertical-rl; text-orientation: mixed; width: 100%; height: 400px;
+      font-size: 16px; line-height: 2.4; color: #4a3324; white-space: pre-wrap; overflow-x: auto;
     }
     body[data-mode="bar"] .preview-text { color: #333; }
 
-    /* ★ 送信アニメーション（空へ飛んでいく） */
+    /* 同封写真のプレビュー */
+    .attached-photo-preview {
+      position: absolute; bottom: 80px; left: 40px;
+      width: 90px; height: 100px; background: #fff; padding: 5px 5px 15px 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: rotate(-5deg);
+      display: none; z-index: 5;
+    }
+    .attached-photo-preview img { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.4); }
+
     @keyframes flyAway {
-      0% { 
-        transform: translateY(0) rotate(1deg) scale(1); 
-        opacity: 1; 
-      }
-      40% { 
-        transform: translateY(30px) rotate(-5deg) scale(0.9); 
-        opacity: 1; 
-      }
-      100% { 
-        transform: translateY(-800px) translateX(100px) rotate(20deg) scale(0.6); 
-        opacity: 0; 
-      }
+      0% { transform: translateY(0) rotate(1deg) scale(1); opacity: 1; }
+      40% { transform: translateY(30px) rotate(-5deg) scale(0.9); opacity: 1; }
+      100% { transform: translateY(-800px) translateX(100px) rotate(20deg) scale(0.6); opacity: 0; }
     }
-    .fly-away {
-      animation: flyAway 1.8s ease-in-out forwards;
-      pointer-events: none; /* クリック無効化 */
-    }
+    .fly-away { animation: flyAway 1.8s ease-in-out forwards; pointer-events: none; }
 
   </style>
 </head>
@@ -271,6 +240,16 @@
       </div>
 
       <div class="form-group">
+        <label>写真を同封する（Gift）</label>
+        <div class="file-input-wrapper">
+          <span class="material-icons-outlined file-icon">photo_camera</span>
+          <span id="fileNameDisplay">ここをタップして写真を選択</span>
+          <input type="file" id="photoInput" accept="image/*" onchange="handleFileSelect(event)">
+        </div>
+        <p style="font-size:11px; color:#888; margin-top:4px;">※風景や日常の一コマなど。自動的にリサイズされます。</p>
+      </div>
+
+      <div class="form-group">
         <label>切手を選ぶ</label>
         <div class="stamp-options">
           <label class="stamp-option">
@@ -287,16 +266,6 @@
           </label>
         </div>
       </div>
-
-      <div class="form-group">
-        <label>同封BGMを添える</label>
-        <select id="bgmSelect" class="stylish-select">
-          <option value="">なし</option>
-          <option value="rain">雨の音 - Rainy Days</option>
-          <option value="jazz">カフェジャズ - Cafe Jazz</option>
-        </select>
-        <p style="font-size:11px; color:#888; margin-top:4px;">※お相手が手紙を開いた時に、静かに流れます。</p>
-      </div>
       
       <button class="btn-submit" onclick="sendLetter()">封をする（送信）</button>
       <p style="text-align:center; font-size:12px; color:#888; margin-top:15px;">
@@ -308,6 +277,9 @@
       <div class="card" id="previewCard">
         <img id="previewStampImg" class="preview-stamp" src="" alt="stamp">
         <div class="wax-seal"></div>
+        <div class="attached-photo-preview" id="photoPreview">
+          <img id="photoPreviewImg" src="">
+        </div>
         <div id="previewText" class="preview-text">
           （ここに本文がプレビューされます）
         </div>
@@ -322,6 +294,7 @@
     let myName = "";
     let toId = "";
     let toName = "";
+    let attachedImageData = ""; // アップロードされた画像を保持
 
     const stampImages = {
       rose: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2060%2070%22%3E%3Crect%20width%3D%2260%22%20height%3D%2270%22%20fill%3D%22%23f4ecd8%22%20stroke%3D%22%23dcc%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%223%202%22%2F%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23e0c0b0%22%2F%3E%3Cpath%20d%3D%22M30%2020c-5%205-10%200-10%2010s5%2015%2010%205c5%2010%2010%205%2010-5s-5-5-10-10z%22%20fill%3D%22%23a63737%22%2F%3E%3Ctext%20x%3D%2230%22%20y%3D%2265%22%20font-family%3D%22Dancing%20Script%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%235a3e32%22%3ESereness%20Post%3C%2Ftext%3E%3C%2Fsvg%3E',
@@ -373,31 +346,83 @@
       }
     });
 
+    // ★ 画像選択時の処理（圧縮してプレビュー）
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      document.getElementById("fileNameDisplay").textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // サイズ制限 (長辺500px)
+          const MAX_SIZE = 500;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // 圧縮してDataURL化
+          attachedImageData = canvas.toDataURL('image/jpeg', 0.7);
+          
+          // プレビュー表示
+          const previewBox = document.getElementById("photoPreview");
+          const previewImg = document.getElementById("photoPreviewImg");
+          previewImg.src = attachedImageData;
+          previewBox.style.display = "block";
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
     async function sendLetter() {
       const body = document.getElementById("body").value;
       if(!body.trim()) { alert("本文を入力してください"); return; }
       
       const selectedStampRadio = document.querySelector('input[name="stamp"]:checked');
       const stamp = selectedStampRadio ? selectedStampRadio.value : '';
-      const bgm = document.getElementById("bgmSelect").value;
 
       if(!confirm("この内容で手紙を送りますか？\n（送信後は取り消せません）")) return;
 
       const btn = document.querySelector('.btn-submit');
       btn.disabled = true; btn.textContent = "封をしています...";
 
-      try {
-        const url = new URL(GAS_URL);
-        url.searchParams.append("action", "send_letter");
-        url.searchParams.append("fromMemberId", myId);
-        url.searchParams.append("fromName", myName);
-        url.searchParams.append("toMemberId", toId);
-        url.searchParams.append("toName", toName);
-        url.searchParams.append("body", body);
-        url.searchParams.append("giftFlower", stamp);
-        url.searchParams.append("giftBgm", bgm); 
+      // ★ POST送信に変更（画像データが大きいため）
+      const params = new URLSearchParams();
+      params.append("action", "send_letter");
+      params.append("fromMemberId", myId);
+      params.append("fromName", myName);
+      params.append("toMemberId", toId);
+      params.append("toName", toName);
+      params.append("body", body);
+      params.append("giftFlower", stamp);
+      params.append("imageSrc", attachedImageData); // 画像データ
 
-        const res = await fetch(url.toString(), { redirect: "follow" });
+      try {
+        const res = await fetch(GAS_URL, { 
+            method: "POST",
+            body: params
+        });
         const json = await res.json();
         
         if(json.ok) {
