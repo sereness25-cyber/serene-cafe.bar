@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>手紙を綴る｜Sereness Cafe & Bar</title>
 
-<link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#5a3e32">
@@ -315,6 +315,7 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbx79zOLPWQ85wu_qS4uWAsDJKV8uWr35eLK21IaHd6jfe6XRS1Di-nCudb45t5eaEy-GA/exec";
     let myId = "";
+    let myName = ""; // 追加
     let toId = "";
     let toName = "";
 
@@ -329,11 +330,12 @@
       const h = new Date().getHours();
       if(h >= 18 || h < 6) document.body.setAttribute("data-mode", "bar");
 
-      // ログインチェック
+      // ログインチェック & 名前取得
       try {
         const sess = JSON.parse(localStorage.getItem("ma_member_session"));
         if(!sess || !sess.memberId) { alert("ログインが必要です"); location.href="login.html"; return; }
         myId = sess.memberId;
+        myName = sess.name || "匿名"; // セッションから名前を取得
       } catch(e) { location.href="login.html"; return; }
 
       // URLパラメータ取得
@@ -388,17 +390,20 @@
       try {
         const url = new URL(GAS_URL);
         url.searchParams.append("action", "send_letter");
-        url.searchParams.append("fromId", myId);
-        url.searchParams.append("toId", toId);
+        // ★修正ポイント：GASに合わせてパラメータ名を変更 & 名前も送信
+        url.searchParams.append("fromMemberId", myId);
+        url.searchParams.append("fromName", myName);
+        url.searchParams.append("toMemberId", toId);
+        url.searchParams.append("toName", toName);
         url.searchParams.append("body", body);
-        url.searchParams.append("stamp", stamp);
-        url.searchParams.append("bgm", bgm); 
+        url.searchParams.append("giftFlower", stamp);
+        url.searchParams.append("giftBgm", bgm); 
 
         const res = await fetch(url.toString(), { redirect: "follow" });
         const json = await res.json();
         
         if(json.ok) {
-          // ★ 送信アニメーション開始
+          // 送信アニメーション開始
           const card = document.getElementById('previewCard');
           card.classList.add('fly-away');
           
