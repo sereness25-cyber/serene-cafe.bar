@@ -266,16 +266,17 @@
     .btn-yes:active { transform: translateY(2px); }
     .btn-no { background: transparent; color: #888; text-decoration: underline; font-size: 12px; }
 
-    /* ★ 修正: ×ボタンのスタイルを調整 */
+    /* ★ 修正: ×ボタンのスタイルを調整（サイズUP & 最前面固定） */
     .close-btn {
       position: absolute; top: 10px; right: 10px;
-      width: 44px; height: 44px; /* スマホで押しやすいサイズ */
+      width: 50px; height: 50px; /* さらに大きく */
       border-radius: 50%; border: 1px solid #ccc;
-      background: rgba(255,255,255,0.8); 
+      background: rgba(255,255,255,0.9); /* 透過度を下げる */
       color: #888; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      z-index: 200; /* 最前面に */
-      font-size: 24px;
+      z-index: 9999; /* 確実に最前面に */
+      font-size: 28px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 影をつけて浮き上がらせる */
       touch-action: manipulation;
     }
 
@@ -540,7 +541,7 @@
       closeReader();
     }
 
-    // ★ 修正: 英語のID (rain, fire, jazz, forest) と 日本語表記の両方に対応
+    // ★ 修正: より確実な音源URLに変更
     function playBgm(bgmName) {
       if(!bgmName) return;
       const p = document.getElementById("bgmPlayer");
@@ -549,20 +550,25 @@
       // 送信元(letter.html)のvalue値(rain, fire, jazz, forest)と、
       // 以前のバージョンで保存された日本語名の両方をチェック
       if(bgmName === "rain" || bgmName.includes("雨")) {
-          src = "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg";
+          // 雨の音 (Pixabay Free Sound)
+          src = "https://cdn.pixabay.com/download/audio/2022/07/04/audio_3f7457782b.mp3";
       } else if(bgmName === "fire" || bgmName.includes("焚き火")) {
-          src = "https://actions.google.com/sounds/v1/ambiences/fireplace.ogg";
+          // 焚き火の音
+          src = "https://cdn.pixabay.com/download/audio/2021/08/09/audio_8ed59a5840.mp3";
       } else if(bgmName === "jazz" || bgmName.includes("ジャズ")) {
-          src = "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg";
+          // ジャズ
+          src = "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3";
       } else if(bgmName === "forest" || bgmName.includes("森")) {
-          // 森の音を追加
-          src = "https://actions.google.com/sounds/v1/ambiences/forest_morning.ogg";
+          // 森の音
+          src = "https://cdn.pixabay.com/download/audio/2021/09/06/audio_03d6e35552.mp3";
       }
       
       if(src) { 
           p.src = src; 
           p.volume = 0.2; 
-          p.play().catch(e => console.log("Audio play failed:", e)); 
+          // ユーザー操作直後のみ再生許可されるブラウザ仕様に対応するため、
+          // play()のエラーを握りつぶしつつ試行
+          p.play().catch(e => console.log("Audio play failed (browser restriction):", e)); 
       }
     }
     
