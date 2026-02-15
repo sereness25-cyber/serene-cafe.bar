@@ -26,7 +26,7 @@
       --wood-dark: #3e2723;
     }
 
-    /* 木目調の背景（カフェの壁やテーブル） */
+    /* 木目調の背景 */
     .wood-bg {
       position: fixed; inset: 0; z-index: -1;
       background-color: #8d6e63;
@@ -42,18 +42,26 @@
     }
     body[data-mode="bar"] { color: #eaddcf; }
 
-    /* ★ ヘッダー (デザイン統一) */
+    /* ★ヘッダー修正: 上部に50pxの余白を強制的に入れて、ボタンを下に押し下げる */
     header { 
-      position: absolute; top: 0; left: 0; width: 100%; height: 70px;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 20px; box-sizing: border-box; z-index: 10;
-      /* 背景を少し暗くしてチケットの穴を目立たせる */
-      background: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
+      position: absolute; top: 0; left: 0; width: 100%; 
+      height: 120px; /* 高さを十分に確保 */
+      display: flex; 
+      align-items: center; /* 垂直方向中央（paddingを除いたエリアでの中央） */
+      justify-content: center;
+      padding-top: 50px; /* ★ここでステータスバー分の余白を確保 */
+      padding-left: 20px; padding-right: 20px;
+      box-sizing: border-box; z-index: 10;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+      pointer-events: none; /* ヘッダーの背景部分はクリックを邪魔しない */
     }
     
-    .wrap { width: 100%; max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .wrap { 
+      width: 100%; max-width: 800px; margin: 0 auto; 
+      display: flex; justify-content: space-between; align-items: center;
+      pointer-events: auto; /* 中身のボタンはクリック可能にする */
+    }
 
-    /* おしゃれな店名ロゴ */
     .brand { 
       font-family: 'Dancing Script', cursive; font-size: 28px; 
       color: #fff; letter-spacing: 0.1em; font-weight: 700;
@@ -61,85 +69,64 @@
     }
     body[data-mode="bar"] .brand { color: #eaddcf; }
 
-    /* ★ チケット風ボタン (Inbox専用調整) */
+    /* ボタン */
     .btn.ghost { 
       border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.1); color: #fff; 
-      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
-      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      padding: 10px 20px; /* 指で押しやすいように大きめに */
+      border-radius: 4px; text-decoration: none; 
+      font-size: 13px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); 
       transition: 0.3s; position: relative; backdrop-filter: blur(4px);
       text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
     .btn.ghost:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
     
-    /* チケットの穴（背景が木目なので、穴の色は透明っぽく見せる工夫） */
     .btn.ghost::before, .btn.ghost::after {
       content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
-      background: #8d6e63; /* 背景の木目色に近い色を指定 */
-      border-radius: 50%; transform: translateY(-50%);
+      background: #8d6e63; border-radius: 50%; transform: translateY(-50%);
       border: 1px solid rgba(255,255,255,0.6);
       box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
     }
-    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after {
-      background: #3e2723; /* 夜の背景色 */
-    }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #3e2723; }
     .btn.ghost::before { left: -4px; border-right-color: transparent; }
     .btn.ghost::after { right: -4px; border-left-color: transparent; }
 
-    /* --- 木製の郵便受け（トレイ） --- */
+    /* 郵便受け */
     .mailbox-container {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 90%; max-width: 400px; height: 60vh;
-      background: #5d4037;
-      border: 8px solid #3e2723;
-      border-radius: 4px;
-      box-shadow: 
-        inset 0 0 30px rgba(0,0,0,0.6), 
-        0 20px 40px rgba(0,0,0,0.5);
+      position: absolute; top: 58%; left: 50%; transform: translate(-50%, -50%);
+      width: 90%; max-width: 400px; height: 55vh;
+      background: #5d4037; border: 8px solid #3e2723; border-radius: 4px;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 20px 40px rgba(0,0,0,0.5);
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      padding: 20px; perspective: 1000px;
-      overflow-y: auto;
+      padding: 20px; perspective: 1000px; overflow-y: auto;
     }
     
-    /* 銘板 */
     .mailbox-plate {
-      background: #d4af37; color: #3e2723;
-      padding: 4px 16px; margin-bottom: 20px;
+      background: #d4af37; color: #3e2723; padding: 4px 16px; margin-bottom: 20px;
       font-family: 'Dancing Script'; font-size: 18px; font-weight: bold;
       border: 1px solid #b8860b; border-radius: 2px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4); text-shadow: 0 1px 0 rgba(255,255,255,0.4);
     }
 
-    /* 封筒（スタック表示） */
     .letter-stack {
       position: relative; width: 100%; height: 100%;
       display: flex; flex-direction: column; align-items: center; gap: 10px;
     }
 
     .envelope {
-      width: 90%; height: 140px;
-      background: #fdf6e3;
-      border: 1px solid #dcc;
-      position: relative;
-      cursor: pointer;
-      transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      transform-origin: center bottom;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: -80px; /* 重ねる */
+      width: 90%; height: 140px; background: #fdf6e3; border: 1px solid #dcc;
+      position: relative; cursor: pointer; transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2); transform-origin: center bottom;
+      display: flex; align-items: center; justify-content: center; margin-bottom: -80px;
     }
     .envelope:hover { transform: translateY(-20px) rotate(1deg); z-index: 10; }
     
-    /* 封筒のフタ部分 */
     .envelope::before {
       content: ""; position: absolute; top: 0; left: 0; right: 0; height: 50%;
       background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.03) 50%);
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-      z-index: 1; pointer-events: none;
+      border-bottom: 1px solid rgba(0,0,0,0.1); z-index: 1; pointer-events: none;
     }
     
-    /* 封蝋 */
     .wax-seal {
       width: 40px; height: 40px; background: #a63737; border-radius: 50%;
       box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 1px 3px 5px rgba(0,0,0,0.3);
@@ -148,66 +135,32 @@
       position: relative; z-index: 2; border: 2px solid #8a2a2a;
     }
     
-    /* 宛名書き */
     .env-address {
       position: absolute; bottom: 15px; left: 20px; 
       font-family: 'Zen Kurenaido'; font-size: 14px; color: #5a3e32;
       writing-mode: vertical-rl; text-orientation: mixed; height: 80px;
     }
 
-    /* ★ 運営（マスター）からの手紙用スタイル */
-    .envelope.official {
-      background: #1a237e; /* 濃紺 */
-      border: 2px solid #ffd700; /* 金色の枠線 */
-      color: #fff;
-    }
+    .envelope.official { background: #1a237e; border: 2px solid #ffd700; color: #fff; }
     .envelope.official::before {
       background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.1) 50%);
       border-bottom: 1px solid rgba(255,215,0, 0.3);
     }
-    .envelope.official .env-address {
-      color: #fff; /* 文字色を白に */
-      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-      font-size: 12px;
-      height: 95px;
-    }
-    .envelope.official .env-address span {
-      color: #ffd700 !important; /* Fromの色を金色に */
-      font-weight: bold;
-      font-size: 9px !important;
-    }
-    .envelope.official .wax-seal {
-      background: #ffd700; /* 金色の封蝋 */
-      color: #3e2723;
-      border-color: #b8860b;
-      box-shadow: inset 0 0 5px rgba(255,255,255,0.5), 1px 3px 5px rgba(0,0,0,0.5);
-    }
+    .envelope.official .env-address { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); font-size: 12px; height: 95px; }
+    .envelope.official .env-address span { color: #ffd700 !important; font-weight: bold; font-size: 9px !important; }
+    .envelope.official .wax-seal { background: #ffd700; color: #3e2723; border-color: #b8860b; box-shadow: inset 0 0 5px rgba(255,255,255,0.5), 1px 3px 5px rgba(0,0,0,0.5); }
 
-    /* NEWバッジ */
     .new-badge-corner {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #d32f2f;
-      color: #fff;
-      font-size: 10px;
-      font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      border: 2px solid #fff;
-      z-index: 5;
-      font-family: sans-serif;
-      animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: absolute; top: -8px; right: -8px; background: #d32f2f; color: #fff;
+      font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3); border: 2px solid #fff; z-index: 5;
+      font-family: sans-serif; animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes bounceIn { 0%{transform:scale(0);} 60%{transform:scale(1.2);} 100%{transform:scale(1);} }
 
-    .empty-msg {
-      color: rgba(255,255,255,0.5); font-size: 13px; text-align: center; margin-top: 100px;
-      line-height: 2;
-    }
+    .empty-msg { color: rgba(255,255,255,0.5); font-size: 13px; text-align: center; margin-top: 100px; line-height: 2; }
 
-    /* --- 手紙閲覧モーダル --- */
+    /* 手紙閲覧モーダル */
     .reader-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100;
       display: none; align-items: center; justify-content: center;
@@ -216,13 +169,9 @@
     .reader-overlay.active { opacity: 1; }
 
     .paper-sheet {
-      width: 90%; max-width: 500px; height: 85vh;
-      background: #fffcf9;
-      position: relative;
-      box-shadow: 0 0 40px rgba(0,0,0,0.8);
-      padding: 40px 30px;
-      overflow-y: auto;
-      font-family: "Shippori Mincho", serif;
+      width: 90%; max-width: 500px; height: 85vh; background: #fffcf9;
+      position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.8); padding: 40px 30px;
+      overflow-y: auto; font-family: "Shippori Mincho", serif;
       background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiM5ZTllOWUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+');
       transform: translateY(50px); transition: transform 0.6s;
     }
@@ -235,27 +184,20 @@
     .sender-name { font-size: 18px; font-weight: bold; color: var(--pri); }
     .gift-icon { color: #c97b63; font-size: 12px; display: flex; align-items: center; gap: 4px; }
 
-    /* 本文（縦書き） */
     .letter-body {
-      writing-mode: vertical-rl; text-orientation: mixed;
-      width: 100%; height: 350px;
-      font-size: 16px; line-height: 2.4; color: #333;
-      white-space: pre-wrap; overflow-x: auto;
+      writing-mode: vertical-rl; text-orientation: mixed; width: 100%; height: 350px;
+      font-size: 16px; line-height: 2.4; color: #333; white-space: pre-wrap; overflow-x: auto;
       background-image: linear-gradient(to left, rgba(0,0,0,0.05) 1px, transparent 1px);
       background-size: 40px 100%; background-position: right top;
       padding: 10px 0; margin-bottom: 30px;
     }
 
-    /* ポラロイド（画像がある場合） */
     .polaroid {
-      background: #fff; padding: 10px 10px 30px 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transform: rotate(-2deg); margin: 0 auto 30px; max-width: 90%;
-      border: 1px solid #eee;
+      background: #fff; padding: 10px 10px 30px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transform: rotate(-2deg); margin: 0 auto 30px; max-width: 90%; border: 1px solid #eee;
     }
     .polaroid img { width: 100%; display: block; filter: sepia(0.3); }
 
-    /* アクションボタン */
     .action-area { text-align: center; margin-top: 20px; }
     .btn-action {
       display: block; width: 100%; padding: 16px; border: none; border-radius: 2px;
@@ -266,21 +208,6 @@
     .btn-yes:active { transform: translateY(2px); }
     .btn-no { background: transparent; color: #888; text-decoration: underline; font-size: 12px; }
 
-    /* ★ 修正: ×ボタンのスタイルを調整（サイズUP & 最前面固定） */
-    .close-btn {
-      position: absolute; top: 10px; right: 10px;
-      width: 50px; height: 50px; /* さらに大きく */
-      border-radius: 50%; border: 1px solid #ccc;
-      background: rgba(255,255,255,0.9); /* 透過度を下げる */
-      color: #888; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 9999; /* 確実に最前面に */
-      font-size: 28px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 影をつけて浮き上がらせる */
-      touch-action: manipulation;
-    }
-
-    /* BGMプレイヤー（非表示） */
     #bgmPlayer { display: none; }
 
   </style>
@@ -308,8 +235,6 @@
 
   <div id="readerModal" class="reader-overlay">
     <div class="paper-sheet">
-      <button class="close-btn" onclick="closeReader()">×</button>
-      
       <div class="letter-header">
         <div>
           <div style="font-size:10px; color:#888;">From</div>
@@ -326,12 +251,7 @@
       <div id="viewContent"></div>
 
       <div class="action-area" id="actionArea">
-        <p style="font-size:12px; color:#5a3e32; margin-bottom:12px;">
-          この手紙に、お返事（相席の了承）をしますか？
-        </p>
-        <button class="btn-action btn-yes" onclick="acceptLetter()">お話ししてみたい</button>
-        <button class="btn-action btn-no" onclick="declineLetter()">今回はそっと閉じる</button>
-      </div>
+        </div>
       
       <div id="waitingArea" style="display:none; text-align:center; padding-top:40px;">
         <span class="material-icons-outlined" style="font-size:48px; color:#8b3a3a; margin-bottom:16px;">mark_email_read</span>
@@ -422,14 +342,13 @@
           unreadMark = `<div id="badge-${l.id}" class="new-badge-corner">NEW</div>`;
         }
 
-        // ★ 運営（MASTER）からの手紙の場合の判定とスタイル適用
         let isOfficial = false;
         let senderName = escapeHtml(l.fromName);
         
         if(l.fromMemberId === "MASTER" || l.fromName === "Sereness Master" || l.fromName === "マスター") {
             isOfficial = true;
-            senderName = "👑 マスター"; // 王冠アイコン＋「マスター」表記
-            div.classList.add("official"); // 特別なCSSクラス（紺色＋金枠）
+            senderName = "👑 マスター";
+            div.classList.add("official");
         }
 
         div.innerHTML = `
@@ -452,12 +371,10 @@
       if (!l.isRead) {
         l.isRead = true; 
         api("read_letter", { id: id }); 
-        
         const badge = document.getElementById("badge-" + id);
         if(badge) badge.style.display = "none";
       }
 
-      // ★ 開いた後のモーダルでも「マスター」と表示する
       let isOfficial = false;
       let senderDisp = l.fromName;
       if(l.fromMemberId === "MASTER" || l.fromName === "Sereness Master" || l.fromName === "マスター") {
@@ -483,18 +400,16 @@
       const actionArea = document.getElementById("actionArea");
       const waitingArea = document.getElementById("waitingArea");
 
-      // ★ 運営からの手紙の場合は「お話してみたい」ボタンを出さず、「閉じる」のみにする
+      playBgm(l.giftBgm);
+
       if (isOfficial) {
           waitingArea.style.display = "none";
           actionArea.style.display = "block";
-          // シンプルな閉じるボタンのみ表示
           actionArea.innerHTML = `<button class="btn-action btn-no" onclick="closeReader()">閉じる</button>`;
       } else if(l.status.startsWith("matched")) {
-          // マッチング済み
           actionArea.style.display = "none";
           waitingArea.style.display = "block";
       } else {
-          // 通常の手紙（未回答）
           waitingArea.style.display = "none";
           actionArea.style.display = "block";
           actionArea.innerHTML = `
@@ -509,9 +424,6 @@
       const modal = document.getElementById("readerModal");
       modal.style.display = "flex";
       setTimeout(() => modal.classList.add("active"), 10);
-
-      // ★ BGM再生
-      playBgm(l.giftBgm);
     }
 
     function closeReader() {
@@ -541,34 +453,47 @@
       closeReader();
     }
 
-    // ★ 修正: より確実な音源URLに変更
+    // ★ BGM再生関数（雨音のURLをMP3で、実績のあるものに固定）
     function playBgm(bgmName) {
       if(!bgmName) return;
+      
+      const key = bgmName.toLowerCase();
+      console.log(`BGM再生リクエスト: ${bgmName} (変換後: ${key})`);
+
       const p = document.getElementById("bgmPlayer");
+      
+      const sounds = {
+        // ★ 雨音：このURLは以前動作していた実績のあるMP3ファイルです
+        "rain": "https://cdn.pixabay.com/audio/2022/07/04/audio_3f7457782b.mp3",
+        // ★ カフェ：こちらもMP3です
+        "jazz": "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3"
+      };
+
       let src = "";
       
-      // 送信元(letter.html)のvalue値(rain, fire, jazz, forest)と、
-      // 以前のバージョンで保存された日本語名の両方をチェック
-      if(bgmName === "rain" || bgmName.includes("雨")) {
-          // 雨の音 (Pixabay Free Sound)
-          src = "https://cdn.pixabay.com/download/audio/2022/07/04/audio_3f7457782b.mp3";
-      } else if(bgmName === "fire" || bgmName.includes("焚き火")) {
-          // 焚き火の音
-          src = "https://cdn.pixabay.com/download/audio/2021/08/09/audio_8ed59a5840.mp3";
-      } else if(bgmName === "jazz" || bgmName.includes("ジャズ")) {
-          // ジャズ
-          src = "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3";
-      } else if(bgmName === "forest" || bgmName.includes("森")) {
-          // 森の音
-          src = "https://cdn.pixabay.com/download/audio/2021/09/06/audio_03d6e35552.mp3";
+      if (key.includes("rain") || key.includes("雨")) {
+          src = sounds["rain"];
+      } else if (key.includes("jazz") || key.includes("cafe") || key.includes("カフェ")) {
+          src = sounds["jazz"];
       }
-      
-      if(src) { 
+
+      if(src) {
+          if (!p.paused && p.src === src) {
+             return; 
+          }
+
           p.src = src; 
-          p.volume = 0.2; 
-          // ユーザー操作直後のみ再生許可されるブラウザ仕様に対応するため、
-          // play()のエラーを握りつぶしつつ試行
-          p.play().catch(e => console.log("Audio play failed (browser restriction):", e)); 
+          p.load(); 
+          p.volume = 0.3; 
+          
+          const playPromise = p.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(e => {
+              console.error("BGM再生エラー:", e);
+            });
+          }
+      } else {
+          console.warn("指定されたBGMは現在取り扱っていません:", key);
       }
     }
     

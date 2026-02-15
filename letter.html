@@ -34,7 +34,7 @@
 
     html, body {
       margin: 0; padding: 0; font-family: "Shippori Mincho", serif; 
-      color: var(--pri); min-height: 100vh; overflow-x: hidden; /* アニメーション用 */
+      color: var(--pri); min-height: 100vh; overflow-x: hidden;
     }
     body[data-mode="bar"] { color: #eaddcf; }
 
@@ -52,7 +52,7 @@
     .brand { font-family: 'Dancing Script', cursive; font-size: 26px; color: var(--pri); font-weight: 700; }
     body[data-mode="bar"] .brand { color: #eaddcf; }
 
-    /* ★ チケット風ボタン */
+    /* チケット風ボタン */
     .btn.ghost { 
       border: 1px solid var(--pri); background: transparent; color: var(--pri); 
       padding: 6px 14px; border-radius: 4px; text-decoration: none; 
@@ -62,38 +62,36 @@
     }
     .btn.ghost:hover { background: rgba(62, 39, 35, 0.05); transform: translateY(-1px); }
 
-    /* チケットの穴 */
     .btn.ghost::before, .btn.ghost::after {
       content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
-      background: rgba(255, 250, 246, 1); /* ヘッダー背景色 */
+      background: rgba(255, 250, 246, 1);
       border-radius: 50%; transform: translateY(-50%);
       border: 1px solid var(--pri);
     }
     .btn.ghost::before { left: -4px; border-right-color: transparent; }
     .btn.ghost::after { right: -4px; border-left-color: transparent; }
 
-    /* 夜モードのボタン */
     body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
     body[data-mode="bar"] .btn.ghost:hover { background: rgba(255,255,255,0.1); }
     body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after {
-      background: #2b2b2b; /* 夜ヘッダー色 */
-      border-color: #d7ccc8;
+      background: #2b2b2b; border-color: #d7ccc8;
     }
 
-    /* メインレイアウト */
+    /* メインレイアウト（★ここが右側配置のキモです） */
     .container {
       max-width: 900px; margin: 90px auto 40px; padding: 20px;
       display: flex; flex-direction: column; gap: 30px;
     }
+    /* 画面幅が広い時は横並びにする設定 */
     @media (min-width: 768px) {
       .container { flex-direction: row; align-items: flex-start; }
     }
 
-    /* 入力フォーム側 */
+    /* 入力フォーム側（左） */
     .editor-panel {
       flex: 1; background: rgba(255,255,255,0.9); padding: 30px;
       border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      z-index: 10; /* アニメーションより手前に */
+      z-index: 10;
     }
     body[data-mode="bar"] .editor-panel { background: rgba(40, 30, 25, 0.9); }
 
@@ -112,7 +110,7 @@
     }
     body[data-mode="bar"] textarea { background: #3e2723; color: #eaddcf; border-color: #5d4037; }
 
-    /* セレクトボックス（BGM用） */
+    /* セレクトボックス */
     select.stylish-select {
       width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;
       font-family: "Shippori Mincho", serif; font-size: 14px;
@@ -120,7 +118,7 @@
     }
     body[data-mode="bar"] select.stylish-select { background: #3e2723; color: #eaddcf; border-color: #5d4037; }
 
-    /* 切手選択オプション */
+    /* 切手選択 */
     .stamp-options {
       display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
     }
@@ -153,11 +151,11 @@
     body[data-mode="bar"] .btn-submit { background: #c97b63; }
     body[data-mode="bar"] .btn-submit:hover { background: #b06a53; }
 
-    /* プレビュー側 */
+    /* プレビュー側（右） */
     .letter-preview {
       flex: 1; display: flex; justify-content: center;
       position: sticky; top: 100px;
-      perspective: 1000px; /* 3Dアニメーション用 */
+      perspective: 1000px;
     }
     
     .card {
@@ -182,7 +180,6 @@
       box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 10px 30px rgba(0,0,0,0.5);
     }
     
-    /* プレビュー内の切手 */
     .preview-stamp {
       position: absolute; top: 25px; left: 25px;
       width: 55px; height: 65px; object-fit: cover;
@@ -195,7 +192,6 @@
       to { opacity: 1; transform: rotate(-3deg) scale(1) translateY(0); }
     }
     
-    /* 封蝋 */
     .wax-seal {
       position: absolute; bottom: 30px; right: 30px;
       width: 40px; height: 40px; background: var(--accent); border-radius: 50%;
@@ -207,7 +203,6 @@
     body[data-mode="bar"] .wax-seal { background: #c97b63; border-color: #b06a53; }
     .wax-seal::after { content: "S"; }
 
-    /* 本文プレビュー */
     .preview-text {
       writing-mode: vertical-rl; text-orientation: mixed;
       width: 100%; height: 400px;
@@ -216,24 +211,14 @@
     }
     body[data-mode="bar"] .preview-text { color: #333; }
 
-    /* ★ 送信アニメーション（空へ飛んでいく） */
     @keyframes flyAway {
-      0% { 
-        transform: translateY(0) rotate(1deg) scale(1); 
-        opacity: 1; 
-      }
-      40% { 
-        transform: translateY(30px) rotate(-5deg) scale(0.9); 
-        opacity: 1; 
-      }
-      100% { 
-        transform: translateY(-800px) translateX(100px) rotate(20deg) scale(0.6); 
-        opacity: 0; 
-      }
+      0% { transform: translateY(0) rotate(1deg) scale(1); opacity: 1; }
+      40% { transform: translateY(30px) rotate(-5deg) scale(0.9); opacity: 1; }
+      100% { transform: translateY(-800px) translateX(100px) rotate(20deg) scale(0.6); opacity: 0; }
     }
     .fly-away {
       animation: flyAway 1.8s ease-in-out forwards;
-      pointer-events: none; /* クリック無効化 */
+      pointer-events: none;
     }
 
   </style>
@@ -288,9 +273,7 @@
         <select id="bgmSelect" class="stylish-select">
           <option value="">なし</option>
           <option value="rain">雨の音 - Rainy Days</option>
-          <option value="fire">焚き火 - Fireplace</option>
           <option value="jazz">カフェジャズ - Cafe Jazz</option>
-          <option value="forest">森の音 - Morning Forest</option>
         </select>
         <p style="font-size:11px; color:#888; margin-top:4px;">※お相手が手紙を開いた時に、静かに流れます。</p>
       </div>
