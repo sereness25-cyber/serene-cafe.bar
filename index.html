@@ -64,6 +64,25 @@
       color: var(--ink); letter-spacing: 0.1em;
     }
 
+    /* ★全国対応バッジのスタイル定義 */
+    .promo-badge {
+      display: inline-block;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.5);
+      transition: 0.5s;
+    }
+    /* 夜モード時のバッジスタイル */
+    body.night .promo-badge {
+      background: rgba(0, 0, 0, 0.4); /* 背景を暗く */
+      color: var(--ink); /* 文字を明るく */
+      border-color: var(--ink);
+    }
+
     /* ヒーローセクション */
     .hero {
       text-align: center; padding: 60px 0; border-bottom: 1px double var(--line);
@@ -78,26 +97,25 @@
     .vertical-copy {
       writing-mode: vertical-rl; text-orientation: mixed;
       font-size: 18px; letter-spacing: 0.3em; line-height: 2.5;
-      height: 280px; margin: 0 auto 50px; opacity: 0.9;
+      height: 320px;
+      margin: 0 auto 50px; opacity: 0.9;
       border-right: 1px solid var(--accent); padding-right: 30px;
       display: inline-block; text-align: left;
     }
     .vertical-copy span { display: inline-block; margin-left: 12px; }
 
-    /* ★ 扉（ドア）ボタンのデザイン */
+    /* 扉（ドア）ボタン */
     .door-container {
       position: relative; width: 140px; height: 220px; margin: 0 auto;
       perspective: 800px; cursor: pointer; display: block; text-decoration: none;
     }
-    /* ドア枠 */
     .door-frame {
       position: absolute; inset: 0;
       border: 8px solid var(--wood-dark); border-bottom: none;
       border-radius: 4px 4px 0 0;
-      background: #1a1512; /* ドアの奥の暗闇 */
+      background: #1a1512;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
-    /* ドア本体 */
     .door {
       width: 100%; height: 100%;
       background-color: var(--wood-light);
@@ -109,7 +127,6 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
     }
-    /* ドアの装飾（框） */
     .door::before, .door::after {
       content: ""; position: absolute; left: 15px; right: 15px;
       border: 1px solid rgba(0,0,0,0.3); box-shadow: 0 1px 0 rgba(255,255,255,0.1);
@@ -117,24 +134,20 @@
     .door::before { top: 20px; height: 70px; }
     .door::after { bottom: 20px; height: 80px; }
 
-    /* ドアノブ */
     .knob {
       position: absolute; top: 50%; right: 10px; width: 8px; height: 8px;
       background: var(--gold); border-radius: 50%;
       box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
-    /* プレート */
     .plate {
       font-family: 'Dancing Script'; font-size: 16px; color: #fff;
       background: #000; padding: 2px 8px; border: 1px solid var(--gold);
       margin-bottom: 50px; text-shadow: none; opacity: 0.9;
     }
 
-    /* ホバー時の開閉アニメーション */
     .door-container:hover .door { transform: rotateY(-20deg); }
     .door-container:active .door { transform: rotateY(-35deg); }
 
-    /* 下の影 */
     .door-shadow {
       position: absolute; bottom: -10px; left: 5px; right: 5px; height: 10px;
       background: radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, transparent 70%);
@@ -236,6 +249,13 @@
 
   <header>
     <div class="brand letterpress">Sereness Cafe &amp; Bar</div>
+    
+    <div style="margin: 15px 0 5px;">
+      <span class="promo-badge">
+        全国どこからでも、ご入店いただけます
+      </span>
+    </div>
+
     <p style="font-size:12px; margin-top:10px; opacity:0.7;">静かな夜に、価値観でつながる。</p>
   </header>
 
@@ -245,6 +265,7 @@
       <div class="vertical-copy">
         <span>顔写真はいらない。</span><br>
         <span>スペックも、脱ぎ捨てて。</span><br>
+        <span>住む場所も、関係ない。</span><br>
         <span>言葉と声だけでつながる、</span><br>
         <span>静寂を愛する大人たちへ。</span>
       </div>
@@ -272,10 +293,10 @@
           </div>
         </li>
         <li>
-          <span class="material-icons-outlined icon">auto_stories</span>
+          <span class="material-icons-outlined icon">public</span>
           <div>
-            <strong>人柄が見える手帳</strong>
-            <br><small>日記や掲示板の言葉から、その人の温度が伝わります。</small>
+            <strong>全国の価値観の合う人と</strong>
+            <br><small>オンライン完結だから、距離を気にせず出会えます。</small>
           </div>
         </li>
         <li>
@@ -369,6 +390,10 @@
     <section class="card fade-up">
       <h2 class="sec-title"><span>Q&A</span><br>よくある質問</h2>
       
+      <details>
+        <summary>地方に住んでいますが参加できますか？</summary>
+        <div class="ans">はい、全国どこからでもご参加いただけます。オンライン完結ですので、距離を気にせず出会いを楽しめます。</div>
+      </details>
       <details>
         <summary>支払い方法は何がありますか？</summary>
         <div class="ans">原則としてクレジットカードのみとなります。マッチング成立時のみ費用が発生する都度払い制です。</div>

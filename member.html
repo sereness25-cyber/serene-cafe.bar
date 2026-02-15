@@ -108,13 +108,16 @@
     body[data-mode="bar"] .pickupBody, body[data-mode="bar"] .infoLabel, body[data-mode="bar"] .news-date, body[data-mode="bar"] .step-content h4 { color: #eaddcf !important; }
     body[data-mode="bar"] a { color: #eaddcf; }
 
-    /* ヘッダー (固定表示 & おしゃれロゴ) */
+    /* ★スマホ最適化: ヘッダー */
     header { 
-      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
-      display: flex; align-items: center; justify-content: center;
+      position: fixed; top: 0; left: 0; width: 100%; 
+      height: 110px; /* 高さを確保 */
+      display: flex; align-items: flex-end; /* 下揃え */
+      justify-content: center;
       background: rgba(255, 250, 246, 0.95); backdrop-filter: blur(10px); 
       border-bottom: 1px solid rgba(0,0,0,0.1); 
-      z-index: 1000; padding: 0 16px; box-sizing: border-box;
+      z-index: 1000; padding: 0 16px 25px 16px; /* 下余白を追加 */
+      box-sizing: border-box;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
     }
     body[data-mode="bar"] header { 
@@ -138,10 +141,10 @@
 
     .navRight { display: flex; gap: 10px; align-items: center; }
 
-    /* レイアウト */
+    /* レイアウト（★スマホ最適化: padding-topを増やしてヘッダー被り防止） */
     .layout { 
       max-width: 960px; margin: 0 auto; 
-      padding: 100px 16px 120px; /* ヘッダー固定分(70px) + 余白 */
+      padding: 130px 16px 120px; /* ヘッダー高さ分+α */
       display: grid; grid-template-columns: 1fr; gap: 35px; 
     }
     @media (min-width: 768px) { .layout { grid-template-columns: 1.2fr 1fr; align-items: start; } }
@@ -825,12 +828,18 @@
       return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+bg+svgMy+'<polygon points="'+polyT+'" fill="rgba(201,123,99,0.4)" stroke="rgba(201,123,99,1)" stroke-width="2"/>'+txts+'</svg>';
     }
 
+    // ★ 修正: エリアの変数を正しく構築し、表示箇所を厳密に指定
     function renderMyProfile(prof) {
       if(!prof || Object.keys(prof).length === 0) return;
       const parsed = parseValues(prof.valuesResult);
       const showName = (prof.nickname||"").trim() || memberId;
       const avatar = (prof.avatarDataUrl||"").trim() ? String(prof.avatarDataUrl) : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-      const area = ((prof.pref||"") + " " + (prof.city||"")).trim();
+      
+      // エリア情報の構築 (nullチェックを含む)
+      const pref = prof.pref || "";
+      const city = prof.city || "";
+      let area = (pref + " " + city).trim();
+      if(area === "") area = "—";
 
       document.getElementById("info").innerHTML = 
         '<div style="display:flex; justify-content:center; margin-bottom:16px;">' +
@@ -839,7 +848,7 @@
         '<div class="infoGrid">' +
           '<div class="infoItem"><div class="infoLabel">お名前</div><div class="infoValue">'+escapeHtml(showName)+'</div></div>' +
           '<div class="infoItem"><div class="infoLabel">性別</div><div class="infoValue">'+escapeHtml(prof.gender||"—")+'</div></div>' +
-          '<div class="infoItem"><div class="infoLabel">エリア</div><div class="infoValue">'+escapeHtml(area||"—")+'</div></div>' +
+          '<div class="infoItem"><div class="infoLabel">エリア</div><div class="infoValue">'+escapeHtml(area)+'</div></div>' + // ★ここが確実にAreaになるよう修正
           '<div class="infoItem"><div class="infoLabel">タイプ</div><div class="infoValue">'+escapeHtml(parsed.type)+'</div></div>' +
         '</div>';
 
@@ -971,12 +980,18 @@
           letterBtnHtml = '<div style="margin-top:20px; text-align:center;"><button class="btnMini primary" style="width:100%; font-size:14px; padding:12px;" onclick="location.href=\'letter.html?to='+encodeURIComponent(prof.memberId)+'&name='+encodeURIComponent(prof.nickname || "匿名")+'\'">この人に手紙を綴る</button></div>';
       }
 
+      // ★ 修正: ポップアップのヘッダー下にもエリアを表示
+      const pref = prof.pref || "";
+      const city = prof.city || "";
+      let area = (pref + " " + city).trim();
+      if(area === "") area = "—";
+
       container.innerHTML = 
         '<div class="prof-header">' +
           avatarHtml +
           '<div>' +
             '<div class="prof-name">'+escapeHtml(prof.nickname || "匿名")+'</div>' +
-            '<div style="font-size:13px; color:#666; margin-top:4px;">'+escapeHtml(prof.gender||"未設定")+'</div>' +
+            '<div style="font-size:13px; color:#666; margin-top:4px;">'+escapeHtml(prof.gender||"未設定")+' / ' + escapeHtml(area) +'</div>' +
           '</div>' +
         '</div>' +
         '<div class="prof-section"><div class="prof-label">自己紹介</div><div class="prof-text">'+escapeHtml(prof.bio||"（未入力）")+'</div></div>' +

@@ -234,7 +234,7 @@
     <header>
       <div class="brand">Board</div>
       <nav class="navRight">
-        <a class="btn ghost" href="diary.html">手帳</a>
+        <a class="btn ghost" href="diary.html">日記</a>
         <a class="btn ghost" href="member.html">指定席に戻る</a>
       </nav>
     </header>
@@ -596,7 +596,6 @@
             } catch(e){}
         } 
         
-        // ★ 読み込み中の表示を改善
         if (!hasCache) {
             listEl.innerHTML = `<div class="loader"><span class="material-icons-outlined">refresh</span>読み込み中...</div>`;
         }
@@ -779,20 +778,40 @@
         }
       };
       
+      // ★ 修正: 異性のみ閲覧可能にする
       function renderProfileFull(prof, myProf, container, uid) {
-          // ★ 非公開プロフィールのチェック
           const isMine = (prof.memberId === myId);
           // profilePublicがtrueまたは文字列"true"以外なら非公開
           let isPublic = (prof.profilePublic === true || String(prof.profilePublic) === "true");
 
-          if (!isPublic && !isMine) {
-             container.innerHTML = `
-                <div style="text-align:center; padding:60px 20px; color:#999;">
-                    <div style="font-size:48px; margin-bottom:16px;">🔒</div>
-                    <div style="font-weight:bold;">このプロフィールは非公開です</div>
-                </div>
-             `;
-             return;
+          // 性別判定
+          const myG = myProf.gender || "";
+          const targetG = prof.gender || "";
+          let isOpposite = false;
+          if (myG === "男性" && targetG === "女性") isOpposite = true;
+          else if (myG === "女性" && targetG === "男性") isOpposite = true;
+
+          // 自分以外で、条件（非公開 or 同性）に引っかかる場合はブロック
+          if (!isMine) {
+              if (!isPublic) {
+                 container.innerHTML = `
+                    <div style="text-align:center; padding:60px 20px; color:#999;">
+                        <div style="font-size:48px; margin-bottom:16px;">🔒</div>
+                        <div style="font-weight:bold;">このプロフィールは非公開です</div>
+                    </div>
+                 `;
+                 return;
+              }
+              
+              if (!isOpposite) {
+                 container.innerHTML = `
+                    <div style="text-align:center; padding:60px 20px; color:#999;">
+                        <div style="font-size:48px; margin-bottom:16px;">🚫</div>
+                        <div style="font-weight:bold;">異性の方のみプロフィールをご覧いただけます</div>
+                    </div>
+                 `;
+                 return;
+              }
           }
 
           let targetScores = [3,3,3,3,3];

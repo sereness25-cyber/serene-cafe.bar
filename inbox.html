@@ -42,15 +42,12 @@
     }
     body[data-mode="bar"] { color: #eaddcf; }
 
-    /* ★ヘッダー修正: 上部に50pxの余白を強制的に入れて、ボタンを下に押し下げる */
+    /* ★ ヘッダー修正: スマホ対応（高さを広げてボタンを下げる） */
     header { 
-      position: absolute; top: 0; left: 0; width: 100%; 
-      height: 120px; /* 高さを十分に確保 */
-      display: flex; 
-      align-items: center; /* 垂直方向中央（paddingを除いたエリアでの中央） */
+      position: absolute; top: 0; left: 0; width: 100%; height: 110px; /* 高さを確保 */
+      display: flex; align-items: flex-end; /* 下揃え */
       justify-content: center;
-      padding-top: 50px; /* ★ここでステータスバー分の余白を確保 */
-      padding-left: 20px; padding-right: 20px;
+      padding: 0 20px 25px 20px; /* 下に余白を持たせてボタンを押しやすく */
       box-sizing: border-box; z-index: 10;
       background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
       pointer-events: none; /* ヘッダーの背景部分はクリックを邪魔しない */
@@ -58,8 +55,8 @@
     
     .wrap { 
       width: 100%; max-width: 800px; margin: 0 auto; 
-      display: flex; justify-content: space-between; align-items: center;
-      pointer-events: auto; /* 中身のボタンはクリック可能にする */
+      display: flex; justify-content: space-between; align-items: center; 
+      pointer-events: auto; /* 中身のボタンだけクリック可能にする */
     }
 
     .brand { 
@@ -72,7 +69,7 @@
     /* ボタン */
     .btn.ghost { 
       border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.1); color: #fff; 
-      padding: 10px 20px; /* 指で押しやすいように大きめに */
+      padding: 10px 18px; /* ★指で押しやすい大きさに変更 */
       border-radius: 4px; text-decoration: none; 
       font-size: 13px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); 
@@ -93,7 +90,7 @@
 
     /* 郵便受け */
     .mailbox-container {
-      position: absolute; top: 58%; left: 50%; transform: translate(-50%, -50%);
+      position: absolute; top: 58%; left: 50%; transform: translate(-50%, -50%); /* ヘッダーを避けて少し下へ */
       width: 90%; max-width: 400px; height: 55vh;
       background: #5d4037; border: 8px solid #3e2723; border-radius: 4px;
       box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 20px 40px rgba(0,0,0,0.5);
@@ -453,7 +450,7 @@
       closeReader();
     }
 
-    // ★ BGM再生関数（雨音のURLをMP3で、実績のあるものに固定）
+    // ★ BGM再生関数（URLを安定板MP3に変更）
     function playBgm(bgmName) {
       if(!bgmName) return;
       
@@ -463,9 +460,9 @@
       const p = document.getElementById("bgmPlayer");
       
       const sounds = {
-        // ★ 雨音：このURLは以前動作していた実績のあるMP3ファイルです
-        "rain": "https://cdn.pixabay.com/audio/2022/07/04/audio_3f7457782b.mp3",
-        // ★ カフェ：こちらもMP3です
+        // ★ 雨音：より安定したMP3素材(Pixabay)に変更
+        "rain": "https://cdn.pixabay.com/audio/2021/09/06/audio_3ea03a0772.mp3",
+        // ★ カフェ：実績のあるMP3
         "jazz": "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3"
       };
 
