@@ -20,6 +20,7 @@
       --sec: #c97b63;
       --paper-light: #fffdf8;
       --paper-dark: #2a2a2a;
+      --sub-text: #8d6e63;
     }
 
     html, body {
@@ -37,37 +38,57 @@
     body[data-mode="bar"] .night-bg { display: block; }
 
     /* 夜モード設定 */
-    body[data-mode="bar"] { color: #eaddcf; }
+    body[data-mode="bar"] { color: #eaddcf; --sub-text: #a1887f; }
     body[data-mode="bar"] .paper-card { background: #dcd1c4; border-color: #b5a695; color: #333; box-shadow: 2px 6px 15px rgba(0,0,0,0.5); }
-    body[data-mode="bar"] .brand { color: #eaddcf !important; }
+    body[data-mode="bar"] .brand-en { color: #eaddcf !important; }
+    body[data-mode="bar"] .brand-jp { color: #d7ccc8 !important; opacity: 0.8; }
     body[data-mode="bar"] h2 { border-bottom-color: #8b5a4a !important; color: #5a3e32 !important; }
     body[data-mode="bar"] h3 { color: #5a3e32 !important; }
 
-    /* ヘッダー (スマホ対応・安全領域確保) */
+    /* ヘッダー (お洒落デザイン版) */
     header { 
       background: rgba(255, 250, 246, 0.98) !important; 
       backdrop-filter: blur(10px); 
       border-bottom: 1px solid rgba(0,0,0,0.1); 
       position: fixed; 
       top: 0; left: 0; width: 100%; box-sizing: border-box;
-      z-index: 9999; /* 最前面へ */
-      height: auto; /* 高さは自動調整 */
+      z-index: 9999; 
+      height: auto; 
       min-height: 60px;
       display: flex; align-items: center; justify-content: center;
-      /* ノッチ対応のパディング (上部に安全領域を追加) */
-      padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+      /* ノッチ対応のパディング */
+      padding: max(8px, env(safe-area-inset-top)) 16px 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
     }
-    body[data-mode="bar"] header { background: rgba(20, 20, 20, 0.95) !important; border-bottom-color: rgba(255,255,255,0.1); }
+    body[data-mode="bar"] header { background: rgba(30, 25, 20, 0.95) !important; border-bottom-color: rgba(255,255,255,0.1); }
     
     .wrap { width: 100%; max-width: 600px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-    .brand { color: var(--pri) !important; font-weight: 900; font-size: 18px; font-family: "Shippori Mincho", serif; letter-spacing: 0.1em; }
+    
+    /* ブランドロゴ（2行構成） */
+    .header-content { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0; }
+    
+    .brand-en { 
+      font-family: 'Dancing Script', cursive; 
+      font-size: 26px; 
+      color: var(--pri); 
+      line-height: 1.1;
+      font-weight: 600;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .brand-jp {
+      font-family: "Shippori Mincho", serif; 
+      font-size: 10px; 
+      color: var(--sub-text); 
+      letter-spacing: 0.15em; 
+      font-weight: bold;
+      transform: translateY(-2px); /* 少し上に詰める */
+    }
 
     /* コンテンツレイアウト */
     .container { 
       max-width: 600px; margin: 0 auto; 
-      /* ヘッダーの高さ(約60px) + ノッチ分 + 余白 を確保 */
-      padding: calc(80px + env(safe-area-inset-top)) 16px 100px; 
+      /* ヘッダーの高さ変化に対応 */
+      padding: calc(85px + env(safe-area-inset-top)) 16px 100px; 
     }
     
     /* お店の張り紙風カード */
@@ -112,15 +133,11 @@
       .container { 
         padding-left: 10px; 
         padding-right: 10px; 
-        /* ヘッダーの高さ変化に対応 */
-        padding-top: calc(75px + env(safe-area-inset-top)); 
+        padding-top: calc(85px + env(safe-area-inset-top)); 
       }
       
       /* カード内の文字表示領域を最大化 */
-      .paper-card { 
-        padding: 25px 15px; 
-        margin-bottom: 20px; 
-      }
+      .paper-card { padding: 25px 15px; margin-bottom: 20px; }
       
       /* 文字サイズの微調整 */
       h1 { font-size: 20px !important; margin-bottom: 20px !important; }
@@ -146,7 +163,10 @@
 
   <header>
     <div class="wrap">
-      <div class="brand">お店のルールとマナー</div>
+      <div class="header-content">
+        <div class="brand-en">Sereness Rules</div>
+        <div class="brand-jp">お店のルールとマナー</div>
+      </div>
     </div>
   </header>
 
