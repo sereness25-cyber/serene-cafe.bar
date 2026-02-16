@@ -123,8 +123,9 @@
 
     /* 棚板 */
     .bookshelf-row {
-      display: flex; align-items: flex-end; justify-content: flex-start; flex-wrap: wrap;
-      padding: 0 10px; /* スマホ用に余白調整 */
+      display: flex; align-items: flex-end; justify-content: space-around; /* スマホで均等配置 */
+      flex-wrap: wrap;
+      padding: 0 5px; 
       margin-bottom: 0;
       border-bottom: 18px solid #6d4c41; 
       box-shadow: 0 8px 15px rgba(0,0,0,0.3); 
@@ -137,16 +138,18 @@
       pointer-events: none;
     }
 
-    /* 本の背表紙 */
+    /* ★スマホ最適化: 本の背表紙 */
     .book-spine {
-      width: 32px; 
+      width: 42px; /* スマホでタップしやすい幅に拡大 */
       border-radius: 2px 4px 4px 2px;
       cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      position: relative; z-index: 1; padding: 10px 2px; margin-right: 3px; margin-left: 3px;
+      position: relative; z-index: 1; padding: 10px 2px; 
+      margin: 0 2px; /* 横の間隔 */
       box-shadow: inset 2px 0 5px rgba(255,255,255,0.15), inset -2px 0 5px rgba(0,0,0,0.3), 2px 5px 5px rgba(0,0,0,0.3);
       transition: transform 0.2s; transform-origin: bottom center;
       color: rgba(255,255,255,0.9);
-      font-family: "Shippori Mincho", serif; font-size: 10px; font-weight: bold;
+      font-family: "Shippori Mincho", serif; font-size: 12px; /* 文字サイズ拡大 */
+      font-weight: bold;
       writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 1px;
       overflow: hidden;
     }
@@ -169,7 +172,7 @@
       background: rgba(255,255,255,0.3);
     }
     
-    .book-lock { position: absolute; bottom: 4px; color: rgba(255,255,255,0.7); font-size: 8px; }
+    .book-lock { position: absolute; bottom: 4px; color: rgba(255,255,255,0.7); font-size: 10px; }
 
     /* FAB */
     .fab { 
@@ -188,20 +191,27 @@
       align-items: center; justify-content: center; padding: 10px; perspective: 1200px; 
     }
     
+    /* ★スマホ最適化: モーダルのサイズ */
     .book-container {
-      background: #fff; width: 100%; max-width: 500px; max-height: 85vh; 
+      background: #fff; width: 100%; max-width: 500px; 
+      height: 80vh; /* 高さを確保 */
       border-radius: 2px 6px 6px 2px;
       box-shadow: 10px 10px 30px rgba(0,0,0,0.5);
       display: flex; flex-direction: column; position: relative; overflow: hidden;
       transform-origin: center center;
       border-left: 12px solid #3e2723;
     }
+    /* スマホ画面で左の帯を細くしてスペース確保 */
+    @media (max-width: 480px) {
+      .book-container { border-left-width: 6px; }
+    }
+
     body[data-mode="bar"] .book-container { background: #2b2b2b; border-left-color: #1a1512; }
 
     .book-open { animation: openBook 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     @keyframes openBook { from { transform: rotateY(-90deg); opacity: 0; } to { transform: rotateY(0deg); opacity: 1; } }
 
-    .book-content { padding: 30px 20px; overflow-y: auto; position: relative; z-index: 10; height: 100%; }
+    .book-content { padding: 25px 20px; overflow-y: auto; position: relative; z-index: 10; height: 100%; }
     
     .ruled-bg {
       background-image: linear-gradient(transparent 31px, rgba(62, 39, 35, 0.1) 31px, rgba(62, 39, 35, 0.1) 32px, transparent 32px);
@@ -471,7 +481,7 @@
           // 本の高さをランダムに (110px ~ 130px)
           const h = 110 + Math.floor(Math.random() * 20); 
           const clr = colors[(d.id.charCodeAt(d.id.length-1) + idx) % colors.length];
-          const w = 28 + Math.floor(Math.random() * 8); // 幅も少しランダムに
+          const w = 42; // スマホ用に幅広固定
 
           const spine = document.createElement("div");
           spine.className = `book-spine ${clr}`;
