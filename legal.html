@@ -96,13 +96,6 @@
       margin-bottom: 24px; position: relative;
     }
     
-    /* スマホ向け調整 */
-    @media (max-width: 600px) {
-      .paper-card { padding: 30px 20px; }
-      h2 { font-size: 18px; }
-      h3 { font-size: 15px; }
-    }
-    
     /* 画鋲 */
     .pin {
       position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 14px; height: 14px; border-radius: 50%;
@@ -145,21 +138,51 @@
     .legal-content ul { padding-left: 1.5em; margin-bottom: 20px; }
     .legal-content ul li { margin-bottom: 8px; list-style-type: disc; }
 
-    /* 特商法テーブル */
+    /* 特商法テーブル（基本PCスタイル） */
     .tokusho-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
     .tokusho-table th, .tokusho-table td { border-bottom: 1px dotted #c0a080; padding: 12px 8px; text-align: left; vertical-align: top; }
     .tokusho-table th { width: 30%; color: var(--pri); font-weight: 900; background: rgba(161, 136, 127, 0.1); border-radius: 4px; }
     
+    .date { text-align: right; margin-top: 50px; font-size: 12px; color: #888; }
+
+    /* ★★★ スマホ専用最適化CSS ★★★ */
     @media (max-width: 600px) {
-      .tokusho-table th, .tokusho-table td { display: block; width: 100%; border: none; }
-      .tokusho-table th { margin-top: 20px; margin-bottom: 5px; padding: 8px; }
-      .tokusho-table td { padding: 5px 8px 15px 8px; border-bottom: 1px dotted #c0a080; }
+      /* コンテナとカードの余白を詰める */
+      .container { padding: 80px 10px 100px; }
+      .paper-card { padding: 25px 15px; }
+      
+      /* タイトルサイズの調整 */
+      .legal-content h2 { font-size: 18px; margin-bottom: 20px; }
+      .legal-content h3 { font-size: 15px; margin-top: 30px; border-left-width: 3px; }
+      .legal-content p, .legal-content li { font-size: 13.5px; line-height: 1.7; }
+      
+      /* 特商法テーブルを縦並びに（レスポンシブ対応） */
+      .tokusho-table th, .tokusho-table td {
+        display: block; 
+        width: 100%; 
+        border-bottom: none; 
+      }
+      .tokusho-table th {
+        margin-top: 20px; 
+        margin-bottom: 5px; 
+        padding: 5px 0; 
+        background: transparent; 
+        color: var(--sec);
+        font-size: 14px;
+      }
+      .tokusho-table td {
+        padding: 0 0 15px 5px; 
+        border-bottom: 1px dotted #c0a080;
+      }
+      /* 夜モード時のテーブル調整 */
+      body[data-mode="bar"] .tokusho-table th { color: #c97b63; background: transparent; }
+      body[data-mode="bar"] .tokusho-table td { border-bottom-color: #555; }
     }
     
+    /* 夜モードの基本設定 */
     body[data-mode="bar"] .tokusho-table th, body[data-mode="bar"] .tokusho-table td { border-bottom-color: #555; }
     body[data-mode="bar"] .tokusho-table th { color: #5a3e32; background: rgba(0,0,0,0.05); }
 
-    .date { text-align: right; margin-top: 50px; font-size: 12px; color: #888; }
   </style>
 </head>
 <body>
@@ -294,7 +317,7 @@
 
         <h3>第10条（違約金）</h3>
         <ol>
-          <li>登録ユーザーが、既婚者であるにもかかわらず独身と偽って登録した場合、または年齢、性別その他の登録事項について故意に虚偽の情報を登録したことが発覚した場合、当該ユーザーは運営に対し、違約金として金1万円を直ちに支払うものとします。</li>
+          <li>登録ユーザーが、既婚者であるにもかかわらず独身と偽って登録した場合、または年齢、性別その他の登録事項について故意に虚偽の情報を登録したことが発覚した場合、当該ユーザーは運営に対し、違約金として金15万円を直ちに支払うものとします。</li>
           <li>前項の規定は、運営が当該ユーザーに対し、違約金の額を超える損害（対応に要した費用、弁護士費用、信用の毀損を含みますがこれらに限りません）の賠償を請求することを妨げるものではありません。</li>
         </ol>
 
@@ -394,7 +417,10 @@
           </tr>
           <tr>
             <th>サービス利用料金</th>
-            <td>各プラン・チケット購入ページに税込み価格で表示しております。</td>
+            <td>
+              オンラインデート：1回 3,300円（税込）<br>
+              ※登録料・月会費は無料です。
+            </td>
           </tr>
           <tr>
             <th>代金の支払方法</th>

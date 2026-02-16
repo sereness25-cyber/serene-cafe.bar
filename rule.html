@@ -50,7 +50,7 @@
       border-bottom: 1px solid rgba(0,0,0,0.1); 
       position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box;
       z-index: 1000; height: 60px; 
-      display: flex; align-items: center; justify-content: center; /* 中央寄せ */
+      display: flex; align-items: center; justify-content: center;
       padding: 0 16px; 
       box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
     }
@@ -72,10 +72,19 @@
       margin-bottom: 24px; position: relative;
     }
     
-    /* スマホ向け調整 */
-    @media (max-width: 480px) {
-      .paper-card { padding: 25px 20px; } /* 余白を少し詰める */
-      h1 { font-size: 22px !important; }
+    /* スマホ向け最適化 */
+    @media (max-width: 600px) {
+      .container { padding-left: 12px; padding-right: 12px; padding-top: 75px; } /* 両端の余白を少し詰める */
+      .paper-card { padding: 25px 16px; margin-bottom: 20px; } /* カード内の余白を確保しつつ広げる */
+      
+      h1 { font-size: 20px !important; margin-bottom: 20px !important; }
+      h2 { font-size: 17px !important; margin-bottom: 14px !important; }
+      h3 { font-size: 15px !important; margin-top: 18px !important; }
+      
+      p, .check-item { font-size: 13.5px !important; line-height: 1.7 !important; }
+      .check-box { padding: 12px; }
+      
+      .pin { top: 10px; width: 10px; height: 10px; } /* ピンも少し小さく */
     }
     
     /* 画鋲 */
@@ -214,21 +223,6 @@
       }
       applyDayNight(); 
       setInterval(applyDayNight, 60000);
-
-      // セッションチェック（必要に応じて有効化してください）
-      /*
-      try {
-          const s = JSON.parse(localStorage.getItem("ma_member_session"));
-          if(!s || !s.memberId) { 
-              // alert("ログインが必要です"); 
-              // location.replace("login.html"); 
-              return; 
-          }
-      } catch(e){ 
-          // location.replace("login.html"); 
-          return; 
-      }
-      */
     });
   </script>
 </body>
