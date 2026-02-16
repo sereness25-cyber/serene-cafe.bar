@@ -27,6 +27,7 @@
     html, body {
       margin: 0; padding: 0; font-family: "Shippori Mincho", serif; 
       height: 100dvh; width: 100vw; overflow: hidden; color: #333; transition: color 0.3s;
+      -webkit-text-size-adjust: 100%;
     }
 
     /* 背景 */
@@ -42,10 +43,17 @@
 
     .app-container { display: flex; flex-direction: column; height: 100dvh; width: 100%; position: relative; z-index: 1; }
 
+    /* ヘッダー (スマホ対応) */
     header { 
-      flex-shrink: 0; background: rgba(255, 250, 246, 0.95) !important; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.1); 
-      height: 60px; display: flex; align-items: center; padding: 0 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      justify-content: space-between;
+      flex-shrink: 0; background: rgba(255, 250, 246, 0.95) !important; backdrop-filter: blur(10px); 
+      border-bottom: 1px solid rgba(0,0,0,0.1); 
+      /* 高さとパディングを自動調整 */
+      height: auto; min-height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      /* ノッチ対応 */
+      padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      z-index: 100;
     }
     body[data-mode="bar"] header { background: rgba(20, 20, 20, 0.9) !important; border-bottom-color: rgba(255,255,255,0.1); }
     
@@ -60,19 +68,11 @@
     
     .btn.ghost { 
       border: 1px solid var(--pri); background: transparent; color: var(--pri); 
-      padding: 6px 14px; border-radius: 4px; text-decoration: none; 
-      font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+      padding: 6px 12px; border-radius: 4px; text-decoration: none; 
+      font-size: 11px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); transition: 0.3s; position: relative;
     }
-    .btn.ghost::before, .btn.ghost::after {
-      content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
-      background: rgba(255, 250, 246, 1); border-radius: 50%; transform: translateY(-50%);
-      border: 1px solid var(--pri);
-    }
-    .btn.ghost::before { left: -4px; border-right-color: transparent; }
-    .btn.ghost::after { right: -4px; border-left-color: transparent; }
     body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
-    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #201414; border-color: #d7ccc8; }
 
     /* タブバー */
     .tab-bar {
@@ -82,9 +82,10 @@
     .tab-bar::-webkit-scrollbar { display: none; }
     
     .tab-item {
-      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-family: "Shippori Mincho";
+      padding: 8px 16px; border-radius: 20px; font-size: 13px; font-family: "Shippori Mincho";
       background: rgba(255,255,255,0.6); color: #555; border: 1px solid rgba(0,0,0,0.1);
       white-space: nowrap; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0; /* スマホで潰れないように */
     }
     .tab-item.active { background: var(--pri); color: #fff; border-color: var(--pri); font-weight: bold; }
     body[data-mode="bar"] .tab-item { background: rgba(0,0,0,0.4); color: #ccc; border-color: rgba(255,255,255,0.1); }
@@ -96,8 +97,8 @@
     }
     main::-webkit-scrollbar { display: none; } 
 
-    /* テーブル一覧 */
-    .comm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 600px; margin: 0 auto; }
+    /* テーブル一覧（グリッド） */
+    .comm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 800px; margin: 0 auto; }
     .comm-card {
       background: var(--paper-light); border-radius: 2px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 16px; text-align: center;
@@ -106,16 +107,9 @@
     }
     .comm-card:active { transform: scale(0.98); }
     body[data-mode="bar"] .comm-card { background: #dcd1c4; color: #333; }
-    .comm-card::before {
-      content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(2deg);
-      width: 40px; height: 20px; background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
-    }
-    .comm-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; color: var(--pri); font-family: 'Zen Kurenaido'; line-height: 1.3;}
-    .comm-desc { font-size: 11px; color: #666; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .comm-count { font-size: 10px; color: #999; margin-top: 8px; }
-
-    /* 掲示板 */
-    .board-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 12px; max-width: 600px; margin: 0 auto; align-items: start; }
+    
+    /* 掲示板（グリッド） */
+    .board-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 12px; max-width: 800px; margin: 0 auto; align-items: start; }
     
     .flyer {
       background: var(--paper-light); width: 100%; position: relative;
@@ -133,32 +127,23 @@
 
     .flyer-content { padding: 24px 10px 12px 10px; }
     .flyer-title { font-weight: bold; font-size: 16px; color: var(--pri); margin-bottom: 8px; text-align: center; font-family: 'Zen Kurenaido', sans-serif; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px; line-height: 1.3; }
-    .flyer-body { font-size: 13px; line-height: 1.6; color: #444; white-space: pre-wrap; word-break: break-word; font-family: 'Zen Kurenaido', sans-serif; min-height: 60px; }
+    .flyer-body { font-size: 14px; line-height: 1.7; color: #444; white-space: pre-wrap; word-break: break-word; font-family: 'Zen Kurenaido', sans-serif; min-height: 60px; }
     
     .ng-blur { filter: blur(4px); user-select: none; cursor: not-allowed; }
     .ng-warning { font-size: 10px; color: #d32f2f; margin-bottom: 4px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
 
     .reply-list { margin-top: 12px; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
     .reply-item {
-      background: rgba(255,255,255,0.7); padding: 8px 10px; border-radius: 4px;
-      font-size: 12px; color: #444; position: relative; box-shadow: 1px 2px 5px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
-    }
-    .reply-item::before {
-      content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%) rotate(-2deg);
-      width: 24px; height: 10px; background: rgba(201,123,99,0.4); 
+      background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;
+      font-size: 13px; color: #444; position: relative; box-shadow: 1px 2px 5px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
     }
     body[data-mode="bar"] .reply-item { background: rgba(0,0,0,0.2); color: #ddd; border-color: rgba(255,255,255,0.1); }
-    body[data-mode="bar"] .reply-item::before { background: rgba(255,255,255,0.2); }
     
     .reply-author { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; color: #777; cursor: pointer; }
-    .reply-author:active { opacity: 0.7; }
     .reply-author img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
 
-    .flyer-author { margin-top: 10px; text-align: right; font-size: 10px; color: #777; font-family: sans-serif; display: flex; align-items: center; justify-content: flex-end; gap: 4px; cursor: pointer; padding: 2px; border-radius: 4px; transition: 0.2s;}
-    .flyer-author:hover { background: rgba(0,0,0,0.05); }
-    .flyer-author:active { transform: scale(0.95); opacity: 0.8; }
+    .flyer-author { margin-top: 10px; text-align: right; font-size: 11px; color: #777; font-family: sans-serif; display: flex; align-items: center; justify-content: flex-end; gap: 4px; cursor: pointer; padding: 4px; border-radius: 4px; }
     .flyer-author img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
-    .flyer-author span { text-decoration: underline dotted rgba(0,0,0,0.3); }
 
     .tear-tabs { display: flex; border-top: 1px dashed #ccc; height: 45px; } 
     .tear-tab {
@@ -172,8 +157,7 @@
     .tear-tab.torn { animation: tearOffAnim 0.5s forwards cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
     @keyframes tearOffAnim { 0% { transform: translateY(0) rotate(0); opacity: 1; } 40% { transform: translateY(10px) rotate(5deg); opacity: 1; } 100% { transform: translateY(60px) rotate(15deg); opacity: 0; } }
 
-    .my-post-action { background: #eee; text-align: center; padding: 8px; font-size: 11px; color: #888; cursor: pointer; transition: 0.2s; border-radius: 0 0 2px 2px; font-family: sans-serif; }
-    .my-post-action:hover { background: #e0e0e0; color: #d32f2f; }
+    .my-post-action { background: #eee; text-align: center; padding: 12px; font-size: 12px; color: #888; cursor: pointer; transition: 0.2s; border-radius: 0 0 2px 2px; font-family: sans-serif; }
     body[data-mode="bar"] .my-post-action { background: #b5a695; color: #444; }
 
     /* FAB */
@@ -182,21 +166,22 @@
     .fab:active { transform: scale(0.9); }
 
     /* Modal */
-    .editor-overlay { position: fixed; inset: 0; z-index: 2000; display: none; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+    .editor-overlay { position: fixed; inset: 0; z-index: 2000; display: none; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 16px; }
 
-    .board-editor { background: #fffdf8; width: 100%; max-width: 400px; border-radius: 2px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .board-editor { background: #fffdf8; width: 100%; max-width: 500px; border-radius: 4px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; position: relative; max-height: 90vh; }
     body[data-mode="bar"] .board-editor { background: #dcd1c4; color: #333; }
-    .editor-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; }
+    .editor-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; }
     .editor-title-text { font-weight: bold; color: var(--pri); font-size: 16px; font-family: 'Zen Kurenaido', sans-serif; }
-    .editor-body { padding: 20px; display: flex; flex-direction: column; }
+    .editor-body { padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
     
     .board-editor .btn.ghost { background: rgba(255,255,255,0.6) !important; border: 1px solid #999 !important; color: #333 !important; font-weight: bold; }
     
     input.board-in-title, textarea.board-in-body { width: 100%; font-family: 'Zen Kurenaido', sans-serif; color: #333; background: transparent; border: none; outline: none; box-sizing: border-box; }
+    /* スマホ入力でズームしないよう16px以上 */
     input.board-in-title { font-size: 20px; font-weight: bold; margin-bottom: 16px; border-bottom: 1px dotted #ccc; padding-bottom: 8px; }
     textarea.board-in-body { flex: 1; min-height: 150px; font-size: 16px; line-height: 1.8; resize: none; }
 
-    .btn.primary { background: #e63946; color: #fff; border: none; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+    .btn.primary { background: #e63946; color: #fff; border: none; padding: 10px 24px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px;}
     body[data-mode="bar"] .btn.primary { background: #a63737; }
     .btn.primary:active { transform: scale(0.95); }
     
@@ -207,23 +192,40 @@
     .prof-header { display:flex; gap:16px; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:16px; }
     .prof-avatar-lg { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); background:#f3f4f6; }
     .prof-name { font-weight:900; font-size:24px; color:var(--pri); margin:0; line-height:1.2; }
-    body[data-mode="bar"] .prof-name { color: #333; }
     
     .prof-section { margin-bottom:16px; text-align: left; }
     .prof-label { font-weight:bold; font-size:13px; color:#9ca3af; border-left:4px solid var(--pri); padding-left:8px; margin-bottom:6px; }
     .prof-text { font-size:15px; line-height:1.6; white-space:pre-wrap; color:#374151; }
-    .prof-value-type { font-weight: 900; font-size: 18px; color: #4b5563; margin-bottom: 12px; padding: 4px 0; }
     .chart-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top:10px; }
     .chart-legend { display:flex; gap:16px; font-size:12px; margin-top:12px; color:#666; justify-content: center; }
     .legend-item { display:flex; align-items:center; gap:6px; }
     .legend-dot { width:10px; height:10px; border-radius:50%; }
 
-    /* ローダーの改善 */
+    /* ローダー */
     .loader { text-align:center; padding:40px; color:#555; font-size:14px; font-family: sans-serif; text-shadow: none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;}
     .loader .material-icons-outlined { animation: spin 1s linear infinite; font-size: 24px; color: var(--pri); }
     @keyframes spin { 100% { transform: rotate(360deg); } }
     body[data-mode="bar"] .loader { color: #ddd; }
     body[data-mode="bar"] .loader .material-icons-outlined { color: #eaddcf; }
+
+    /* ★★★ スマホ最適化CSS ★★★ */
+    @media (max-width: 600px) {
+      /* グリッドを1列に */
+      .comm-grid, .board-grid { grid-template-columns: 1fr; gap: 20px; }
+      
+      /* カードの幅を最大化し、回転を無効化（読みやすく） */
+      .flyer { transform: none !important; width: 100%; margin-bottom: 10px; }
+      
+      /* モーダルの幅を広げる */
+      .board-editor, .profile-card { max-width: 100%; width: 100%; border-radius: 8px; }
+      .editor-overlay { padding: 10px; }
+      
+      /* FABの位置調整 */
+      .fab { bottom: 20px; right: 20px; width: 56px; height: 56px; }
+      
+      /* メインエリアの余白 */
+      main { padding: 16px 16px 100px 16px; }
+    }
   </style>
 </head>
 
@@ -273,7 +275,7 @@
       </div>
       <div class="editor-body">
         <input type="text" id="inCommTitle" class="board-in-title" placeholder="テーブル名 (例: 猫好きの席)" maxlength="15">
-        <textarea id="inCommDesc" class="board-in-body" placeholder="どんな話題で盛り上がりますか？" style="min-height:100px; font-size:14px;"></textarea>
+        <textarea id="inCommDesc" class="board-in-body" placeholder="どんな話題で盛り上がりますか？" style="min-height:100px; font-size:16px;"></textarea>
       </div>
     </div>
   </div>
@@ -287,7 +289,7 @@
       </div>
       <div class="editor-body" style="text-align: center; padding: 30px 20px;">
         <p style="margin-bottom: 20px; font-family:'Zen Kurenaido'; font-size: 16px; color:var(--pri);" id="joinCommMsg"></p>
-        <p style="font-size: 12px; color: #888; line-height: 1.6;">このテーブルに参加すると、<br>会話を見たり言葉を綴ったりできます。</p>
+        <p style="font-size: 13px; color: #888; line-height: 1.6;">このテーブルに参加すると、<br>会話を見たり言葉を綴ったりできます。</p>
       </div>
     </div>
   </div>
@@ -308,7 +310,7 @@
   </div>
 
   <div id="replyModal" class="editor-overlay">
-    <div class="board-editor" style="max-height: 300px;">
+    <div class="board-editor" style="max-height: 400px;">
       <div class="editor-header">
         <button class="btn ghost" onclick="document.getElementById('replyModal').style.display='none'">やめる</button>
         <div class="editor-title-text" id="replyModalTitle">返信を書く</div>
@@ -322,8 +324,8 @@
 
   <div id="profileModal" class="editor-overlay">
     <div class="profile-card" style="padding:0; text-align:left; overflow:hidden;">
-      <button class="btn ghost" onclick="closeProfile()" style="position:absolute; top:10px; right:10px; border:none; background:transparent; font-size:20px; z-index:10; color:#999;">×</button>
-      <div id="profileBody" style="padding: 24px; max-height: 75vh; overflow-y: auto;">読み込み中...</div>
+      <button class="btn ghost" onclick="closeProfile()" style="position:absolute; top:10px; right:10px; border:none; background:transparent; font-size:24px; z-index:10; color:#999;">×</button>
+      <div id="profileBody" style="padding: 24px; max-height: 80vh; overflow-y: auto;">読み込み中...</div>
     </div>
   </div>
 
@@ -630,7 +632,8 @@
             const dispName = escapeHtml(userProf.nickname || "匿名");
             const avatar = userProf.avatarDataUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
             
-            const rot = (Math.random() * 6 - 3).toFixed(1);
+            // スマホレイアウト用に回転を控えめに
+            const rot = (Math.random() * 2 - 1).toFixed(1);
             const pinColor = pins[Math.floor(Math.random() * pins.length)];
 
             if(post.lineUserId) { profileCache[post.lineUserId] = { ...profileCache[post.lineUserId], ...userProf }; }
@@ -778,38 +781,23 @@
         }
       };
       
-      // ★ 修正: 異性のみ閲覧可能にする
       function renderProfileFull(prof, myProf, container, uid) {
           const isMine = (prof.memberId === myId);
-          // profilePublicがtrueまたは文字列"true"以外なら非公開
           let isPublic = (prof.profilePublic === true || String(prof.profilePublic) === "true");
 
-          // 性別判定
           const myG = myProf.gender || "";
           const targetG = prof.gender || "";
           let isOpposite = false;
           if (myG === "男性" && targetG === "女性") isOpposite = true;
           else if (myG === "女性" && targetG === "男性") isOpposite = true;
 
-          // 自分以外で、条件（非公開 or 同性）に引っかかる場合はブロック
           if (!isMine) {
               if (!isPublic) {
-                 container.innerHTML = `
-                    <div style="text-align:center; padding:60px 20px; color:#999;">
-                        <div style="font-size:48px; margin-bottom:16px;">🔒</div>
-                        <div style="font-weight:bold;">このプロフィールは非公開です</div>
-                    </div>
-                 `;
+                 container.innerHTML = `<div style="text-align:center; padding:60px 20px; color:#999;"><div style="font-size:48px; margin-bottom:16px;">🔒</div><div style="font-weight:bold;">このプロフィールは非公開です</div></div>`;
                  return;
               }
-              
               if (!isOpposite) {
-                 container.innerHTML = `
-                    <div style="text-align:center; padding:60px 20px; color:#999;">
-                        <div style="font-size:48px; margin-bottom:16px;">🚫</div>
-                        <div style="font-weight:bold;">異性の方のみプロフィールをご覧いただけます</div>
-                    </div>
-                 `;
+                 container.innerHTML = `<div style="text-align:center; padding:60px 20px; color:#999;"><div style="font-size:48px; margin-bottom:16px;">🚫</div><div style="font-weight:bold;">異性の方のみプロフィールをご覧いただけます</div></div>`;
                  return;
               }
           }
