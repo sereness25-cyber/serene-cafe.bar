@@ -43,18 +43,22 @@
     body[data-mode="bar"] h2 { border-bottom-color: #8b5a4a !important; color: #5a3e32 !important; }
     body[data-mode="bar"] h3 { color: #5a3e32 !important; }
 
-    /* ヘッダー (固定表示・中央寄せ) */
+    /* ヘッダー (スマホ対応・安全領域確保) */
     header { 
-      background: rgba(255, 250, 246, 0.95) !important; 
+      background: rgba(255, 250, 246, 0.98) !important; 
       backdrop-filter: blur(10px); 
       border-bottom: 1px solid rgba(0,0,0,0.1); 
-      position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box;
-      z-index: 1000; height: 60px; 
+      position: fixed; 
+      top: 0; left: 0; width: 100%; box-sizing: border-box;
+      z-index: 9999; /* 最前面へ */
+      height: auto; /* 高さは自動調整 */
+      min-height: 60px;
       display: flex; align-items: center; justify-content: center;
-      padding: 0 16px; 
+      /* ノッチ対応のパディング (上部に安全領域を追加) */
+      padding: max(10px, env(safe-area-inset-top)) 16px 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
     }
-    body[data-mode="bar"] header { background: rgba(20, 20, 20, 0.9) !important; border-bottom-color: rgba(255,255,255,0.1); }
+    body[data-mode="bar"] header { background: rgba(20, 20, 20, 0.95) !important; border-bottom-color: rgba(255,255,255,0.1); }
     
     .wrap { width: 100%; max-width: 600px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
     .brand { color: var(--pri) !important; font-weight: 900; font-size: 18px; font-family: "Shippori Mincho", serif; letter-spacing: 0.1em; }
@@ -62,7 +66,8 @@
     /* コンテンツレイアウト */
     .container { 
       max-width: 600px; margin: 0 auto; 
-      padding: 80px 16px 100px; /* ヘッダー分の余白確保 */
+      /* ヘッダーの高さ(約60px) + ノッチ分 + 余白 を確保 */
+      padding: calc(80px + env(safe-area-inset-top)) 16px 100px; 
     }
     
     /* お店の張り紙風カード */
@@ -70,21 +75,6 @@
       background: #fdf6e3; border: 1px solid #e0d0c0; border-radius: 4px;
       box-shadow: 2px 4px 15px rgba(0,0,0,0.1); padding: 30px 24px;
       margin-bottom: 24px; position: relative;
-    }
-    
-    /* スマホ向け最適化 */
-    @media (max-width: 600px) {
-      .container { padding-left: 12px; padding-right: 12px; padding-top: 75px; } /* 両端の余白を少し詰める */
-      .paper-card { padding: 25px 16px; margin-bottom: 20px; } /* カード内の余白を確保しつつ広げる */
-      
-      h1 { font-size: 20px !important; margin-bottom: 20px !important; }
-      h2 { font-size: 17px !important; margin-bottom: 14px !important; }
-      h3 { font-size: 15px !important; margin-top: 18px !important; }
-      
-      p, .check-item { font-size: 13.5px !important; line-height: 1.7 !important; }
-      .check-box { padding: 12px; }
-      
-      .pin { top: 10px; width: 10px; height: 10px; } /* ピンも少し小さく */
     }
     
     /* 画鋲 */
@@ -115,6 +105,38 @@
     }
     .contact-btn:active { transform: scale(0.98); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
     body[data-mode="bar"] .contact-btn { background: #8b3a3a; }
+
+    /* ★★★ スマホ専用最適化CSS ★★★ */
+    @media (max-width: 600px) {
+      /* 横幅の余白を調整 */
+      .container { 
+        padding-left: 10px; 
+        padding-right: 10px; 
+        /* ヘッダーの高さ変化に対応 */
+        padding-top: calc(75px + env(safe-area-inset-top)); 
+      }
+      
+      /* カード内の文字表示領域を最大化 */
+      .paper-card { 
+        padding: 25px 15px; 
+        margin-bottom: 20px; 
+      }
+      
+      /* 文字サイズの微調整 */
+      h1 { font-size: 20px !important; margin-bottom: 20px !important; }
+      h2 { font-size: 17px !important; margin-bottom: 14px !important; }
+      h3 { font-size: 15px !important; margin-top: 18px !important; }
+      p { font-size: 13.5px !important; line-height: 1.7 !important; }
+      
+      /* チェックリストの視認性向上 */
+      .check-box { padding: 12px; }
+      .check-item { gap: 8px; font-size: 13.5px; }
+      .icon-ng { font-size: 16px; margin-top: 3px; }
+      
+      /* ピンのサイズ調整 */
+      .pin { top: 10px; width: 10px; height: 10px; }
+      .pin::after { top: 6px; left: 4px; width: 2px; height: 6px; }
+    }
   </style>
 </head>
 <body>
