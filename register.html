@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>入店手続き｜セレネスCafe&Bar</title>
 
-<link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#5a3e32">
-  
   <link rel="apple-touch-icon" href="icon.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +32,7 @@
     body[data-mode="bar"] { 
       --wall: #2b2623;
       --brick: #3e3733;
-      --wood: #d7ccc8; /* 夜は文字を明るく */
+      --wood: #d7ccc8;
       --wood-light: #4e3b31;
       --glass: rgba(30, 30, 30, 0.85);
       --light: rgba(255, 180, 100, 0.15);
@@ -71,7 +70,7 @@
     /* ヘッダー */
     header { 
       position: sticky; top: 0; z-index: 100; height: 70px; display: flex; align-items: center; padding: 0 20px;
-      background: rgba(232, 228, 220, 0.95); /* 壁色に近い半透明 */
+      background: rgba(232, 228, 220, 0.95);
       backdrop-filter: blur(5px);
       border-bottom: 1px solid rgba(0,0,0,0.1);
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
@@ -81,7 +80,6 @@
     .wrap { width: 100%; max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
     .brand { font-size: 24px; font-family: 'Dancing Script', cursive; font-weight: 700; letter-spacing: 0.1em; }
     
-    /* ★ チケット風ボタン */
     .btn.ghost { 
       border: 1px solid var(--wood); background: transparent; color: var(--wood); 
       padding: 6px 14px; border-radius: 4px; text-decoration: none; 
@@ -90,16 +88,12 @@
     }
     .btn.ghost::before, .btn.ghost::after {
       content: ""; position: absolute; top: 50%; width: 6px; height: 6px; 
-      background: #e8e4dc; /* ヘッダー背景色と合わせる（昼） */
-      border-radius: 50%; transform: translateY(-50%);
+      background: #e8e4dc; border-radius: 50%; transform: translateY(-50%);
       border: 1px solid var(--wood);
     }
     .btn.ghost::before { left: -4px; border-right-color: transparent; }
     .btn.ghost::after { right: -4px; border-left-color: transparent; }
-
-    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { 
-        background: #2b2623; /* ヘッダー背景色と合わせる（夜） */
-    }
+    body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #2b2623; }
 
     main { max-width: 600px; margin: 0 auto; padding: 40px 20px 80px; }
 
@@ -118,7 +112,6 @@
     }
     body[data-mode="bar"] .card { border-color: #3e2e28; }
 
-    /* ボードの留め具 */
     .card::before {
       content: ""; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
       width: 120px; height: 20px; background: #3e2723;
@@ -126,15 +119,8 @@
     }
     .card::after {
       content: ""; position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
-      width: 2px; height: 20px; background: #333; /* 吊り紐 */
+      width: 2px; height: 20px; background: #333;
     }
-
-    .okBox {
-      background: rgba(255,255,255,0.5); border: 1px dashed var(--accent);
-      color: var(--wood); padding: 16px; text-align: center; font-size: 14px;
-      margin-bottom: 24px; border-radius: 2px;
-    }
-    body[data-mode="bar"] .okBox { background: rgba(0,0,0,0.2); }
 
     .message-text {
       font-size: 14px; line-height: 1.9; margin-bottom: 24px;
@@ -158,16 +144,23 @@
     .hr { height: 1px; background: var(--accent); margin: 30px 0; border: none; opacity: 0.3; }
 
     label { display: block; margin: 16px 0 6px; font-size: 13px; color: var(--accent); font-weight: bold; }
-    input {
+    
+    /* --- 入力フィールドの修正 --- */
+    input[type="text"],
+    input[type="number"],
+    input[type="tel"] {
       width: 100%; padding: 10px; border: none; border-bottom: 1px solid var(--accent);
       background: transparent; font-size: 16px; font-family: "Shippori Mincho";
       color: var(--wood); outline: none; border-radius: 0; transition: 0.3s;
     }
-    input:focus { border-bottom-color: var(--wood); background: rgba(255,255,255,0.1); }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="tel"]:focus { 
+      border-bottom-color: var(--wood); background: rgba(255,255,255,0.1); 
+    }
 
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-    /* 木のボタン */
     .btn.primary {
       width: 100%; padding: 16px; background: var(--btn-bg); color: #fff;
       border: none; border-radius: 2px; font-family: "Shippori Mincho"; font-size: 16px;
@@ -178,16 +171,22 @@
     .btn.primary:active { transform: translateY(4px); box-shadow: 0 0 0 #3e2723, inset 0 2px 5px rgba(0,0,0,0.3); }
     .btn.primary:disabled { background: #a1887f; cursor: not-allowed; box-shadow: none; transform: none; }
 
-    .agreeBox { margin: 24px 0; font-size: 12px; display: flex; gap: 8px; align-items: start; }
+    /* --- 利用規約ボックスの修正 --- */
+    .agreeBox { 
+      margin: 24px 0; font-size: 12px; 
+      display: flex; gap: 10px; align-items: start; /* 上揃え */
+    }
+    /* チェックボックス専用スタイル */
+    input[type="checkbox"] {
+      width: 18px; height: 18px; margin-top: 2px; /* 文章の1行目に高さを合わせる */
+      accent-color: var(--btn-bg);
+      cursor: pointer;
+    }
     .agreeLink { color: var(--wood); text-decoration: underline; }
 
     .hint { font-size: 11px; color: var(--accent); display: block; text-align: center; margin-top: 8px; }
 
   </style>
-
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script defer src="liff-config.js"></script>
-  <script defer src="app.js"></script>
 </head>
 
 <body>
@@ -208,10 +207,7 @@
     <h1>ご入店手続き</h1>
 
     <section class="card">
-      <div id="lineBox" class="okBox">
-        まずは、連絡先（LINE）をご提示ください。
-      </div>
-
+      
       <div class="message-text">
         <b>静かな時間を守るために</b><br>
         当店は会員制のカフェ＆バーです。<br>
@@ -227,37 +223,30 @@
 
       <div class="hr"></div>
 
-      <div id="step1">
-        <div style="text-align:center; margin-bottom:10px; font-family:'Dancing Script'; font-size:18px; color:var(--accent);">Step 1</div>
-        <button class="btn primary" id="btnConnectLine" type="button">連絡先を提示する (LINE)</button>
-        <span class="hint">※入力フォームが表示されます</span>
-      </div>
-
-      <form id="formRegister" style="display:none; margin-top:20px;">
-        <div style="text-align:center; margin-bottom:20px; font-family:'Dancing Script'; font-size:18px; color:var(--accent);">Step 2</div>
+      <form id="formRegister">
         
         <label>お名前</label>
-        <input id="name" required placeholder="例：山田 太郎" />
+        <input type="text" id="name" required placeholder="例：山田 太郎" />
 
         <div class="grid">
           <div>
             <label>年齢</label>
-            <input id="age" type="number" min="18" max="99" required placeholder="例：35" />
+            <input type="number" id="age" min="18" max="99" required placeholder="例：35" />
           </div>
           <div>
             <label>電話番号</label>
-            <input id="phone" required inputmode="tel" placeholder="例：09012345678" />
+            <input type="tel" id="phone" required inputmode="tel" placeholder="例：09012345678" />
           </div>
         </div>
 
         <div class="agreeBox">
           <input type="checkbox" id="agreeCheck">
           <label for="agreeCheck">
-            <a href="legal.html" target="_blank" class="agreeLink">利用規約</a> および <a href="legal.html" target="_blank" class="agreeLink">プライバシーポリシー</a> を確認し、同意します。
+            <a href="legal.html" target="_blank" class="agreeLink">利用規約およびプライバシーポリシー</a> を確認し、同意します。
           </label>
         </div>
 
-        <button class="btn primary" id="btnApply" type="submit">扉をノックする（申請）</button>
+        <button class="btn primary" id="btnApply" type="submit">扉をノックする（LINEを起動）</button>
         
         <p class="hint" style="margin-top:16px; line-height:1.6;">
           ボタンを押すとLINEが起動します。<br>
@@ -269,8 +258,8 @@
   </main>
 
 <script>
-document.addEventListener("DOMContentLoaded", async ()=>{
-  // 昼夜モード判定
+document.addEventListener("DOMContentLoaded", ()=>{
+  // --- 昼夜モード自動切替 ---
   function isNightNow() { return (new Date().getHours() >= 18 || new Date().getHours() < 6); }
   function applyDayNight() { 
     if(isNightNow()) document.body.setAttribute("data-mode", "bar");
@@ -279,95 +268,55 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   applyDayNight(); 
   setInterval(applyDayNight, 60000);
 
-  const lineBox = document.getElementById("lineBox");
-  const step1 = document.getElementById("step1");
-  const btnConnect = document.getElementById("btnConnectLine");
   const form = document.getElementById("formRegister");
   const agreeCheck = document.getElementById("agreeCheck");
   const btnApply = document.getElementById("btnApply");
 
-  let lineUserId = null;
-  let displayName = "";
-
-  const cleanUrl = location.origin + location.pathname;
+  // ★ ここにご自身のLINE IDを入れてください（@マーク必須）
   const OA_ID = "@820theos"; 
 
-  function showFormMode(name){
-    step1.style.display = "none";
-    form.style.display = "block";
-    
-    lineBox.innerHTML = `連絡先を確認しました。<br>ようこそ、<b>${name || "ゲスト"}</b> 様`;
-    // メモ書き風にスタイル変更
-    lineBox.style.background = "rgba(255,255,255,0.8)";
-    lineBox.style.border = "1px solid #8d6e63";
-    lineBox.style.fontFamily = "'Zen Kurenaido', sans-serif";
-  }
+  // --- 送信ボタンクリック時 ---
+  form.addEventListener("submit", (e)=>{
+    e.preventDefault();
 
-  function makeTalkUrl(name, age, phone){
-    const text = 
-`【入店申請】
+    // 1. バリデーション
+    const name  = document.getElementById("name").value.trim();
+    const age   = document.getElementById("age").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if(!name || !age || !phone) {
+        alert("すべての項目を記入してください");
+        return;
+    }
+    if(!agreeCheck.checked){ 
+        alert("規約への同意が必要です。チェックを入れてください。"); 
+        return; 
+    }
+
+    // 2. 送信メッセージの作成
+    const text = `【入店申請】
 お名前：${name}
 年齢：${age}
 電話番号：${phone}
 
-扉をノックしました。案内をお願いします。`;
-    return `https://line.me/R/oaMessage/${OA_ID}/?${encodeURIComponent(text)}`;
-  }
+規約に同意し、入店を申請します。`;
 
-  try{
-    if(typeof initLIFF === "function"){
-      const r = await initLIFF();
-      if(r.ok && window.liff && liff.isLoggedIn()){
-        const p = await getLineProfileSafe();
-        lineUserId = p.userId;
-        displayName = p.displayName || "";
-        showFormMode(displayName);
-      }
-    }
-  }catch(e){ console.warn(e); }
+    // 3. LINE URLスキームの作成
+    const talkUrl = `https://line.me/R/oaMessage/${OA_ID}/?${encodeURIComponent(text)}`;
 
-  btnConnect.addEventListener("click", async ()=>{
-    if(typeof initLIFF !== "function"){ alert("エラー：設定ファイルを読み込めませんでした。"); return; }
-    try {
-      const r = await initLIFF();
-      if(!r.ok){ alert("LINE連携エラー: " + (r.msg || "不明")); return; }
-      if(!liff.isLoggedIn()){ liff.login({ redirectUri: cleanUrl }); return; }
-      const p = await getLineProfileSafe();
-      lineUserId = p.userId;
-      displayName = p.displayName || "";
-      showFormMode(displayName);
-    } catch(err) {
-      console.error(err);
-      alert("エラーが発生しました。");
-    }
-  });
-
-  form.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    if(!lineUserId){ alert("連絡先の確認（LINE連携）ができていません。"); return; }
-    if(!agreeCheck.checked){ alert("規約への同意が必要です。チェックを入れてください。"); return; }
-
-    const name  = document.getElementById("name").value.trim();
-    const age   = document.getElementById("age").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    if(!name || !age || !phone) return alert("すべての項目を記入してください");
-
-    const talkUrl = makeTalkUrl(name, age, phone);
-    const win = window.open(talkUrl, "_blank");
-
+    // 4. ボタンを無効化
     btnApply.disabled = true;
-    btnApply.textContent = "呼び出し中...";
-    lineBox.textContent = "LINEが開きます。そのまま送信してください。";
+    btnApply.textContent = "LINEを起動中...";
 
-    try{
-      if(typeof gasApply === "function"){
-        const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), 8000));
-        await Promise.race([ gasApply({ lineUserId, displayName, name, age, phone }), timeout ]);
-      }
-    }catch(err){ console.warn(err); }
+    // 5. LINEアプリへ強制遷移
+    window.location.href = talkUrl;
     
-    btnApply.textContent = "ノックしました";
-    if(!win){ lineBox.innerHTML = `LINEが開かない場合は <a href="${talkUrl}" target="_blank" style="text-decoration:underline">こちら</a> をタップしてください。`; }
+    // PCなどのための救済措置
+    setTimeout(() => {
+        btnApply.textContent = "再度 LINEを開く";
+        btnApply.disabled = false;
+        btnApply.onclick = () => window.open(talkUrl, "_blank");
+    }, 3000);
   });
 });
 </script>
