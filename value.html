@@ -55,6 +55,7 @@ html, body {
   font-family: "Shippori Mincho", serif;
   color: var(--ink); transition: color 0.5s;
   min-height: 100vh;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* テーブルの小物（コーヒー） */
@@ -73,14 +74,17 @@ body[data-mode="bar"] .steam-svg { display: none; }
 .steam-svg path:nth-child(3) { animation-delay: -2s; }
 @keyframes steamAnim { 0% { transform: translateY(0) translateX(0); opacity: 0.2; } 100% { transform: translateY(-15px) translateX(8px); opacity: 0.8; } }
 
-/* ★ ヘッダー (固定 & デザイン統一) */
+/* ★ ヘッダー (スマホ対応・安全領域確保) */
 header { 
-  position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+  position: fixed; top: 0; left: 0; width: 100%; 
+  height: auto; min-height: 70px; /* 自動調整 */
   display: flex; align-items: center; justify-content: center;
   background: rgba(255, 250, 246, 0.95); backdrop-filter: blur(4px);
   border-bottom: 1px double rgba(62, 39, 35, 0.2);
   box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;
-  padding: 0 16px; box-sizing: border-box;
+  /* ノッチ対応の余白 */
+  padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+  box-sizing: border-box;
 }
 body[data-mode="bar"] header { background: rgba(43, 43, 43, 0.95); border-bottom-color: rgba(255,255,255,0.1); }
 
@@ -88,7 +92,7 @@ body[data-mode="bar"] header { background: rgba(43, 43, 43, 0.95); border-bottom
 
 /* おしゃれな店名ロゴ */
 .brand { 
-  font-family: 'Dancing Script', cursive; font-size: 26px; 
+  font-family: 'Dancing Script', cursive; font-size: 24px; 
   color: var(--ink); letter-spacing: 0.1em; font-weight: 700;
   text-shadow: 0 1px 1px rgba(255,255,255,0.8);
 }
@@ -99,8 +103,8 @@ body[data-mode="bar"] .brand { color: #eaddcf; text-shadow: 0 2px 4px rgba(0,0,0
 /* ボタン（チケット風） */
 .btn.ghost { 
   border: 1px solid var(--ink); background: transparent; color: var(--ink); 
-  padding: 6px 14px; border-radius: 4px; text-decoration: none; 
-  font-size: 12px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
+  padding: 6px 12px; border-radius: 4px; text-decoration: none; 
+  font-size: 11px; font-family: "Shippori Mincho", serif; letter-spacing: 1px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); transition: 0.3s; position: relative;
 }
 .btn.ghost::before, .btn.ghost::after {
@@ -114,11 +118,15 @@ body[data-mode="bar"] .btn.ghost { border-color: #d7ccc8; color: #d7ccc8; }
 body[data-mode="bar"] .btn.ghost::before, body[data-mode="bar"] .btn.ghost::after { background: #2b2b2b; border-color: #d7ccc8; }
 
 /* メインコンテンツ */
-main { max-width: 680px; margin: 0 auto; padding: 100px 16px 120px; }
+main { 
+  max-width: 680px; margin: 0 auto; 
+  /* ヘッダーの高さ＋ノッチ分を確保 */
+  padding: calc(90px + env(safe-area-inset-top)) 16px 120px; 
+}
 
 /* プログレスバー（インク風） */
 .progress-container { 
-  display: flex; align-items: center; gap: 16px; margin-bottom: 30px; 
+  display: flex; align-items: center; gap: 16px; margin-bottom: 20px; 
   font-family: 'Dancing Script', cursive; font-size: 18px; color: var(--ink); 
 }
 .progress-bar-bg { 
@@ -142,7 +150,7 @@ body[data-mode="bar"] .progress-bar-bg { background: rgba(255,255,255,0.2); }
   border: 1px solid var(--menu-border); 
   border-radius: 2px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.08), inset 0 0 30px rgba(62, 39, 35, 0.02);
-  padding: 40px 30px; margin-bottom: 24px; position: relative; 
+  padding: 30px 20px; margin-bottom: 24px; position: relative; 
   transition: opacity 0.4s, transform 0.4s;
   min-height: 400px; display: flex; flex-direction: column; justify-content: center;
 }
@@ -168,7 +176,7 @@ body[data-mode="bar"] .progress-bar-bg { background: rgba(255,255,255,0.2); }
   padding-bottom: 10px; display: inline-block; width: 100%;
 }
 .qText { 
-  font-size: 16px; margin-bottom: 32px; line-height: 2; text-align: center; 
+  font-size: 15px; margin-bottom: 30px; line-height: 1.8; text-align: center; 
   font-feature-settings: "palt";
 }
 
@@ -176,19 +184,19 @@ body[data-mode="bar"] .progress-bar-bg { background: rgba(255,255,255,0.2); }
 .optBtn { 
   display: block; width: 100%; text-align: left; 
   background: transparent; border: none; border-bottom: 1px dotted var(--menu-border);
-  padding: 16px 10px; margin-top: 8px; 
+  padding: 18px 10px; margin-top: 8px; 
   cursor: pointer; transition: all 0.3s; 
   font-family: "Shippori Mincho", serif; font-size: 14px; color: var(--ink);
-  position: relative;
+  position: relative; line-height: 1.5;
 }
-.optBtn:hover { 
-  background: rgba(161, 136, 127, 0.05); padding-left: 20px; color: #8d6e63;
+.optBtn:active { 
+  background: rgba(161, 136, 127, 0.1); transform: scale(0.98);
 }
 .optBtn::before { 
   content: "♦"; position: absolute; left: 0; top: 50%; transform: translateY(-50%) scale(0.8); 
   color: var(--accent); opacity: 0; transition: 0.3s; 
 }
-.optBtn:hover::before { opacity: 1; left: 5px; }
+.optBtn:active::before { opacity: 1; left: 5px; }
 
 /* 診断結果 */
 .result-header { text-align: center; padding: 20px; margin-bottom: 20px; position: relative; }
@@ -196,7 +204,7 @@ body[data-mode="bar"] .progress-bar-bg { background: rgba(255,255,255,0.2); }
   content: ""; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); 
   width: 60px; height: 3px; background: double var(--accent); 
 }
-.result-desc { font-size: 14px; line-height: 2.2; text-align: justify; margin: 0 auto; max-width: 500px; }
+.result-desc { font-size: 14px; line-height: 2; text-align: justify; margin: 0 auto; max-width: 500px; }
 .chart-container { display: flex; justify-content: center; margin: 30px 0; }
 
 .btn-save {
@@ -204,9 +212,25 @@ body[data-mode="bar"] .progress-bar-bg { background: rgba(255,255,255,0.2); }
   background: var(--ink); color: #fff; border: 1px solid var(--ink);
   padding: 16px; text-align: center; font-family: 'Zen Kurenaido'; font-weight: bold;
   letter-spacing: 0.1em; cursor: pointer; transition: 0.3s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 4px;
 }
-.btn-save:hover { background: #fff; color: var(--ink); transform: translateY(-2px); }
+.btn-save:active { background: #fff; color: var(--ink); transform: translateY(2px); }
+
+/* ★★★ スマホ最適化CSS ★★★ */
+@media (max-width: 600px) {
+  /* メインエリアの余白調整 */
+  main { padding-left: 10px; padding-right: 10px; padding-bottom: 80px; }
+  
+  /* カード内の余白調整 */
+  .card { padding: 25px 15px; min-height: auto; }
+  
+  /* 文字サイズの微調整 */
+  .qText { font-size: 14px; margin-bottom: 20px; }
+  .optBtn { font-size: 13px; padding: 16px 8px; }
+  
+  /* チャートサイズ調整 */
+  .chart-container svg { width: 100%; height: auto; max-width: 250px; }
+}
 
 </style>
 </head>
@@ -308,6 +332,7 @@ const QUESTIONS = [
   { key:"q10",t:"Question 10", sub:"生活のルール", q:"洗濯のたたみ方や物の置き場所など、家事のルールはありますか？", opts:[{c:"A",text:"自分のやり方やルールがある。できれば合わせてほしい。"},{c:"B",text:"最低限の清潔感があればOK。やり方はその時々で合わせられる。"},{c:"C",text:"全く気にしない。散らかっていても死なないし、楽なのが一番。"}] },
   { key:"q11",t:"Question 11", sub:"変化と安定", q:"これからの人生、どんなペースで歩んでいきたいですか？", opts:[{c:"A",text:"新しい趣味や場所へどんどん出かけて、変化を楽しみたい。"},{c:"B",text:"たまに旅行に行くくらいで、基本は穏やかな日常を繰り返したい。"},{c:"C",text:"変化は疲れる。いつもの家で、いつものように過ごすのが一番の幸せ。"}] },
   { key:"q12",t:"Question 12", sub:"家族の優先順位", q:"パートナーとの関係はどうありたいですか？", opts:[{c:"A",text:"子供や親のことが最優先。それを一緒に支え合う同志でありたい。"},{c:"B",text:"バランス重視。家族も大事だが、パートナーとのデートも大切にしたい。"},{c:"C",text:"子供がいようとも、夫婦（パートナー）の関係が全ての土台。二人の絆が一番。"}] },
+  { key:"q13", t:"Question 13", sub:"食事の時間", q:"日々の食事について、どのようなスタイルが理想ですか？", opts:[{c:"A",text:"できるだけ一緒に食べて、今日あったことを話す時間にしたい。"},{c:"B",text:"予定が合えば一緒に。無理して合わせる必要はない。"},{c:"C",text:"食事の時間はバラバラでも気にならない。それぞれのペースを尊重したい。"}] }
 ];
 
 const TYPE_INFO = {
