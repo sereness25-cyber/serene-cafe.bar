@@ -25,7 +25,6 @@
     body { 
       margin:0; font-family:"Shippori Mincho",serif; color:var(--ink); 
       background-color:#2b1d16; 
-      /* 重い画像を削除し、CSSグラデーションで木目を表現 */
       background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 20px);
       min-height:100vh; 
       -webkit-text-size-adjust: 100%;
@@ -215,11 +214,10 @@
       <div id="secDashboard" class="section active">
         <h2>店舗状況 (Dashboard)</h2>
         <div class="dashboard-grid">
-          <div class="stat-card"><div class="stat-label">総会員数</div><div class="stat-val" id="stMembers">-</div></div>
+          <div class="stat-card"><div class="stat-label">承認済会員</div><div class="stat-val" id="stMembers">-</div></div>
           <div class="stat-card"><div class="stat-label">男性 / 女性</div><div class="stat-val" id="stGender">-</div></div>
           <div class="stat-card"><div class="stat-label">手紙流通数</div><div class="stat-val" id="stLetters">-</div></div>
           <div class="stat-card"><div class="stat-label">売上目安</div><div class="stat-val" id="stSales">-</div></div>
-          <div class="stat-card"><div class="stat-label">凍結中</div><div class="stat-val" id="stBanned">-</div></div>
         </div>
       </div>
 
@@ -375,7 +373,7 @@
         <option value="true">確認済み</option>
       </select>
       <div style="display:flex; justify-content:space-between; margin-top:20px;">
-        <button class="btn btn-danger" onclick="deleteMem()">削除</button>
+        <button class="btn btn-danger" onclick="deleteMem()">削除 (leftへ)</button>
         <button class="btn btn-success" onclick="saveMem()">保存</button>
       </div>
       <button class="btn" onclick="document.getElementById('memberEditModal').style.display='none'" style="margin-top:10px; background:#ccc; width:100%;">閉じる</button>
@@ -413,12 +411,28 @@
     } else { alert("パスワードが違います"); }
   }
 
-  async function api(act, p={}) {
+  // ★ 修正: POST送信のバグを修正 (URLにactionを含めつつ、BodyにはURLSearchParamsでデータを送るハイブリッド方式)
+  async function api(act, p={}, method="GET") {
     const u = new URL(GAS_URL);
+    // GETでもPOSTでも、GASのルーティング用にactionをURLに付与
     u.searchParams.append("action", act);
     u.searchParams.append("_nc", Date.now()); 
-    for(let k in p) u.searchParams.append(k, p[k]);
-    try { const res = await fetch(u); return await res.json(); } catch(e){ return {ok:false}; }
+    
+    if(method === "GET") {
+        for(let k in p) u.searchParams.append(k, p[k]);
+        try { const res = await fetch(u); return await res.json(); } catch(e){ return {ok:false}; }
+    } else {
+        // POSTのBodyは URLSearchParams で送る (x-www-form-urlencoded)
+        const params = new URLSearchParams();
+        // 念のためBodyにもactionを入れる
+        params.append("action", act); 
+        for(let k in p) params.append(k, p[k]);
+        
+        try { 
+            const res = await fetch(u, { method: "POST", body: params }); 
+            return await res.json(); 
+        } catch(e){ return {ok:false}; }
+    }
   }
 
   async function init(){
@@ -453,22 +467,33 @@
     const res = await api("get_dashboard_data");
     if(res.ok) {
         let s = res.stats || {};
-        let membersObj = s.members || {};
+        // let membersObj = s.members || {};
         let lettersObj = s.letters || {};
         let salesObj = s.sales || {};
 
-        document.getElementById("stMembers").textContent = (membersObj.total || 0) + "名";
-        document.getElementById("stGender").textContent = (membersObj.male || 0) + " / " + (membersObj.female || 0);
+        // document.getElementById("stMembers").textContent = (membersObj.total || 0) + "名";
+        // document.getElementById("stGender").textContent = (membersObj.male || 0) + " / " + (membersObj.female || 0);
         document.getElementById("stLetters").textContent = (lettersObj.total || 0) + "通";
         document.getElementById("stSales").textContent = "¥" + (salesObj.total || 0).toLocaleString();
-        document.getElementById("stBanned").textContent = (membersObj.banned || 0) + "名";
+        // document.getElementById("stBanned").textContent = (s.members.banned || 0) + "名";
     }
   }
 
   /* --- Members --- */
   async function loadMembers() {
     const res = await api("list_members_all");
-    if(res.ok) { allMembers = res.members; renderMembers(); }
+    if(res.ok) { 
+        allMembers = res.members; 
+        renderMembers(); 
+        
+        // ★ ダッシュボード数値を「承認済みのみ」で再計算
+        const validMembers = allMembers.filter(m => m.status === 'approved' || m.status === 'active');
+        const countMale = validMembers.filter(m => m.gender === '男性').length;
+        const countFemale = validMembers.filter(m => m.gender === '女性').length;
+        
+        document.getElementById("stMembers").textContent = validMembers.length + "名";
+        document.getElementById("stGender").textContent = countMale + " / " + countFemale;
+    }
   }
   
   function calcAge(bstr) {
@@ -485,6 +510,9 @@
     const term = document.getElementById("searchMember").value.toLowerCase();
     const el = document.getElementById("memberList"); el.innerHTML="";
     allMembers.forEach(m=>{
+      // ★ 修正: リスト表示の際、status='left'の会員は除外して表示しない
+      if(m.status === 'left') return;
+
       if(term && !m.nickname.toLowerCase().includes(term) && !m.memberId.toLowerCase().includes(term)) return;
       let stBadge = `<span class="badge bg-gray">${escapeHtml(m.status)}</span>`;
       if(m.status === 'left') stBadge = '<span class="badge bg-gray">退店済</span>';
@@ -522,6 +550,7 @@
     if(!body) return alert("メッセージを入力してください");
     if(!confirm(`${name} さんに通知を送りますか？`)) return;
 
+    // 通知はPOSTで送信
     const res = await api("send_letter", {
       fromMemberId: "MASTER",
       fromName: "マスター",
@@ -533,7 +562,7 @@
       paperType: "classic",
       waxColor: "wax-gold",
       sealMark: "star"
-    });
+    }, "POST");
 
     if(res.ok) {
       alert("送信しました");
@@ -555,19 +584,65 @@
     document.getElementById("edAgeVerified").value = (m.ageVerified === "true" || m.ageVerified === true) ? "true" : "false";
     document.getElementById("memberEditModal").style.display="flex";
   }
+  
   async function saveMem() {
-    await api("update_profile", { 
+    const btn = event.currentTarget; 
+    if(btn) { btn.disabled = true; btn.textContent = "..."; }
+
+    // 更新はPOSTで行う
+    const res = await api("update_profile", { 
         memberId: document.getElementById("edId").value, 
         nickname: document.getElementById("edName").value,
         status: document.getElementById("edStatus").value,
         ageVerified: document.getElementById("edAgeVerified").value
-    });
-    closeModal("memberEditModal"); loadMembers();
+    }, "POST");
+    
+    if(res.ok) {
+        closeModal("memberEditModal"); 
+        loadMembers();
+    } else {
+        alert("保存に失敗しました");
+    }
+    if(btn) { btn.disabled = false; btn.textContent = "保存"; }
   }
+
+  // ★ 修正: POSTで送信し、成功したら画面リストから除外する
   async function deleteMem() {
-    if(!confirm("削除しますか？")) return;
-    await api("delete_member", { memberId: document.getElementById("edId").value });
-    closeModal("memberEditModal"); loadMembers();
+    const id = document.getElementById("edId").value;
+    const name = document.getElementById("edName").value;
+    
+    if(!confirm(`ID: ${id} を退店処理（ステータス：left）にしますか？\n（台帳リストからは非表示になります）`)) return;
+    
+    // 1. プロフィールシートの更新
+    const res1 = await api("update_profile", { 
+        memberId: id,
+        nickname: name,
+        status: "left", // 強制的にleftへ
+        ageVerified: document.getElementById("edAgeVerified").value
+    }, "POST");
+
+    // 2. アプリケーションシートの更新 (追加)
+    // GAS側で "update_application" というアクションを受け取れるようにしてください
+    const res2 = await api("update_application", {
+        memberId: id,
+        status: "left"
+    }, "POST");
+
+    if(res1.ok) { // res2はGAS未実装でもエラーにしない（運用回避）
+        alert("処理しました。台帳から非表示になります。");
+        closeModal("memberEditModal");
+        
+        // Optimistic Update: 即座にリストデータでステータスを変更し、再描画（フィルタで消える）
+        const target = allMembers.find(m => m.memberId === id);
+        if(target) { target.status = "left"; }
+        
+        renderMembers();
+        
+        // ダッシュボード更新のために再読み込み
+        loadMembers();
+    } else {
+        alert("変更に失敗しました: " + (res1.error || "通信エラー"));
+    }
   }
 
   /* --- Letters --- */
@@ -613,14 +688,14 @@
   }
   async function approveLetter() {
     if(!confirm("承認しますか？")) return;
-    await api("update_letter_status", { id:document.getElementById("mLetterId").value, status:"approved", adminComment:document.getElementById("mComment").value });
+    await api("update_letter_status", { id:document.getElementById("mLetterId").value, status:"approved", adminComment:document.getElementById("mComment").value }, "POST");
     closeModal('letterModal'); loadLetters(); 
   }
   async function rejectLetter() { deleteLet(document.getElementById("mLetterId").value); closeModal('letterModal'); }
   
   async function deleteLet(id) {
     if(!confirm("削除しますか？")) return;
-    await api("delete_letter", { id: id }); 
+    await api("delete_letter", { id: id }, "POST"); 
     loadLetters();
   }
 
@@ -666,7 +741,7 @@
       const desc = document.getElementById("edCommDesc").value.trim();
       if(!title) return alert("タイトルを入力してください");
       
-      const res = await api("update_community", { communityId: id, title: title, description: desc });
+      const res = await api("update_community", { communityId: id, title: title, description: desc }, "POST");
       if(res.ok) { closeModal("communityEditModal"); loadCommunities(); } 
       else { alert("エラーが発生しました"); }
   }
@@ -677,7 +752,7 @@
 
   async function deleteAdminCommunity(id) {
       if(!confirm("このテーブルを削除しますか？\n※テーブル内の投稿は残りますが、一覧からアクセスできなくなります。")) return;
-      await api("delete_community", { communityId: id });
+      await api("delete_community", { communityId: id }, "POST");
       loadCommunities();
   }
 
@@ -720,7 +795,7 @@
 
   async function deleteAdminPost(id, filterCommId, filterCommTitle) {
       if(!confirm("この投稿を削除しますか？")) return;
-      await api("delete_post", { postId: id });
+      await api("delete_post", { postId: id }, "POST");
       loadBoard(filterCommId, filterCommTitle);
   }
 
@@ -750,7 +825,7 @@
   }
   async function deleteAdminDiary(id) {
       if(!confirm("この日記を削除しますか？")) return;
-      await api("delete_diary", { diaryId: id });
+      await api("delete_diary", { diaryId: id }, "POST");
       loadDiaries();
   }
 
@@ -817,7 +892,6 @@
               
             // PC表示用の上書き（display:grid で上書きされるが、内容はここでセット）
             if(window.innerWidth >= 768) {
-               // ※CSS Gridで表示するため、要素の順序と数を合わせる
                const lastRow = el.lastElementChild;
                lastRow.innerHTML = `
                 <div class="l-col">${ledgerMonth+1}/${date}</div>
@@ -838,13 +912,12 @@
   
   async function stampPay(id) {
     if(!confirm("入金を確認しましたか？\nハンコを押します。")) return;
-    const res = await api("update_letter_status", { id: id, status: "matched_paid" });
+    const res = await api("update_letter_status", { id: id, status: "matched_paid" }, "POST");
     if(res.ok) {
-        // 再読み込みせずDOMだけ更新（UX向上）
         const row = document.getElementById(`row-${id}`);
         const stampArea = row.querySelector(".l-stamp-area");
         if(stampArea) stampArea.innerHTML = `<div class="stamp-mark stamp-anim">受領</div>`;
-        loadLetters(); // 集計更新のためリロード
+        loadLetters(); 
     }
   }
 
@@ -854,14 +927,14 @@
       const newPrice = parseInt(newPriceStr, 10);
       if(isNaN(newPrice)) return alert("有効な数値を入力してください");
       
-      const res = await api("update_letter_price", { id: id, price: newPrice });
+      const res = await api("update_letter_price", { id: id, price: newPrice }, "POST");
       if(res.ok) { loadLetters(); } 
       else { alert("金額の更新に失敗しました"); }
   }
 
   async function deleteLedgerItem(id) {
       if(!confirm("この取引（手紙のやり取り）を帳簿から完全に削除しますか？")) return;
-      const res = await api("delete_letter", { id: id });
+      const res = await api("delete_letter", { id: id }, "POST");
       if(res.ok) { loadLetters(); } else { alert("削除に失敗しました"); }
   }
 
@@ -869,7 +942,7 @@
     const body = document.getElementById("bcBody").value;
     if(!body) return alert("メッセージを入力してください");
     if(!confirm("全会員のポストに手紙を送ります。よろしいですか？")) return;
-    const res = await api("broadcast_letter", { body: body });
+    const res = await api("broadcast_letter", { body: body }, "POST");
     if(res.ok) { alert(res.count + "通送信しました"); document.getElementById("bcBody").value = ""; } else { alert("送信失敗"); }
   }
 
