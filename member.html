@@ -298,7 +298,7 @@
     }
     @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
-    /* 退会セクションのデザイン (修正：メールボックスのすぐ下に配置) */
+    /* 退会セクションのデザイン */
     .exit-section {
       margin-top: 10px; /* 余白を詰める */
       padding-top: 0;   
@@ -756,17 +756,36 @@
     const btnValueTest = document.getElementById("btnValueTest");
     if(btnValueTest){
       btnValueTest.addEventListener("click", function(e){
+        // ★修正: サーバーから取得した最新のプロフィールデータから判定
+        let lastDate = null;
         let hasResult = false;
+
+        // 最新のプロフィールデータを確認
         if(profileCache[memberId] && profileCache[memberId].valuesResult) {
-            const parsed = parseValues(profileCache[memberId].valuesResult);
-            if(parsed.type !== "未診断" && parsed.type.indexOf("エラー") === -1) hasResult = true;
+            let vr = profileCache[memberId].valuesResult;
+            if (typeof vr === 'string') { try { vr = JSON.parse(vr); } catch(e){} }
+            
+            // 診断結果が有効かチェック
+            if (vr && vr.typeName && vr.typeName !== "未診断" && vr.typeName.indexOf("エラー") === -1) {
+                hasResult = true;
+                if (vr.updatedAt) {
+                    lastDate = new Date(vr.updatedAt);
+                }
+            }
         }
-        const lastTestStr = localStorage.getItem("srn_val_test_" + memberId);
-        if(hasResult && lastTestStr) {
-            const lastDate = new Date(parseInt(lastTestStr));
+
+        // フォールバック: ローカルストレージも確認（サーバーデータがない場合のみ）
+        if (!lastDate) {
+            const localStr = localStorage.getItem("srn_val_test_" + memberId);
+            if (localStr) lastDate = new Date(parseInt(localStr));
+        }
+
+        // 30日制限のチェック
+        if(hasResult && lastDate) {
             const now = new Date();
             const diffTime = now.getTime() - lastDate.getTime();
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+            
             if(diffDays < 30) {
                 e.preventDefault();
                 const nextDate = new Date(lastDate.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -774,6 +793,7 @@
                 return;
             }
         }
+
         if(hasResult) {
             if(!confirm("前回の診断から時間が経過しました。\n今のあなたの価値観で、診断を受け直しますか？")) e.preventDefault();
         } else {
