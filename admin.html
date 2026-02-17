@@ -129,7 +129,7 @@
       <div class="d-tab" onclick="switchTab('members')">👤 会員</div>
       <div class="d-tab" onclick="switchTab('letters')">📮 手紙</div>
       <div class="d-tab" onclick="switchTab('communities')">🪑 テーブル</div>
-      <div class="d-tab" onclick="switchTab('diaries')">📖 手帳</div>
+      <div class="d-tab" onclick="switchTab('diaries')">📖 日記</div>
       <div class="d-tab" onclick="switchTab('ledger')">💰 帳簿</div>
       <div class="d-tab" onclick="switchTab('system')">⚙️ システム</div>
     </div>
@@ -326,7 +326,7 @@
 
   function adminLogin() {
     const p = document.getElementById("adminPass").value;
-    if(p === "admin") { 
+    if(p === "kei591117") { 
       document.getElementById("loginModal").style.display = "none";
       document.getElementById("mainContent").style.display = "block";
       init();
