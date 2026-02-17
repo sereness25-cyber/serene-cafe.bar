@@ -896,7 +896,7 @@
     function renderPickupData(p) {
         if(!p) return;
         const bodyEl = document.getElementById("pickupBody"); 
-        const msg = p.reason === "values_match" ? "価値観が同じみたいですよ。お話ししてみませんか？" : (p.reason === "random" ? "たまには違うタイプの方とも相席いかがですか？" : "あなたにおすすめのお相手です。");
+        const msg = p.reason === "values_match" ? "価値観が近いみたいですよ。お話ししてみませんか？" : (p.reason === "random" ? "たまには違うタイプの方とも相席いかがですか？" : "あなたにおすすめのお相手です。");
         const ava = (p.avatarDataUrl && p.avatarDataUrl.length > 50) ? p.avatarDataUrl : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
         bodyEl.innerHTML = 
           '<div class="pickupRow">' +
